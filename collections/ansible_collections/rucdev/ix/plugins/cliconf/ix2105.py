@@ -60,7 +60,7 @@ class Cliconf(CliconfBase):
             cmd = "show running-config"
         cmd += " ".join(to_list(flags))
         cmd = cmd.strip()
-        return self.send_command()
+        return self.send_command(cmd)
 
     def get_diff(
         self,
@@ -215,6 +215,10 @@ class Cliconf(CliconfBase):
         return responses
 
     @configure_mode
+    def run_configs(self, commands=None, check_rc=True) -> list:
+        return self.run_commands(commands=commands, check_rc=check_rc)
+
+    @configure_mode
     def edit_config(
         self, candidate=None, commit=True, replace=None, diff=False, comment=None
     ):
@@ -227,13 +231,18 @@ class Cliconf(CliconfBase):
         results = []
         requests = []
         if commit:
+            self.send_command("configure")
             for line in to_list(candidate):
                 if not isinstance(line, Mapping):
                     line = {"command": line}
+
                 cmd = line["command"]
                 if cmd != "exit":
                     results.append(self.send_command(**line))
                     requests.append(cmd)
+
+            self.send_command("configure")
+            self.send_command("exit")
 
         else:
             raise ValueError("check mode is not supported")
@@ -241,3 +250,17 @@ class Cliconf(CliconfBase):
         resp["request"] = requests
         resp["response"] = results
         return resp
+
+    def get_default_flag(self):
+        self.send_command("configure")
+        out = self.get("show running-config ?")
+        out = to_text(out, errors="surrogate_then_replace")
+
+        commands = set()
+        for line in out.splitlines():
+            if line.strip():
+                commands.add(line.strip().split()[0])
+        if "all" in commands:
+            return "all"
+        else:
+            return "full"

@@ -71,9 +71,12 @@ def get_config(module, flags=None):
         return cfg
 
 
-def run_commands(module: AnsibleModule, commands, check_rc=True):
+def run_commands(module: AnsibleModule, commands, check_rc=True, configure=False):
     connection = get_connection(module)
     try:
-        return connection.run_commands(commands=commands, check_rc=check_rc)
+        if configure:
+            return connection.run_configs(commands=commands, check_rc=check_rc)
+        else:
+            return connection.run_commands(commands=commands, check_rc=check_rc)
     except ConnectionError as exc:
         module.fail_json(msg=to_text(exc))
