@@ -9,7 +9,7 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.c
     NetworkConfig,
     dumps,
 )
-from ansible_collections.rucdev.ix.plugins.module_utils.network.ix2105.ix2105 import (
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.ix import (
     run_commands,
     get_config,
     get_connection,

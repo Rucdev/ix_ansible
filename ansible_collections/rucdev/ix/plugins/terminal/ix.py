@@ -7,17 +7,13 @@ import re
 
 from ansible.errors import AnsibleConnectionFailure
 from ansible.module_utils._text import to_bytes, to_text
-from ansible.utils.display import Display
 from ansible_collections.ansible.netcommon.plugins.plugin_utils.terminal_base import (
     TerminalBase,
 )
 
-display = Display()
-
 
 class TerminalModule(TerminalBase):
     def __init__(self, connection):
-        display.vvvvv("Terminal init")
         super().__init__(connection)
 
     terminal_stdout_re = [
@@ -30,28 +26,15 @@ class TerminalModule(TerminalBase):
     terminal_stderr_re = [
         re.compile(rb"% .* Invalid command\."),
         re.compile(rb"% .* -- Ambiguous command."),
+        re.compile(rb"% Expects a subcommand or item selection."),
     ]
 
     terminal_config_prompt = re.compile(r"^.+\(config\)#$")
 
     def on_open_shell(self):
         pass
-        # try:
-        #     prompt = self._get_prompt()
-        #     if prompt.strip().endswith(b"#"):
-        #         display.vvv("starting cli", self._connection._play_context.remote_addr)
-        #     else:
-        #         raise AnsibleConnectionFailure
-        # except AnsibleConnectionFailure:
-        #     raise AnsibleConnectionFailure("")
-        # try:
-        #     self._exec_cli_command(b"terminal length 0")
-        # except AnsibleConnectionFailure:
-        #     raise AnsibleConnectionFailure("unable to set parameters")
-        # return super().on_open_shell()
 
     def on_become(self, passwd=None):
-        display.vvv("ix role is become ")
         if self._get_prompt().endswith(b"(config)#"):
             return
         cmd = {"command": "configure"}
