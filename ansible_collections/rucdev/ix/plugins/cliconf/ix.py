@@ -115,7 +115,7 @@ class Cliconf(CliconfBase):
     def get_device_info(self) -> dict:
         if not self._device_info:
             device_info = {}
-            device_info["network_os"] = "ix2105"
+            device_info["network_os"] = "ix"
 
             reply = self.get(command="show version")
             data = to_text(reply, errors="surrogate_or_strict")

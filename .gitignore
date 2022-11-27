@@ -2,3 +2,4 @@
 .vscode
 ex_playbook/
 debugs/
+__pycache__/
