@@ -3,3 +3,4 @@
 ex_playbook/
 debugs/
 __pycache__/
+*.py[cod]
