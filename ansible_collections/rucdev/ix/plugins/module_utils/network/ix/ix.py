@@ -9,7 +9,7 @@ import json
 _DEVICE_CONFIGS = {}
 
 
-def get_connection(module: AnsibleModule):
+def get_connection(module):
     print("called get connection")
     if hasattr(module, "_ix_connection"):
         return module._ix_connection
@@ -24,7 +24,7 @@ def get_connection(module: AnsibleModule):
     return module._ix_connection
 
 
-def get_capabilities(module: AnsibleModule):
+def get_capabilities(module):
     if hasattr(module, "_ix_capabilities"):
         return module._ix_capabilities
 
@@ -36,7 +36,7 @@ def get_capabilities(module: AnsibleModule):
     return module._ix_capabilities
 
 
-def get_defaults_flag(module: AnsibleModule):
+def get_defaults_flag(module):
     connection = get_connection(module)
     try:
         out = connection.get_defaults_flag()
@@ -71,7 +71,7 @@ def get_config(module, flags=None):
         return cfg
 
 
-def run_commands(module: AnsibleModule, commands, check_rc=True, configure=False):
+def run_commands(module, commands, check_rc=True, configure=False):
     connection = get_connection(module)
     try:
         if configure:

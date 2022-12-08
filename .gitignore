@@ -1,6 +1,6 @@
 .venv
 .vscode
-ex_playbook/
+example/
 debugs/
 __pycache__/
 *.py[cod]
