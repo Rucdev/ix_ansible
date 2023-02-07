@@ -10,6 +10,26 @@ authors:
 short_description: Run commands on remote NEC IX devices.
 description:
   - Send arbitrary commands to an ix node and returns the results read from the device
+options:
+  commands:
+    description:
+    - ""
+    required: true
+    type: list
+    elements: raw
+"""
+
+EXAMPLES = """
+- name: Get show running config
+  ix_config:
+    commands: show running-config
+
+- name: Run multiple commands
+  ix_command:
+    commands:
+      - show clock
+      - show vlans
+
 """
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.parsing import (
