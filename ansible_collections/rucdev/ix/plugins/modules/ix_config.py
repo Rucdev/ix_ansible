@@ -23,8 +23,7 @@ module: ix_config
 author:
   - Yushi Takeda
 short_description: Manage configuration on device of NEC IX
-description:
-- ""
+description: ""
 version_added: 0.1.0
 notes: ""
 options:
