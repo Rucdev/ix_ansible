@@ -1,6 +1,6 @@
 .venv
 .vscode
+__pycache__/
 example/
 debugs/
-__pycache__/
 *.py[cod]
