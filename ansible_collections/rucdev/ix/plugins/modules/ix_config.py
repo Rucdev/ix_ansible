@@ -23,7 +23,9 @@ module: ix_config
 author:
   - Yushi Takeda
 short_description: Manage configuration on device of NEC IX
-description: ""
+description: 
+  - This module provides an implementation for manage the configuration
+    of NEC IX series.
 version_added: 0.1.0
 notes: ""
 options:
