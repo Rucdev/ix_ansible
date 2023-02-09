@@ -18,12 +18,12 @@ from ansible.utils.display import Display
 
 DOCUMENTATION = """
 author: 
-- rucdev
+  - Yushi Takeda
 name: ix
 short_description: Use ix cliconf to run command on NEC IX platform
 description:
 - ""
-version_added: 1.0.0
+version_added: 0.1.0
 """
 
 display = Display()

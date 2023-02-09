@@ -20,14 +20,15 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 DOCUMENTATION = """
 module: ix_config
-author: rucdev
+author:
+  - Yushi Takeda
 short_description: Manage configuration on device of NEC IX
 description:
 - ""
-version_added:
+version_added: 0.1.0
 extends_documentation_fragment:
 - rucdev.ix.ix
-notes:
+notes: ""
 options:
   lines:
     description:
@@ -85,8 +86,6 @@ options:
     type: bool
     default: no
 """
-
-import json
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
