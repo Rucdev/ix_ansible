@@ -4,8 +4,7 @@ __metaclass__ = type
 
 DOCUMENTATION = """
 module: ix_command
-authors:
-  - Yushi Takeda
+author: Yushi Takeda
 short_description: Run commands on remote NEC IX devices.
 description:
   - Send arbitrary commands to an ix node and returns the results read from the device

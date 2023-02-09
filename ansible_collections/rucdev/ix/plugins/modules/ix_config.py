@@ -20,8 +20,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 DOCUMENTATION = """
 module: ix_config
-author:
-  - Yushi Takeda
+author: Yushi Takeda
 short_description: Manage configuration on device of NEC IX
 description:
   - This module provides an implementation for manage the configuration

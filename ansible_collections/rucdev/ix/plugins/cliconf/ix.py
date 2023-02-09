@@ -17,8 +17,7 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.c
 from ansible.utils.display import Display
 
 DOCUMENTATION = """
-author: 
-  - Yushi Takeda
+author: Yushi Takeda
 name: ix
 short_description: Use ix cliconf to run command on NEC IX platform
 description:
