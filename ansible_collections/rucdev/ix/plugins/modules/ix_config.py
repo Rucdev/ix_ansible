@@ -26,8 +26,6 @@ short_description: Manage configuration on device of NEC IX
 description:
 - ""
 version_added: 0.1.0
-extends_documentation_fragment:
-- rucdev.ix.ix
 notes: ""
 options:
   lines:
