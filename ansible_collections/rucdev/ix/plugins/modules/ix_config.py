@@ -20,10 +20,10 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 DOCUMENTATION = """
 module: ix_config
-author:
-short_description:
+author: rucdev
+short_description: Manage configuration on device of NEC IX
 description:
-- 
+- ""
 version_added:
 extends_documentation_fragment:
 - rucdev.ix.ix
