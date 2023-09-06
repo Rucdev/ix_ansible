@@ -33,7 +33,7 @@ def configure_mode(func):
     def wrapped(self, *args, **kwargs):
         prompt = self._connection.get_prompt()
         if not to_text(prompt, errors="surrogate_or_strict").strip().endswith("#"):
-            self.send_command("configure")
+            self.send_command("svintr-config")
         return func(self, *args, **kwargs)
 
     return wrapped
@@ -49,7 +49,7 @@ class Cliconf(CliconfBase):
     def get_config(self, source="running", flags=None, format=None):
         if source not in ("running", "startup"):
             raise ValueError(
-                # running, starting以外はエラーとする
+                # running, startup以外はエラーとする
                 f"fetching configuration for {source} is not supported"
             )
 
