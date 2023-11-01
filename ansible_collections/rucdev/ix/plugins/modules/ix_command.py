@@ -1,10 +1,27 @@
+#!/usr/bin/python
+#
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+#
 from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
 DOCUMENTATION = """
 module: ix_command
-author: Yushi Takeda
+author: Yushi Takeda (@rucdev)
 short_description: Run commands on remote NEC IX devices.
 description:
   - Send arbitrary commands to an ix node and returns the results read from the device
@@ -30,7 +47,7 @@ options:
         before moving forward. If the conditional is not true within
         the configured number of retries, the task fails. See examples.
     type: list
-    element: str
+    elements: str
   retries:
     description:
       - Specifies the number of retries a command should by tried before it is considered
@@ -65,6 +82,24 @@ EXAMPLES = """
 
 """
 
+RETURN = """
+stdout:
+  description: The set of responses from the commands
+  returned: always apart from low level errors (such as action plugin)
+  type: list
+  sample: ['...', '...']
+stdout_lines:
+  description: The value of stdout split into a list
+  returned: always apart from low level errors (such as action plugin)
+  type: list
+  sample: [['...', '...'], ['...'], ['...']]
+failed_conditions:
+  description: The list of conditionals that have failed
+  returned: failed
+  type: list
+  sample: ['...', '...']
+"""
+
 import time
 
 from ansible.module_utils.basic import AnsibleModule
@@ -94,7 +129,6 @@ def parse_commands(module: AnsibleModule, warnings: list):
 
 
 def main():
-    print("called command")
     argument_spec = dict(
         commands=dict(type="list", elements="raw", required=True),
         wait_for=dict(type="list", elements="str", alias="waitfor"),

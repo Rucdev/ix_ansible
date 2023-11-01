@@ -9,6 +9,7 @@ python = "^3.10"
 ansible = "^6.4.0"
 paramiko = "^2.11.0"
 ansible-pylibssh = "^1.0.0"
+tox = "^4.11.3"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"

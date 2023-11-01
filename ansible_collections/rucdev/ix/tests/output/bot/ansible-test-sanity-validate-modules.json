@@ -1,0 +1,10 @@
+{
+    "docs": "https://docs.ansible.com/ansible-core/2.13/dev_guide/testing/sanity/validate-modules.html", 
+    "results": [
+        {
+            "message": "The test `ansible-test sanity --test validate-modules` [[explain](https://docs.ansible.com/ansible-core/2.13/dev_guide/testing/sanity/validate-modules.html)] failed with 2 errors:", 
+            "output": "plugins/modules/ix_command.py:0:0: import-error: Exception attempting to import module for argument_spec introspection, 'No module named 'ansible_collections.ansible.netcommon''\nplugins/modules/ix_config.py:0:0: import-error: Exception attempting to import module for argument_spec introspection, 'No module named 'ansible_collections.ansible.netcommon''"
+        }
+    ], 
+    "verified": false
+}

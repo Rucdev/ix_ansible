@@ -18,15 +18,15 @@
 from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
+
 DOCUMENTATION = """
 module: ix_config
-author: Yushi Takeda
+author: Yushi Takeda (@ruc_dev)
 short_description: Manage configuration on device of NEC IX
 description:
   - This module provides an implementation for manage the configuration
     of NEC IX series.
 version_added: 0.1.0
-notes: ""
 options:
   lines:
     description:
@@ -83,6 +83,23 @@ options:
     - ""
     type: bool
     default: no
+"""
+
+EXAMPLES = """
+- name: Configure hostname
+  rucdev.ix.ix_config:
+    lines: hostname {{ inventory_hostname }}
+
+- name: Configure GigabitEthernet interface
+  rucdev.ix.ix_config:
+    lines: ip address 192.168.1.1/24
+    parents:
+      - interface GigabitEthernet0.0
+
+"""
+
+RETURN = """
+
 """
 
 from ansible.module_utils._text import to_text
