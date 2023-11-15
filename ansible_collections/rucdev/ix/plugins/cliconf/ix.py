@@ -47,12 +47,19 @@ from ansible.utils.display import Display
 display = Display()
 
 
+SVINTR_CONFIG = "svintr-config"
+
+
 def configure_mode(func):
     @wraps(func)
     def wrapped(self, *args, **kwargs):
         prompt = self._connection.get_prompt()
-        if not to_text(prompt, errors="surrogate_or_strict").strip().endswith("#"):
-            self.send_command("svintr-config")
+        if (
+            not to_text(prompt, errors="surrogate_or_strict")
+            .strip()
+            .endswith("(config)#")
+        ):
+            self.send_command(SVINTR_CONFIG)
         return func(self, *args, **kwargs)
 
     return wrapped
@@ -149,7 +156,7 @@ class Cliconf(CliconfBase):
                 device_info["network_os_version"] = match.group(2)
 
             # TODO: hostnameとnetwork_os_modelの取得方法を追加する
-            self.send_command("configure")
+            self.send_command(SVINTR_CONFIG)
             self.send_command("terminal length 0")
             reply = self.get(command="show running-config")
             data = to_text(reply, errors="surrogate_or_strict")
@@ -254,7 +261,7 @@ class Cliconf(CliconfBase):
         results = []
         requests = []
         if commit:
-            self.send_command("configure")
+            self.send_command(SVINTR_CONFIG)
             for line in to_list(candidate):
                 if not isinstance(line, Mapping):
                     line = {"command": line}
@@ -275,7 +282,7 @@ class Cliconf(CliconfBase):
         return resp
 
     def get_default_flag(self):
-        self.send_command("configure")
+        self.send_command(SVINTR_CONFIG)
         out = self.get("show running-config ?")
         out = to_text(out, errors="surrogate_then_replace")
 
