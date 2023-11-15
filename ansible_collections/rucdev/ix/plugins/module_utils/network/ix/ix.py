@@ -26,6 +26,10 @@
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+from __future__ import absolute_import, division, print_function
+
+__metaclass__ = type
+
 from ansible.module_utils.connection import Connection, ConnectionError
 from ansible.module_utils._text import to_text, to_bytes
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
@@ -37,7 +41,6 @@ _DEVICE_CONFIGS = {}
 
 
 def get_connection(module):
-    print("called get connection")
     if hasattr(module, "_ix_connection"):
         return module._ix_connection
 
@@ -46,7 +49,7 @@ def get_connection(module):
     if network_api == "cliconf":
         module._ix_connection = Connection(module._socket_path)
     else:
-        module.fail_json(msg=f"Invalid connection type {network_api}")
+        module.fail_json(msg="Invalid connection type %s" % network_api)
 
     return module._ix_connection
 

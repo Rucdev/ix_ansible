@@ -1,3 +1,31 @@
+#
+# (c) 2017 Red Hat Inc.
+#
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+DOCUMENTATION = """
+author: Yushi Takeda (@ruc_dev)
+name: ix
+short_description: Use ix cliconf to run command on NEC IX platform
+description:
+- ""
+version_added: 0.1.0
+"""
+
+
 import re
 import json
 from functools import wraps
@@ -16,24 +44,22 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.c
 )
 from ansible.utils.display import Display
 
-DOCUMENTATION = """
-author: Yushi Takeda
-name: ix
-short_description: Use ix cliconf to run command on NEC IX platform
-description:
-- ""
-version_added: 0.1.0
-"""
-
 display = Display()
+
+
+SVINTR_CONFIG = "svintr-config"
 
 
 def configure_mode(func):
     @wraps(func)
     def wrapped(self, *args, **kwargs):
         prompt = self._connection.get_prompt()
-        if not to_text(prompt, errors="surrogate_or_strict").strip().endswith("#"):
-            self.send_command("configure")
+        if (
+            not to_text(prompt, errors="surrogate_or_strict")
+            .strip()
+            .endswith("(config)#")
+        ):
+            self.send_command(SVINTR_CONFIG)
         return func(self, *args, **kwargs)
 
     return wrapped
@@ -49,7 +75,7 @@ class Cliconf(CliconfBase):
     def get_config(self, source="running", flags=None, format=None):
         if source not in ("running", "startup"):
             raise ValueError(
-                # running, starting以外はエラーとする
+                # running, startup以外はエラーとする
                 f"fetching configuration for {source} is not supported"
             )
 
@@ -130,7 +156,7 @@ class Cliconf(CliconfBase):
                 device_info["network_os_version"] = match.group(2)
 
             # TODO: hostnameとnetwork_os_modelの取得方法を追加する
-            self.send_command("configure")
+            self.send_command(SVINTR_CONFIG)
             self.send_command("terminal length 0")
             reply = self.get(command="show running-config")
             data = to_text(reply, errors="surrogate_or_strict")
@@ -235,7 +261,7 @@ class Cliconf(CliconfBase):
         results = []
         requests = []
         if commit:
-            self.send_command("configure")
+            self.send_command(SVINTR_CONFIG)
             for line in to_list(candidate):
                 if not isinstance(line, Mapping):
                     line = {"command": line}
@@ -256,7 +282,7 @@ class Cliconf(CliconfBase):
         return resp
 
     def get_default_flag(self):
-        self.send_command("configure")
+        self.send_command(SVINTR_CONFIG)
         out = self.get("show running-config ?")
         out = to_text(out, errors="surrogate_then_replace")
 
