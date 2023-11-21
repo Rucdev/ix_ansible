@@ -5,8 +5,11 @@ __metaclass__ = type
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.facts.facts import (
     FactsBase,
 )
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.interfaces.interfaces import (
+    InterfacesFacts,
+)
 
-FACT_RESOURCE_SUBSETS = dict()
+FACT_RESOURCE_SUBSETS = dict(interfaces=InterfacesFacts)
 
 
 class Facts(FactsBase):
@@ -15,7 +18,7 @@ class Facts(FactsBase):
     def __init__(self, module):
         super().__init__(module)
 
-    def get_facts(self, resource_facts_type=None, data=None):
+    def get_facts(self, legacy_facts_type=None, resource_facts_type=None, data=None):
         if self.VALID_RESOURCE_SUBSETS:
             self.get_network_resources_facts(
                 FACT_RESOURCE_SUBSETS, resource_facts_type, data
