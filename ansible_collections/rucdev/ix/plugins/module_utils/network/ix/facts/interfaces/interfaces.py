@@ -31,7 +31,7 @@ class InterfacesFacts(object):
         self.argument_spec = InterfacesArgs.argument_spec
 
     def get_interfaces_data(self, connection):
-        return connection.run_configs("show running-config")
+        return connection.configure_get("show running-config")
 
     def populate_facts(self, connection, ansible_facts, data=None):
         """Populate the facts for Interfaces network resource
@@ -47,7 +47,9 @@ class InterfacesFacts(object):
             data = self.get_interfaces_data(connection)
 
         # parse native config using the Interfaces template
-        interfaces_parser = InterfacesTemplate(lines=data, module=self._module)
+        interfaces_parser = InterfacesTemplate(
+            lines=data.splitlines(), module=self._module
+        )
         objs = sorted(
             list(interfaces_parser.parse().values()), key=lambda k, sk="name": k[sk]
         )
@@ -59,9 +61,6 @@ class InterfacesFacts(object):
                 self.argument_spec, {"config": objs}, redact=True
             ),
         )
-        print("######################################################")
-        print(params)
-        print("######################################################")
 
         facts["interfaces"] = params["config"]
         ansible_facts["ansible_network_resources"].update(facts)
