@@ -28,35 +28,49 @@ The arg spec for the ix_device_interfaces module
 
 
 class Device_interfacesArgs(object):  # pylint: disable=R0903
-    """The arg spec for the ix_device_interfaces module
-    """
+    """The arg spec for the ix_device_interfaces module"""
 
     def __init__(self, **kwargs):
         pass
 
-    argument_spec = {'config': {'elements': 'dict',
-            'options': {'duplex': {'choices': ['auto', 'full', 'half'],
-                                   'default': 'auto',
-                                   'type': 'str'},
-                        'keepalive': {'type': 'int'},
-                        'mdix': {'choices': ['mdi', 'mdix'], 'type': 'str'},
-                        'name': {'required': True, 'type': 'str'},
-                        'output-buffer': {'type': 'int'},
-                        'sflow': {'options': {'max_header_size': {'type': 'int'},
-                                              'polling_interval': {'type': 'int'},
-                                              'sampling_rate': {'type': 'int'}},
-                                  'type': 'dict'},
-                        'speed': {'choices': [10, 100, 1000, 'auto'],
-                                  'type': 'str'}},
-            'type': 'list'},
- 'reset': {'options': {'name': {'type': 'str'}}, 'type': 'dict'},
- 'state': {'choices': ['merged',
-                       'replaced',
-                       'overridden',
-                       'deleted',
-                       'rendered',
-                       'gathered',
-                       'purged',
-                       'parsed'],
-           'default': 'merged',
-           'type': 'str'}}  # pylint: disable=C0301
+    argument_spec = {
+        "config": {
+            "elements": "dict",
+            "options": {
+                "duplex": {
+                    "choices": ["auto", "full", "half"],
+                    "default": "auto",
+                    "type": "str",
+                },
+                "keepalive": {"type": "int"},
+                "mdix": {"choices": ["mdi", "mdix"], "type": "str"},
+                "name": {"required": True, "type": "str"},
+                "output-buffer": {"type": "int"},
+                "sflow": {
+                    "options": {
+                        "max_header_size": {"type": "int"},
+                        "polling_interval": {"type": "int"},
+                        "sampling_rate": {"type": "int"},
+                    },
+                    "type": "dict",
+                },
+                "speed": {"choices": [10, 100, 1000, "auto"], "type": "str"},
+            },
+            "type": "list",
+        },
+        "reset": {"options": {"name": {"type": "str"}}, "type": "dict"},
+        "state": {
+            "choices": [
+                "merged",
+                "replaced",
+                "overridden",
+                "deleted",
+                "rendered",
+                "gathered",
+                "purged",
+                "parsed",
+            ],
+            "default": "merged",
+            "type": "str",
+        },
+    }  # pylint: disable=C0301

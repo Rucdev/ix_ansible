@@ -27,12 +27,13 @@ The module file for ix_device_interfaces
 """
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {
-    'metadata_version':'1.1',
-    'status': ['preview'],
-    'supported_by': ['ix-team']
+    "metadata_version": "1.1",
+    "status": ["preview"],
+    "supported_by": ["ix-team"],
 }
 
 DOCUMENTATION = """
@@ -163,8 +164,12 @@ commands:
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.device_interfaces.device_interfaces import Device_interfacesArgs
-from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.config.device_interfaces.device_interfaces import Device_interfaces
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.device_interfaces.device_interfaces import (
+    Device_interfacesArgs,
+)
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.config.device_interfaces.device_interfaces import (
+    Device_interfaces,
+)
 
 
 def main():
@@ -173,12 +178,13 @@ def main():
 
     :returns: the result form module invocation
     """
-    module = AnsibleModule(argument_spec=Device_interfacesArgs.argument_spec,
-                           supports_check_mode=True)
+    module = AnsibleModule(
+        argument_spec=Device_interfacesArgs.argument_spec, supports_check_mode=True
+    )
 
     result = Device_interfaces(module).execute_module()
     module.exit_json(**result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

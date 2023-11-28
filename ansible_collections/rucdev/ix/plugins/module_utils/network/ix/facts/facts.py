@@ -8,8 +8,13 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.f
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.interfaces.interfaces import (
     InterfacesFacts,
 )
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.device_interfaces.device_interfaces import (
+    Device_interfacesFacts,
+)
 
-FACT_RESOURCE_SUBSETS = dict(interfaces=InterfacesFacts)
+FACT_RESOURCE_SUBSETS = dict(
+    interfaces=InterfacesFacts, device_interfaces=Device_interfacesFacts
+)
 
 
 class Facts(FactsBase):
