@@ -24,6 +24,7 @@ class Facts(FactsBase):
         super().__init__(module)
 
     def get_facts(self, legacy_facts_type=None, resource_facts_type=None, data=None):
+        # raise ValueError(self.VALID_RESOURCE_SUBSETS)
         if self.VALID_RESOURCE_SUBSETS:
             self.get_network_resources_facts(
                 FACT_RESOURCE_SUBSETS, resource_facts_type, data

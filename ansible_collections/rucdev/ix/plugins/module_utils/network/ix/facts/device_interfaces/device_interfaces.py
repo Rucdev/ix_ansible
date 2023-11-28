@@ -19,8 +19,9 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.devic
     Device_interfacesArgs,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.device_interfaces import (
-    Device_interfacesArgs,
+    Device_interfacesTemplate,
 )
+
 
 class Device_interfacesFacts(object):
     """The ix device_interfaces fact class"""
@@ -45,20 +46,24 @@ class Device_interfacesFacts(object):
             # typically data is populated from the current device configuration
             # data = connection.get('show running-config | section ^interface')
             # using mock data instead
-        data = self.get_device_interfaces_data(connection)
+            data = self.get_device_interfaces_data(connection)
 
         device_interfaces_parser = Device_interfacesTemplate(
             lines=data.splitlines(), module=self._module
         )
 
         objs = sorted(
-            list(device_interfaces_parser.parse().values()), key=lambda k, sk="name": k[sk])
+            list(device_interfaces_parser.parse().values()),
+            key=lambda k, sk="name": k[sk],
+        )
 
         ansible_facts["ansible_network_resources"].pop("device_interfaces", None)
         facts = {"device_interfaces": []}
         params = utils.remove_empties(
             device_interfaces_parser.validate_config(
-                self.argument_spec, {"config": objs}, redact=True))
+                self.argument_spec, {"config": objs}, redact=True
+            )
+        )
         facts["device_interfaces"] = params["config"]
         ansible_facts["ansible_network_resources"].update(facts)
         return ansible_facts

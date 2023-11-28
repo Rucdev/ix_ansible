@@ -21,10 +21,11 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.r
     NetworkTemplate,
 )
 
-class Device_interfacesTemplate(NetworkTemplate)
+
+class Device_interfacesTemplate(NetworkTemplate):
     def __init__(self, lines=None, tmplt=None, prefix=None, module=None):
         super(Device_interfacesTemplate, self).__init__(lines, tmplt, prefix, module)
-    
+
     PASERS = [
         {
             "name": "device",
@@ -56,4 +57,5 @@ class Device_interfacesTemplate(NetworkTemplate)
                     "description": "{{ description }}",
                 },
             },
-        }
+        },
+    ]
