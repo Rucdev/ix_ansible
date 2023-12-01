@@ -31,7 +31,7 @@ class Device_interfacesFacts(object):
         self.argument_spec = Device_interfacesArgs.argument_spec
 
     def get_device_interfaces_data(self, connection):
-        return connection.configure_get("show running-config")
+        return connection.configure_get("show running-config device")
 
     def populate_facts(self, connection, ansible_facts, data=None):
         """Populate the facts for device_interfaces
