@@ -54,7 +54,7 @@ class Device_interfacesArgs(object):  # pylint: disable=R0903
                     },
                     "type": "dict",
                 },
-                "speed": {"choices": [10, 100, 1000, "auto"], "type": "str"},
+                "speed": {"choices": ["10", "100", "1000", "auto"], "type": "str"},
             },
             "type": "list",
         },
