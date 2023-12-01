@@ -46,17 +46,30 @@ class Device_interfacesTemplate(NetworkTemplate):
             "shared": True,
         },
         {
-            "name": "description",
+            "name": "duplex",
             "getval": re.compile(
                 r"""
-                ^\s+description\s+(?P<description>.+)
-                """,
+                ^\s+(port\s\d\s)?duplex\s(?P<duplex>.+)$""",
                 re.VERBOSE,
             ),
-            "setval": "description {{ description }}",
+            "setval": "duplex {{ duplex }}",
             "result": {
                 "{{ name }}": {
-                    "description": "{{ description }}",
+                    "duplex": "{{ duplex }}",
+                },
+            },
+        },
+        {
+            "name": "speed",
+            "getval": re.compile(
+                r"""
+                ^\s+speed\s(?P<speed>.+)$""",
+                re.VERBOSE,
+            ),
+            "setval": "speed {{ speed }}",
+            "result": {
+                "{{ name }}": {
+                    "speed": "{{ speed }}",
                 },
             },
         },
