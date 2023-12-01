@@ -33,8 +33,7 @@ class Device_interfacesTemplate(NetworkTemplate):
             "name": "device",
             "getval": re.compile(
                 r"""
-                ^(?P<device>\S+)
-                """,
+                ^device\s(?P<name>\S+)$""",
                 re.VERBOSE,
             ),
             "setval": "device {{ name }}",
