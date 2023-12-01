@@ -26,7 +26,7 @@ class Device_interfacesTemplate(NetworkTemplate):
     def __init__(self, lines=None, tmplt=None, prefix=None, module=None):
         super(Device_interfacesTemplate, self).__init__(lines, tmplt, prefix, module)
 
-    PASERS = [
+    PARSERS = [
         {
             "name": "device",
             "getval": re.compile(
@@ -35,9 +35,9 @@ class Device_interfacesTemplate(NetworkTemplate):
                 """,
                 re.VERBOSE,
             ),
-            "setval": "device {{ mame }}",
+            "setval": "device {{ name }}",
             "result": {
-                "mame": {
+                "{{ name }}": {
                     "name": "{{ name }}",
                 },
             },

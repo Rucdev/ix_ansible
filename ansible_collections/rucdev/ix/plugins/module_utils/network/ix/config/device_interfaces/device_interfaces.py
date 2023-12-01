@@ -42,8 +42,7 @@ class Device_interfaces(ResourceModule):
             tmplt=Device_interfacesTemplate(),
         )
         self.parsers = [
-            "description",
-            "duples",
+            "duplex",
             "keepalive",
             "mdix",
             "output-buffer",
