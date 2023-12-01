@@ -24,7 +24,9 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.r
 
 class Device_interfacesTemplate(NetworkTemplate):
     def __init__(self, lines=None, tmplt=None, prefix=None, module=None):
-        super(Device_interfacesTemplate, self).__init__(lines, tmplt, prefix, module)
+        super(Device_interfacesTemplate, self).__init__(
+            lines, tmplt=self, module=module
+        )
 
     PARSERS = [
         {
