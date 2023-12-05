@@ -35,6 +35,7 @@ class Device_interfacesArgs(object):  # pylint: disable=R0903
 
     argument_spec = {
         "config": {
+            "type": "dict",
             "elements": "dict",
             "options": {
                 "duplex": {
@@ -42,17 +43,24 @@ class Device_interfacesArgs(object):  # pylint: disable=R0903
                     "default": "auto",
                     "type": "str",
                 },
-                "keepalive": {"type": "int"},
-                "mdix": {"choices": ["mdi", "mdix"], "type": "str"},
+                # "keepalive": {
+                #     "type": "list",
+                #     "elements": "dict",
+                #     "options": {
+                #         "notification_time": {"type": "int"},
+                #         "down_notification_time": {"type": "int"},
+                #     },
+                # },
+                "mdix": {"choices": ["mdi", "mdix"], "type": "str", "default": "mdix"},
                 "name": {"required": True, "type": "str"},
-                "output-buffer": {"type": "int"},
+                "output_buffer": {"type": "int"},
                 "sflow": {
+                    "type": "dict",
                     "options": {
                         "max_header_size": {"type": "int"},
                         "polling_interval": {"type": "int"},
                         "sampling_rate": {"type": "int"},
                     },
-                    "type": "dict",
                 },
                 "speed": {"choices": ["10", "100", "1000", "auto"], "type": "str"},
             },

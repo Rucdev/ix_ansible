@@ -43,7 +43,8 @@ class Device_interfaces(ResourceModule):
         )
         self.parsers = [
             "duplex",
-            "keepalive",
+            "keepalive.notification_time",
+            "keepalive.notification_count",
             "mdix",
             "output-buffer",
             "sflow",

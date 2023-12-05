@@ -58,11 +58,54 @@ class Device_interfacesTemplate(NetworkTemplate):
                 },
             },
         },
+        # {
+        #     "name": "keepalive",
+        #     "getval": re.compile(
+        #         r"""
+        #         ^\s+(port\s\d\s)?keepalive\s(?P<notification_time>\d+)\s(?P<notification_count>\d+)$""",
+        #         re.VERBOSE,
+        #     ),
+        #     "setval": "keepalive {{ notification_time }} {{ notification_count }}",
+        #     "result": {
+        #         "{{ name }}": {
+        #             "notification_time": "{{ notification_time }}",
+        #             "notification_count": "{{ notification_count }}",
+        #         },
+        #     },
+        # },
+        {
+            "name": "mdix",
+            "getval": re.compile(
+                r"""
+                ^\s+(port\s\d\s)?mdi-mdix\s(?P<mdix>.+)$""",
+                re.VERBOSE,
+            ),
+            "setval": "mdi-mdix {{ mdix }}",
+            "result": {
+                "{{ name }}": {
+                    "mdix": "{{ mdix }}",
+                },
+            },
+        },
+        {
+            "name": "output_buffer",
+            "getval": re.compile(
+                r"""
+                ^\s+output-buffer\s(?P<output_buffer>.+)$""",
+                re.VERBOSE,
+            ),
+            "setval": "output-buffer {{ output_buffer }}",
+            "result": {
+                "{{ name }}": {
+                    "output_buffer": "{{ output_buffer }}",
+                },
+            },
+        },
         {
             "name": "speed",
             "getval": re.compile(
                 r"""
-                ^\s+speed\s(?P<speed>.+)$""",
+                ^\s+(port\s\d\s)?speed\s(?P<speed>.+)$""",
                 re.VERBOSE,
             ),
             "setval": "speed {{ speed }}",
@@ -72,4 +115,5 @@ class Device_interfacesTemplate(NetworkTemplate):
                 },
             },
         },
+        {},
     ]
