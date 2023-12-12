@@ -1,0 +1,10 @@
+{
+    "docs": "https://docs.ansible.com/ansible-core/2.13/dev_guide/testing/sanity/ansible-doc.html", 
+    "results": [
+        {
+            "message": "The test `ansible-test sanity --test ansible-doc` [[explain](https://docs.ansible.com/ansible-core/2.13/dev_guide/testing/sanity/ansible-doc.html)] failed with the error:", 
+            "output": "Command \"ansible-doc -t module rucdev.ix.ix_command rucdev.ix.ix_config rucdev.ix.ix_facts rucdev.ix.ix_interfaces rucdev.ix.ix_l3_interfaces\" returned exit status 1.\n>>> Standard Error\nERROR! module rucdev.ix.ix_facts missing documentation (or could not parse documentation): 'AnsibleUnicode' object has no attribute 'values'"
+        }
+    ], 
+    "verified": false
+}

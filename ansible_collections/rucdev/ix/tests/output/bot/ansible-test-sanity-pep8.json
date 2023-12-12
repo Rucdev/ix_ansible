@@ -1,0 +1,10 @@
+{
+    "docs": "https://docs.ansible.com/ansible-core/2.13/dev_guide/testing/sanity/pep8.html", 
+    "results": [
+        {
+            "message": "The test `ansible-test sanity --test pep8` [[explain](https://docs.ansible.com/ansible-core/2.13/dev_guide/testing/sanity/pep8.html)] failed with 4 errors:", 
+            "output": "plugins/modules/ix_l3_interfaces.py:33:23: E231: missing whitespace after ':'\nplugins/modules/ix_l3_interfaces.py:94:45: W291: trailing whitespace\nplugins/modules/ix_l3_interfaces.py:118:1: W293: blank line contains whitespace\nplugins/modules/ix_l3_interfaces.py:141:1: W293: blank line contains whitespace"
+        }
+    ], 
+    "verified": false
+}

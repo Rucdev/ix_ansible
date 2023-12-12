@@ -1,0 +1,10 @@
+{
+    "docs": "https://docs.ansible.com/ansible-core/2.13/dev_guide/testing/sanity/action-plugin-docs.html", 
+    "results": [
+        {
+            "message": "The test `ansible-test sanity --test action-plugin-docs` [[explain](https://docs.ansible.com/ansible-core/2.13/dev_guide/testing/sanity/action-plugin-docs.html)] failed with 1 error:", 
+            "output": "plugins/action/ix.py:0:0: action plugin has no matching module to provide documentation"
+        }
+    ], 
+    "verified": false
+}
