@@ -58,21 +58,24 @@ class Device_interfacesTemplate(NetworkTemplate):
                 },
             },
         },
+        {
+            "name": "keepalive",
+            "getval": re.compile(
+                r"""
+                    ^\s+(port\s\d\s)?keepalive\s(?P<notification_time>\d+)\s(?P<notification_count>\d+)$""",
+                re.VERBOSE,
+            ),
+            "setval": "keepalive {{ notification_time }} {{ notification_count }}",
+            "result": {
+                "{{ name }}": {
+                    "notification_time": "{{ notification_time }}",
+                    "notification_count": "{{ notification_count }}",
+                },
+            },
+        },
         # {
-        #     "name": "keepalive",
-        #     "getval": re.compile(
-        #         r"""
-        #         ^\s+(port\s\d\s)?keepalive\s(?P<notification_time>\d+)\s(?P<notification_count>\d+)$""",
-        #         re.VERBOSE,
-        #     ),
-        #     "setval": "keepalive {{ notification_time }} {{ notification_count }}",
-        #     "result": {
-        #         "{{ name }}": {
-        #             "notification_time": "{{ notification_time }}",
-        #             "notification_count": "{{ notification_count }}",
-        #         },
-        #     },
-        # },
+        #    "name": "sflow",
+        # }
         {
             "name": "mdix",
             "getval": re.compile(
@@ -115,5 +118,4 @@ class Device_interfacesTemplate(NetworkTemplate):
                 },
             },
         },
-        {},
     ]
