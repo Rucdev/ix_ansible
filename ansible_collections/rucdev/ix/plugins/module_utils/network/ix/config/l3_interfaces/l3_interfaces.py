@@ -10,6 +10,10 @@ is compared to the provided configuration (as dict) and the command set
 necessary to bring the current configuration to it's desired end-state is
 created
 """
+from ansible.module_utils.six import iteritems
+from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module import (
+    ResourceModule,
+)
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.cfg.base import (
     ConfigBase,
 )
@@ -19,38 +23,38 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.u
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.facts import (
     Facts,
 )
+from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
+    dict_merge,
+)
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.l3_interfaces import (
+    L3_interfacesTemplate,
+)
+
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.utils.utils import (
+    validate_n_expand_ipv4,
+    validate_ipv6,
+)
 
 
-class L3_interfaces(ConfigBase):
+class L3_interfaces(ResourceModule):
     """
     The ix_l3_interfaces class
     """
 
-    gather_subset = [
-        "!all",
-        "!min",
-    ]
-
-    gather_network_resources = [
-        "l3_interfaces",
-    ]
-
     def __init__(self, module):
-        super(L3_interfaces, self).__init__(module)
-
-    def get_l3_interfaces_facts(self):
-        """Get the 'facts' (the current configuration)
-
-        :rtype: A dictionary
-        :returns: The current configuration as a dictionary
-        """
-        facts, _warnings = Facts(self._module).get_facts(
-            self.gather_subset, self.gather_network_resources
+        super(L3_interfaces, self).__init__(
+            empty_fact_val={},
+            facts_module=Facts(module),
+            module=module,
+            resource="l3_interfaces",
+            tmplt=L3_interfacesTemplate(),
         )
-        l3_interfaces_facts = facts["ansible_network_resources"].get("l3_interfaces")
-        if not l3_interfaces_facts:
-            return []
-        return l3_interfaces_facts
+        self.parsers = [
+            "ipv4.address",
+            # "ipv4.dhcp",
+            "ipv6.address",
+            "ipv6.autoconfig",
+        ]
 
     def execute_module(self):
         """Execute the module
@@ -58,104 +62,175 @@ class L3_interfaces(ConfigBase):
         :rtype: A dictionary
         :returns: The result from module execution
         """
-        result = {"changed": False}
-        warnings = list()
-        commands = list()
+        if self.state not in ["parsed", "gathered"]:
+            self.generate_commands()
+            self.run_commands()
+        return self.result
 
-        existing_l3_interfaces_facts = self.get_l3_interfaces_facts()
-        commands.extend(self.set_config(existing_l3_interfaces_facts))
-        if commands:
-            if not self._module.check_mode:
-                self._connection.edit_config(commands)
-            result["changed"] = True
-        result["commands"] = commands
-
-        changed_l3_interfaces_facts = self.get_l3_interfaces_facts()
-
-        result["before"] = existing_l3_interfaces_facts
-        if result["changed"]:
-            result["after"] = changed_l3_interfaces_facts
-
-        result["warnings"] = warnings
-        return result
-
-    def set_config(self, existing_l3_interfaces_facts):
-        """Collect the configuration from the args passed to the module,
-            collect the current configuration (as a dict from facts)
-
-        :rtype: A list
-        :returns: the commands necessary to migrate the current configuration
-                  to the desired configuration
+    def generate_commands(self):
+        """Generate configuration commands to send based on
+        want, have and desired state.
         """
-        want = self._module.params["config"]
-        have = existing_l3_interfaces_facts
-        resp = self.set_state(want, have)
-        return to_list(resp)
+        if self.want:
+            wantd = {}
+            for each in self.want:
+                wantd.update({each["name"]: each})
+        else:
+            wantd = {}
+        if self.have:
+            haved = {}
+            for each in self.have:
+                haved.update({each["name"]: each})
+        else:
+            haved = {}
 
-    def set_state(self, want, have):
-        """Select the appropriate function based on the state provided
+        for each in wantd, haved:
+            self.list_to_dict(each)
 
-        :param want: the desired configuration as a dictionary
-        :param have: the current configuration as a dictionary
-        :rtype: A list
-        :returns: the commands necessary to migrate the current configuration
-                  to the desired configuration
-        """
-        state = self._module.params["state"]
-        if state == "overridden":
-            kwargs = {}
-            commands = self._state_overridden(**kwargs)
-        elif state == "deleted":
-            kwargs = {}
-            commands = self._state_deleted(**kwargs)
-        elif state == "merged":
-            kwargs = {}
-            commands = self._state_merged(**kwargs)
-        elif state == "replaced":
-            kwargs = {}
-            commands = self._state_replaced(**kwargs)
-        return commands
+        if self.state == "merged":
+            wantd = dict_merge(haved, wantd)
 
-    @staticmethod
-    def _state_replaced(**kwargs):
-        """The command generator when state is replaced
+        if self.state == "deleted":
+            haved = {k: v for k, v in haved.items() if k in wantd or not wantd}
+            wantd = {}
 
-        :rtype: A list
-        :returns: the commands necessary to migrate the current configuration
-                  to the desired configuration
-        """
-        commands = []
-        return commands
+        # remove superfluous config
+        if self.state in ["overridden", "deleted"]:
+            for k, have in haved.items():
+                if k not in wantd:
+                    self._compare(want={}, have=have)
 
-    @staticmethod
-    def _state_overridden(**kwargs):
-        """The command generator when state is overridden
+        for k, want in wantd.items():
+            self._compare(want=want, have=haved.pop(k, {}))
 
-        :rtype: A list
-        :returns: the commands necessary to migrate the current configuration
-                  to the desired configuration
-        """
-        commands = []
-        return commands
+    def _compare(self, want, have):
+        begin = len(self.commands)
+        self._compare_lists(want=want, have=have)
+        if len(self.commands) != begin:
+            self.commands.insert(begin, self._tmplt.render(want or have, "name", False))
 
-    @staticmethod
-    def _state_merged(**kwargs):
-        """The command generator when state is merged
+    def _compare_lists(self, want, have):
+        for afi in ("ipv4", "ipv6"):
+            wacls = want.pop(afi, {})
+            hacls = have.pop(afi, {})
 
-        :rtype: A list
-        :returns: the commands necessary to merge the provided into
-                  the current configuration
-        """
-        commands = []
-        return commands
+            for key, entry in wacls.items():
+                if entry.get("secondary", False) is True:
+                    continue
+                # entry is set as primary
+                hacl = hacls.get(key, {})
+                if hacl.get("secondary", False) is True:
+                    hacl = {}
+                self.validate_ips(afi, want=entry, have=hacl)
 
-    @staticmethod
-    def _state_deleted(**kwargs):
-        """The command generator when state is deleted
+                if hacl:
+                    hacls.pop(key, {})
 
-        :rtype: A list
-        :returns: the commands necessary to remove the current configuration
-                  of the provided objects
-        """
-        commands = []
-        return commands
+                self.compare(
+                    parsers=self.parsers,
+                    want={afi: entry},
+                    have={afi: hacl},
+                )
+
+            for key, entry in wacls.items():
+                if entry.get("secondary", False) is False:
+                    continue
+                # entry is set as secondary
+                hacl = hacls.get(key, {})
+                if hacl.get("secondary", False) is False:
+                    # hacl is set as primary, if wacls has no other primary entry we must keep
+                    # this entry as primary (so we'll compare entry to hacl and not
+                    # generate commands)
+                    if list(
+                        filter(
+                            lambda w: w.get("secondary", False) is False, wacls.values()
+                        )
+                    ):
+                        # another primary is in wacls
+                        hacl = {}
+                self.validate_ips(afi, want=entry, have=hacl)
+
+                if hacl:
+                    hacls.pop(key, {})
+
+                self.compare(
+                    parsers=self.parsers,
+                    want={afi: entry},
+                    have={afi: hacl},
+                )
+
+            # remove remaining items in have for replaced
+            # these can be subnets that are no longer used
+            # or secondaries that have moved to primary
+            # or primary that has moved to secondary
+            for key, entry in hacls.items():
+                self.validate_ips(afi, have=entry)
+                self.compare(parsers=self.parsers, want={}, have={afi: entry})
+
+    def purge(self, have):
+        """Handle operation for purged state"""
+        self.commands.append(self._tmplt.render(have, "interface", True))
+
+    def normalize_interface_names(self, param):
+        # if param:
+        #     for _k, val in iteritems(param):
+        #         val["name"] = normalize_interface(val["name"])
+        return param
+
+    def validate_ips(self, afi, want=None, have=None):
+        if afi == "ipv4" and want:
+            v4_addr = (
+                validate_n_expand_ipv4(self._module, want)
+                if want.get("address")
+                else {}
+            )
+            if v4_addr:
+                want["address"] = v4_addr
+        elif afi == "ipv6" and want:
+            if want.get("address"):
+                validate_ipv6(want["address"], self._module)
+
+        if afi == "ipv4" and have:
+            v4_addr_h = (
+                validate_n_expand_ipv4(self._module, have)
+                if have.get("address")
+                else {}
+            )
+            if v4_addr_h:
+                have["address"] = v4_addr_h
+        elif afi == "ipv6" and have:
+            if have.get("address"):
+                validate_ipv6(have["address"], self._module)
+
+    def list_to_dict(self, param):
+        if param:
+            for _k, val in iteritems(param):
+                if "ipv4" in val:
+                    temp = {}
+                    for each in val["ipv4"]:
+                        if each.get("address") and each.get("address") != "dhcp":
+                            temp.update({each["address"]: each})
+                        elif each.get("address") == "dhcp":
+                            # deprecated attribute
+                            temp.update(
+                                {
+                                    "dhcp": {
+                                        "dhcp": {
+                                            "client_id": each.get("dhcp_client"),
+                                            "hostname": each.get("dhcp_hostname"),
+                                        },
+                                    },
+                                },
+                            )
+                        if not each.get("address"):
+                            temp.update({list(each.keys())[0]: each})
+                    val["ipv4"] = temp
+                if "ipv6" in val:
+                    temp = {}
+                    for each in val["ipv6"]:
+                        if each.get("address"):
+                            each["address"] = each["address"].lower()
+                            temp.update({each["address"]: each})
+                        if not each.get("address"):
+                            temp.update({list(each.keys())[0]: each})
+                    val["ipv6"] = temp

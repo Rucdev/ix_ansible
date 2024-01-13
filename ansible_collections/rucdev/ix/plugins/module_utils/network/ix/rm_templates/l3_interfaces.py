@@ -73,6 +73,8 @@ class L3_interfacesTemplate(NetworkTemplate):
                     $""",
                 re.VERBOSE,
             ),
+            "setval": "ipv6 address {{ ipv6 }}{{ ' anycast' if ipv6.anycast|d(False) else ''}}"
+            "{{' eui-64' if ipv6.eui|d(False) else ''}}",
             "result": {
                 "{{ name }}": {
                     "ipv6": [
@@ -94,6 +96,8 @@ class L3_interfacesTemplate(NetworkTemplate):
                     $""",
                 re.VERBOSE,
             ),
+            "setval": "{{ 'ipv6 address autoconfig' if ipv6.autoconfig.enable|d(False) or ipv6.autoconfig.default|d(False) else ''}}"
+            "{{ ' receive-default' if ipv6.autoconfig.default|d(False) else ''}}",
             "result": {
                 "{{ name }}": {
                     "ipv6": [

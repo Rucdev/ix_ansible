@@ -116,6 +116,34 @@ options:
           eui:
             description: Use eui-64 interface identifier
             type: bool
+  state:
+    choices:
+    - merged
+    - replaced
+    - overridden
+    - deleted
+    - rendered
+    - gathered
+    - parsed
+    default: merged
+    description:
+      - The state the configuration should be left in
+      - The states I(rendered), I(gathered) and I(parsed) does not perform any change
+        on the device.
+      - The state I(rendered) will transform the configuration in C(config) option to
+        platform specific CLI commands which will be returned in the I(rendered) key
+        within the result. For state I(rendered) active connection to remote host is
+        not required.
+      - The state I(gathered) will fetch the running configuration from device and transform
+        it into structured data in the format as per the resource module argspec and
+        the value is returned in the I(gathered) key within the result.
+      - The state I(parsed) reads the configuration from C(running_config) option and
+        transforms it into JSON format as per the resource module parameters and the
+        value is returned in the I(parsed) key within the result. The value of C(running_config)
+        option should be the same format as the output of command
+        I(show running-config | section ^interface) executed on device. For state I(parsed) active
+        connection to remote host is not required.
+    type: str
 
 """
 EXAMPLES = """

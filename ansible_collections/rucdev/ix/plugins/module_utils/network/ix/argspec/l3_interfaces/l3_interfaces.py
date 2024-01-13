@@ -38,6 +38,7 @@ class L3_interfacesArgs(object):  # pylint: disable=R0903
             "elements": "dict",
             "options": {
                 "ipv4": {
+                    "type": "list",
                     "elements": "dict",
                     "options": {
                         "address": {"type": "str"},
@@ -48,9 +49,9 @@ class L3_interfacesArgs(object):  # pylint: disable=R0903
                         "mtu": {"type": "int"},
                         "secondary": {"type": "bool"},
                     },
-                    "type": "list",
                 },
                 "ipv6": {
+                    "type": "list",
                     "elements": "dict",
                     "options": {
                         "address": {"type": "str"},
@@ -64,10 +65,23 @@ class L3_interfacesArgs(object):  # pylint: disable=R0903
                         },
                         "eui": {"type": "bool"},
                     },
-                    "type": "list",
                 },
                 "name": {"required": True, "type": "str"},
             },
             "type": "list",
-        }
+        },
+        "running_config": {"type": "str"},
+        "state": {
+            "choices": [
+                "merged",
+                "replaced",
+                "overridden",
+                "deleted",
+                "rendered",
+                "gathered",
+                "parsed",
+            ],
+            "default": "merged",
+            "type": "str",
+        },
     }  # pylint: disable=C0301
