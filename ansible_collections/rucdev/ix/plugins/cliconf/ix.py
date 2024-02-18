@@ -59,7 +59,8 @@ def configure_mode(func):
             .strip()
             .endswith("(config)#")
         ):
-            self.send_command(SVINTR_CONFIG)
+            # self.send_command(SVINTR_CONFIG)
+            self.send_command("configure")
         return func(self, *args, **kwargs)
 
     return wrapped
@@ -157,6 +158,7 @@ class Cliconf(CliconfBase):
 
             # TODO: hostnameとnetwork_os_modelの取得方法を追加する
             self.send_command(SVINTR_CONFIG)
+            self.send_command("configure")
             self.send_command("terminal length 0")
             reply = self.get(command="show running-config")
             data = to_text(reply, errors="surrogate_or_strict")
@@ -189,6 +191,27 @@ class Cliconf(CliconfBase):
             sendonly=sendonly,
             newline=newline,
             check_all=check_all,
+        )
+
+    @configure_mode
+    def configure_get(
+        self,
+        command=None,
+        prompt=None,
+        answer=None,
+        sendonly=False,
+        newline=True,
+        output=None,
+        check_all=False,
+    ):
+        return self.get(
+            command,
+            prompt,
+            answer,
+            sendonly,
+            newline,
+            output,
+            check_all,
         )
 
     def get_capabilities(self) -> str:
@@ -261,7 +284,7 @@ class Cliconf(CliconfBase):
         results = []
         requests = []
         if commit:
-            self.send_command(SVINTR_CONFIG)
+            self.send_command("configure")
             for line in to_list(candidate):
                 if not isinstance(line, Mapping):
                     line = {"command": line}
