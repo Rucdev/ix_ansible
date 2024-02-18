@@ -6,3 +6,4 @@ debugs/
 *.py[cod]
 
 collectons/
+tests/output

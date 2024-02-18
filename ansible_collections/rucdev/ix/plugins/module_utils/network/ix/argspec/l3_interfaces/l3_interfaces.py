@@ -1,3 +1,4 @@
+__metaclass__ = type
 #
 # -*- coding: utf-8 -*-
 # Copyright 2023 AP Communications
@@ -35,6 +36,7 @@ class L3_interfacesArgs(object):  # pylint: disable=R0903
 
     argument_spec = {
         "config": {
+            "type": "list",
             "elements": "dict",
             "options": {
                 "ipv4": {

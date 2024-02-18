@@ -1,3 +1,4 @@
+__metaclass__ = type
 #
 # -*- coding: utf-8 -*-
 # Copyright 2023 AP Communications

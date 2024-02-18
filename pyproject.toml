@@ -5,8 +5,8 @@ description = "ansible module for NEC ix."
 authors = ["uc_dev <atrantic0314@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
-ansible = "^6.4.0"
+python = ">=3.10,<3.11"
+ansible = "6.4.0"
 paramiko = "^2.11.0"
 ansible-pylibssh = "^1.0.0"
 tox = "^4.11.3"

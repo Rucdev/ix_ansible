@@ -64,8 +64,8 @@ EXAMPLES = """
 # Collect only the interfaces facts
 - ix_facts:
     gather_subset:
-      - !all
-      - !min
+      - "!all"
+      - "!min"
     gather_network_resources:
       - interfaces
 

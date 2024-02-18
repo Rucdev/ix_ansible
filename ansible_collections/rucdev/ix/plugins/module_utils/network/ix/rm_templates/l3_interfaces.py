@@ -73,7 +73,7 @@ class L3_interfacesTemplate(NetworkTemplate):
                     $""",
                 re.VERBOSE,
             ),
-            "setval": "ipv6 address {{ ipv6 }}{{ ' anycast' if ipv6.anycast|d(False) else ''}}"
+            "setval": "ipv6 address {{ ipv6.address }}{{ ' anycast' if ipv6.anycast|d(False) else ''}}"
             "{{' eui-64' if ipv6.eui|d(False) else ''}}",
             "result": {
                 "{{ name }}": {
