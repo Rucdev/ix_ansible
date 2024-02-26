@@ -43,14 +43,14 @@ class Device_interfacesArgs(object):  # pylint: disable=R0903
                     "default": "auto",
                     "type": "str",
                 },
-                # "keepalive": {
-                #     "type": "list",
-                #     "elements": "dict",
-                #     "options": {
-                #         "notification_time": {"type": "int"},
-                #         "down_notification_time": {"type": "int"},
-                #     },
-                # },
+                "keepalive": {
+                    "type": "list",
+                    "elements": "dict",
+                    "options": {
+                        "down_notification_time": {"type": "int"},
+                        "down_notification_count": {"type": "int"},
+                    },
+                },
                 "mdix": {"choices": ["mdi", "mdix"], "type": "str", "default": "mdix"},
                 "name": {"required": True, "type": "str"},
                 "output_buffer": {"type": "int"},
@@ -59,7 +59,12 @@ class Device_interfacesArgs(object):  # pylint: disable=R0903
                     "options": {
                         "max_header_size": {"type": "int"},
                         "polling_interval": {"type": "int"},
-                        "sampling_rate": {"type": "int"},
+                        "sampling_rate": {
+                            "options": {
+                                "in": {"type": "int"},
+                                "out": {"type": "int"},
+                            },
+                        },
                     },
                 },
                 "speed": {"choices": ["10", "100", "1000", "auto"], "type": "str"},

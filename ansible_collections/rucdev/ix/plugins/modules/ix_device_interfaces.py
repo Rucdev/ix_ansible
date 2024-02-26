@@ -70,7 +70,15 @@ options:
       keepalive:
         description:
           - Enable device keepalive
-        type: int
+        suboptions:
+          down_notification_time:
+            description:
+              - The notification time of the keepalive.
+            type: int
+          down_notification_count:
+            description:
+              - The notification count of the keepalive.
+            type: int
       mdix:
         description:
           - The MDI/MDIX mode of the interface.
@@ -85,7 +93,6 @@ options:
       sflow:
         description:
           - The sFlow configuration of the interface.
-        type: dict
         suboptions:
           max_header_size:
             description:
@@ -98,7 +105,15 @@ options:
           sampling_rate:
             description:
               - The sampling rate of the sFlow.
-            type: int
+              suboptions:
+                in:
+                  description:
+                    - The sampling rate in.
+                  type: int
+                out:
+                  description:
+                    - The sampling rate out.
+                  type: int
       speed:
         description:
           - The speed of the interface.

@@ -62,20 +62,21 @@ class Device_interfacesTemplate(NetworkTemplate):
             "name": "keepalive",
             "getval": re.compile(
                 r"""
-                    ^\s+(port\s\d\s)?keepalive\s(?P<notification_time>\d+)\s(?P<notification_count>\d+)$""",
+                    ^\s+(port\s\d\s)?keepalive\s(?P<down_notification_time>\d+)\s(?P<down_notification_count>\d+)$""",
                 re.VERBOSE,
             ),
-            "setval": "keepalive {{ notification_time }} {{ notification_count }}",
+            "setval": "keepalive {{ down_notification_time }} {{ down_notification_count }}",
             "result": {
                 "{{ name }}": {
-                    "notification_time": "{{ notification_time }}",
-                    "notification_count": "{{ notification_count }}",
+                    "keepalive": [
+                        {
+                            "down_notification_time": "{{ down_notification_time }}",
+                            "down_notification_count": "{{ down_notification_count }}",
+                        }
+                    ],
                 },
             },
         },
-        # {
-        #    "name": "sflow",
-        # }
         {
             "name": "mdix",
             "getval": re.compile(
@@ -101,6 +102,74 @@ class Device_interfacesTemplate(NetworkTemplate):
             "result": {
                 "{{ name }}": {
                     "output_buffer": "{{ output_buffer }}",
+                }
+            },
+        },
+        {
+            "name": "sflow.max_header_size",
+            "getval": re.compile(
+                r"""
+                ^\s+(port\s\d\s)?sflow\smax-header-size\s(?P<max_header_size>.+)$""",
+                re.VERBOSE,
+            ),
+            "setval": "sflow max-header-size {{ max_header_size }}",
+            "result": {
+                "{{ name }}": {
+                    "sflow": {
+                        "max_header_size": "{{ max_header_size }}",
+                    },
+                },
+            },
+        },
+        {
+            "name": "sflow.polling_interval",
+            "getval": re.compile(
+                r"""
+                ^\s+(port\s\d\s)?sflow\spolling-interval\s(?P<polling_interval>.+)$""",
+                re.VERBOSE,
+            ),
+            "setval": "sflow polling-interval {{ polling_interval }}",
+            "result": {
+                "{{ name }}": {
+                    "sflow": {
+                        "polling_interval": "{{ polling_interval }}",
+                    },
+                },
+            },
+        },
+        {
+            "name": "sflow.sampling_rate.in",
+            "getval": re.compile(
+                r"""
+                ^\s+(port\s\d\s)?sflow\ssampling-rate\s(?P<sampling_rate_in>.+)\sin$""",
+                re.VERBOSE,
+            ),
+            "setval": "sflow sampling-rate {{ sampling_rate_in }} in",
+            "result": {
+                "{{ name }}": {
+                    "sflow": {
+                        "sampling_rate": {
+                            "in": "{{ sampling_rate_in }}",
+                        }
+                    },
+                },
+            },
+        },
+        {
+            "name": "sflow.sampling_rate.out",
+            "getval": re.compile(
+                r"""
+                ^\s+(port\s\d\s)?sflow\ssampling-rate\s(?P<sampling_rate_out>.+)\sout$""",
+                re.VERBOSE,
+            ),
+            "setval": "sflow sampling-rate {{ sampling_rate_out }} out",
+            "result": {
+                "{{ name }}": {
+                    "sflow": {
+                        "sampling_rate": {
+                            "out": "{{ sampling_rate_out }}",
+                        }
+                    },
                 },
             },
         },
