@@ -43,9 +43,9 @@ short_description: "Configures interfaces on NEC IX switches."
 description: "This module configures interfaces on NEC IX switches."
 version_added: "1.1.0"
 author:
-  - "Chihiro Nakayama"
+  - "Chihiro Nakayama (@nakayumc0278)"
 notes:
-  - Tested against NEC IX2105 Version 10.2.39.
+  - Tested against NEC IX2215 Version 10.8.21.
   - This module works with connection network_cli.
 options:
   config:
@@ -55,98 +55,99 @@ options:
     suboptions:
       name:
         description:
-          - The name of the interface, e.g. GitEthernet0.0, Loopback0, etc.
+        - The name of the interface, e.g. GitEthernet0.0, Loopback0, etc.
         type: str
         required: true
       duplex:
         description:
-          - The duplex mode of the interface.
+        - The duplex mode of the interface.
         type: str
         choices:
-          - auto
-          - full
-          - half
+        - auto
+        - full
+        - half
         default: auto
       keepalive:
         description:
-          - Enable device keepalive
+        - Enable device keepalive
         suboptions:
           down_notification_time:
             description:
-              - The notification time of the keepalive.
+            - The notification time of the keepalive.
             type: int
           down_notification_count:
             description:
-              - The notification count of the keepalive.
+            - The notification count of the keepalive.
             type: int
       mdix:
         description:
-          - The MDI/MDIX mode of the interface.
+        - The MDI/MDIX mode of the interface.
         type: str
         choices:
-          - mdi
-          - mdix
+        - mdi
+        - mdix
       output-buffer:
         description:
-          - The number of output buffers.
+        - The number of output buffers.
         type: int
       sflow:
         description:
-          - The sFlow configuration of the interface.
+        - The sFlow configuration of the interface.
         suboptions:
           max_header_size:
             description:
-              - The maximum header size of the sFlow.
+            - The maximum header size of the sFlow.
             type: int
           polling_interval:
             description:
-              - The polling interval of the sFlow.
+            - The polling interval of the sFlow.
             type: int
           sampling_rate:
             description:
-              - The sampling rate of the sFlow.
+            - The sampling rate of the sFlow.
               suboptions:
                 in:
                   description:
-                    - The sampling rate in.
+                  - The sampling rate in.
                   type: int
                 out:
                   description:
-                    - The sampling rate out.
+                  - The sampling rate out.
                   type: int
       speed:
         description:
-          - The speed of the interface.
+        - The speed of the interface.
         type: str
         choices:
-          - 10
-          - 100
-          - 1000
-          - auto
+        - 10
+        - 100
+        - 1000
+        - auto
   reset:
     description:
-      - Reset the interface configuration to the default.
+    - Reset the interface configuration to the default.
     type: dict
     suboptions:
       name:
         description:
-          - The name of the interface, e.g. GitEthernet0.0, Loopback0, etc.
+        - The name of the interface, e.g. GitEthernet0.0, Loopback0, etc.
         type: str
   state:
     description:
-      - The state of the interface configuration.
+    - The state of the interface configuration.
     type: str
     choices:
-      - merged
-      - replaced
-      - overridden
-      - deleted
-      - rendered
-      - gathered
-      - purged
-      - parsed
+    - merged
+    - replaced
+    - overridden
+    - deleted
+    - rendered
+    - gathered
+    - purged
+    - parsed
     default: merged
 """
+
 EXAMPLES = """
 - name: Example device_interface module
   rucdev.ix.device_interface:
@@ -154,7 +155,6 @@ EXAMPLES = """
       name: GigaEthernet0
       duplex: full
       speed: auto
-
 
 """
 RETURN = """
