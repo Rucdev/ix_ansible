@@ -38,15 +38,14 @@ class Device_interfaces(ResourceModule):
             empty_fact_val={},
             facts_module=Facts(module),
             module=module,
-            resource="Device_interfaces",
+            resource="device_interfaces",
             tmplt=Device_interfacesTemplate(),
         )
         self.parsers = [
             "duplex",
-            "keepalive.down_notification_time",
-            "keepalive.down_notification_count",
+            "keepalive",
             "mdix",
-            "output-buffer",
+            "output_buffer",
             "sflow.max_header_size",
             "sflow.polling_interval",
             "sflow.sampling_rate.in",
@@ -105,16 +104,18 @@ class Device_interfaces(ResourceModule):
         """
         begin = len(self.commands)
         self.compare(parsers=self.parsers, want=want, have=have)
-        if want.get("enabled") != have.get("enabled"):
-            if want.get("enabled"):
-                self.addcmd(want, "enabled", True)
-            else:
-                if want:
-                    self.addcmd(want, "enabled", False)
-                elif have.get("enabled"):
-                    # handles deleted as want be blank and only
-                    # negates if no shutdown
-                    self.addcmd(have, "enabled", False)
+
+        # if want.get("enabled") != have.get("enabled"):
+        #     if want.get("enabled"):
+        #         self.addcmd(want, "enabled", True)
+        #     else:
+        #         if want:
+        #             self.addcmd(want, "enabled", False)
+        #         elif have.get("enabled"):
+        #             # handles deleted as want be blank and only
+        #             # negates if no shutdown
+        #             self.addcmd(have, "enabled", False)
+
         if len(self.commands) != begin:
             self.commands.insert(
                 begin, self._tmplt.render(want or have, "device", False)

@@ -60,6 +60,7 @@ class Device_interfacesArgs(object):  # pylint: disable=R0903
                         "max_header_size": {"type": "int"},
                         "polling_interval": {"type": "int"},
                         "sampling_rate": {
+                            "type": "dict",
                             "options": {
                                 "in": {"type": "int"},
                                 "out": {"type": "int"},
@@ -69,7 +70,6 @@ class Device_interfacesArgs(object):  # pylint: disable=R0903
                 },
                 "speed": {"choices": ["10", "100", "1000", "auto"], "type": "str"},
             },
-            "type": "list",
         },
         "reset": {"options": {"name": {"type": "str"}}, "type": "dict"},
         "state": {

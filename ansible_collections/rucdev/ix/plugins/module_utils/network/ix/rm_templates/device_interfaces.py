@@ -112,7 +112,7 @@ class Device_interfacesTemplate(NetworkTemplate):
                 ^\s+(port\s\d\s)?sflow\smax-header-size\s(?P<max_header_size>.+)$""",
                 re.VERBOSE,
             ),
-            "setval": "sflow max-header-size {{ max_header_size }}",
+            "setval": "sflow max-header-size {{ sflow.max_header_size }}",
             "result": {
                 "{{ name }}": {
                     "sflow": {
@@ -128,7 +128,7 @@ class Device_interfacesTemplate(NetworkTemplate):
                 ^\s+(port\s\d\s)?sflow\spolling-interval\s(?P<polling_interval>.+)$""",
                 re.VERBOSE,
             ),
-            "setval": "sflow polling-interval {{ polling_interval }}",
+            "setval": "sflow polling-interval {{ sflow.polling_interval }}",
             "result": {
                 "{{ name }}": {
                     "sflow": {
@@ -144,7 +144,7 @@ class Device_interfacesTemplate(NetworkTemplate):
                 ^\s+(port\s\d\s)?sflow\ssampling-rate\s(?P<sampling_rate_in>.+)\sin$""",
                 re.VERBOSE,
             ),
-            "setval": "sflow sampling-rate {{ sampling_rate_in }} in",
+            "setval": "sflow sampling-rate {{ sflow.sampling_rate.in }} in",
             "result": {
                 "{{ name }}": {
                     "sflow": {
@@ -162,7 +162,7 @@ class Device_interfacesTemplate(NetworkTemplate):
                 ^\s+(port\s\d\s)?sflow\ssampling-rate\s(?P<sampling_rate_out>.+)\sout$""",
                 re.VERBOSE,
             ),
-            "setval": "sflow sampling-rate {{ sampling_rate_out }} out",
+            "setval": "sflow sampling-rate {{ sflow.sampling_rate.out }} out",
             "result": {
                 "{{ name }}": {
                     "sflow": {
