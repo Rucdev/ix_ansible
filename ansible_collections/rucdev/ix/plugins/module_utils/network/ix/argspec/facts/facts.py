@@ -1,3 +1,4 @@
+__metaclass__ = type
 #
 # -*- coding: utf-8 -*-
 # Copyright 2023 AP Communications
@@ -14,11 +15,7 @@ class FactsArgs(object):  # pylint: disable=R0903
     def __init__(self, **kwargs):
         pass
 
-    choices = [
-        "all",
-        "interfaces",
-        "device_interfaces",
-    ]
+    choices = ["all", "device_interfaces", "interfaces", "l3_interfaces"]
 
     argument_spec = {
         "gather_subset": dict(default=["min"], type="list"),

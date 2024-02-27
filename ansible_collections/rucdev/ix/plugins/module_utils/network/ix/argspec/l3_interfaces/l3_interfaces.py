@@ -24,12 +24,12 @@ __metaclass__ = type
 #############################################
 
 """
-The arg spec for the ix_interfaces module
+The arg spec for the ix_l3_interfaces module
 """
 
 
-class InterfacesArgs(object):  # pylint: disable=R0903
-    """The arg spec for the ix_interfaces module"""
+class L3_interfacesArgs(object):  # pylint: disable=R0903
+    """The arg spec for the ix_l3_interfaces module"""
 
     def __init__(self, **kwargs):
         pass
@@ -39,10 +39,35 @@ class InterfacesArgs(object):  # pylint: disable=R0903
             "type": "list",
             "elements": "dict",
             "options": {
-                "bandwidth": {"type": "number"},
-                "description": {"type": "str"},
-                "enabled": {"default": True, "type": "bool"},
-                "mtu": {"type": "int"},
+                "ipv4": {
+                    "type": "list",
+                    "elements": "dict",
+                    "options": {
+                        "address": {"type": "str"},
+                        "dhcp": {
+                            "options": {"enable": {"type": "bool"}},
+                            "type": "dict",
+                        },
+                        "mtu": {"type": "int"},
+                        "secondary": {"type": "bool"},
+                    },
+                },
+                "ipv6": {
+                    "type": "list",
+                    "elements": "dict",
+                    "options": {
+                        "address": {"type": "str"},
+                        "anycast": {"type": "bool"},
+                        "autoconfig": {
+                            "options": {
+                                "default": {"type": "bool"},
+                                "enable": {"type": "bool"},
+                            },
+                            "type": "dict",
+                        },
+                        "eui": {"type": "bool"},
+                    },
+                },
                 "name": {"required": True, "type": "str"},
             },
             "type": "list",

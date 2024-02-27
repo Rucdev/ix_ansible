@@ -12,8 +12,12 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.device_
     Device_interfacesFacts,
 )
 
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.l3_interfaces.l3_interfaces import (
+    L3_interfacesFacts,
+)
+
 FACT_RESOURCE_SUBSETS = dict(
-    interfaces=InterfacesFacts, device_interfaces=Device_interfacesFacts
+    interfaces=InterfacesFacts, l3_interfaces=L3_interfacesFacts, device_interfaces=Device_interfacesFacts
 )
 
 
