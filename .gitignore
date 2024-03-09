@@ -4,6 +4,6 @@ __pycache__/
 example/
 debugs/
 *.py[cod]
-
+rm_builder/
 collectons/
 tests/output
