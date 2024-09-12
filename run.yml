@@ -1,0 +1,10 @@
+---
+- hosts: localhost
+  gather_facts: true
+  roles:
+    - ansible_network.cli_rm_builder.run
+  vars:
+    rm_dest: ansible_collections/rucdev/ix/
+    collection_org: rucdev
+    collection_name: ix
+    ansible_connection: local

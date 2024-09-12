@@ -11,9 +11,12 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.interfa
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.l3_interfaces.l3_interfaces import (
     L3_interfacesFacts,
 )
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.ospfv2.ospfv2 import (
+    Ospfv2Facts
+)
 
 FACT_RESOURCE_SUBSETS = dict(
-    interfaces=InterfacesFacts, l3_interfaces=L3_interfacesFacts
+    interfaces=InterfacesFacts, l3_interfaces=L3_interfacesFacts, ospfv2=Ospfv2Facts
 )
 
 
