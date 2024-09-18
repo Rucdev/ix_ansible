@@ -86,14 +86,13 @@ class Ospfv2Template(NetworkTemplate):
             "name":"nssa",
             "getval":re.compile(
                 r"""
-                \sarea
-                (\s(?P<area_id>\S+))?
-                (\s(?P<nssa>nssa\S+))?
+                \s+area\s(?P<area_id>\S+)
+                (\s(?P<nssa>nssa))?
                 (\s(?P<no_summary>no-summary))?
-                (\sstability-interval(?P<stability_interval>\d+))?
+                (\sstability-interval\s(?P<stability_interval>\d+))?
                 (\s(?P<translate>translate))?
-                (\sdefault-metric(?P<default_metric>\d+))?
-                (\sdefault-metric-type(?P<default_metric_type>\d))?
+                (\sdefault-metric\s(?P<default_metric>\d+))?
+                (\sdefault-metric-type\s(?P<default_metric_type>\d))?
                 $""",
                 re.VERBOSE,
             ),
@@ -105,6 +104,9 @@ class Ospfv2Template(NetworkTemplate):
                                 "area_id": "{{ area_id }}",
                                 "nssa": {
                                     "no_summary": "{{ True if no_summary is defined }}",
+                                    "stability_interval": "{{ stability_interval }}",
+                                    "translate": "{{ True if translate is defined }}",
+                                    "default_metric": "{{ default_metric }}",
                                 }
                             }
                         },
