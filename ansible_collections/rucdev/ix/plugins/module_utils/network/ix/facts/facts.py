@@ -16,8 +16,12 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.l3_inte
     L3_interfacesFacts,
 )
 
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.static_routes.static_routes import (
+    Static_routesFacts,
+)
+
 FACT_RESOURCE_SUBSETS = dict(
-    interfaces=InterfacesFacts, l3_interfaces=L3_interfacesFacts, device_interfaces=Device_interfacesFacts
+    interfaces=InterfacesFacts, l3_interfaces=L3_interfacesFacts, device_interfaces=Device_interfacesFacts, static_routes=Static_routesFacts
 )
 
 
