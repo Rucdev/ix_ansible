@@ -69,24 +69,41 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                                 },
                                 "stub": {
                                     "type": "dict",
-                                    "options": {"no_summary": {"type": "bool"}},
-                                },
-                                "virtual-link": {
-                                    "type": "dict",
                                     "options": {
-                                        "authentication": {
-                                            "type": "str",
-                                            "default": "text",
-                                            "choices": [
-                                                "text",
-                                                "message-digest",
-                                                "null",
-                                            ],
+                                            "set": {"type": "bool"},
+                                            "no_summary": {"type": "bool"}
                                         },
-                                        "authentication_key": {"type": "str"},
-                                        "message_digest_key": {"type": "str"},
-                                        "dead_interval": {"type": "int"},
-                                        "hello_interval": {"type": "int"},
+                                },
+                                "virtual_links": {
+                                    "type": "list",
+                                    "elements":"dict",
+                                    "options": {
+                                        "address": {"type": "str"},
+                                        "authentication": {
+                                            "type": "dict",
+                                            "options":{
+                                                "auth_type": {
+                                                    "type": "str",
+                                                    "default": "null",
+                                                    "choices": [
+                                                        "text",
+                                                        "message-digest",
+                                                        "null",
+                                                    ],
+                                                },
+                                                "text_password": {"type": "str"},
+                                                "message_digest_key_id": {"type": "int"},
+                                                "message_digest_password": {"type": "str"}
+                                            }
+                                        },
+                                        "dead_interval": {
+                                            "type": "int",
+                                            "defautl": 40,
+                                        },
+                                        "hello_interval": {
+                                            "type": "int",
+                                            "defautl": 10,
+                                        },
                                         "retransmit_interval": {"type": "int"},
                                         "transmit_delay": {"type": "int"},
                                     },
@@ -103,7 +120,7 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                             "options": {
                                 "external": {"type": "int"},
                                 "inter_area": {"type": "int"},
-                                "intra": {"type": "int"},
+                                "intra_area": {"type": "int"},
                                 "nssa_external": {"type": "int"},
                             },
                         },
@@ -116,10 +133,19 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                         },
                         "network": {
                             "type": "list",
-                            "elements": "dice",
+                            "elements": "dict",
                             "options": {
                                 "address": {"type": "str"},
                                 "area": {"type": "str"},
+                            },
+                        },
+                        "nssa_range": {
+                            "type": "list",
+                            "elements": "dict",
+                            "options": {
+                                "range": {"type": "str"},
+                                "not_advertise": {"type": "bool"},
+                                "tag": {"type": "str"},
                             },
                         },
                         "passive_interface": {"type": "str"},
