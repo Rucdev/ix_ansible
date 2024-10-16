@@ -30,13 +30,76 @@ class Static_routesTemplate(NetworkTemplate):
             "getval": re.compile(
                 r"""
                 ^ip\sroute
-                $""", re.VERBOSE),
-            "setval": "",
+                (\svrf\s(?P<vrf>\S+))?
+                (\s(?P<dest>\S+))?
+                (\s(?P<forward_router_address>(?!dhcp|tag)(?!(?<!\d\.)\b\d+\b(?!\.\d))(\d{1,3}(\.\d{1,3}){3}|\S+)))?
+                (\s(?P<interface>(Tunnel|Loopback|Null|Dialer|BVI|USB-Serial|BRI|GigaEthernet)\S+))?
+                (\s(?P<distance_metric>\d+))?
+                (\stag\s(?P<tag>\d+))?
+                (\s(?P<dhcp>dhcp))?
+                $""", re.VERBOSE,
+            ),
+            "setval": "ip route"
+            "{{ (' vrf ' + ipv4.vrf) if ipv4.vrf is defined else '' }}"
+            "{{ (' ' + ipv4.dest) if ipv4.dest is defined else '' }}"
+            "{{ (' ' + ipv4.forward_router_address) if ipv4.forward_router_address is defined else '' }}"
+            "{{ (' ' + ipv4.interface) if ipv4.interface is defined else '' }}"
+            "{{ (' ' + ipv4.distance_metric|string) if ipv4.distance_metric is defined else '' }}"
+            "{{ (' tag ' + ipv4.tag|string) if ipv4.tag is defined else '' }}"
+            "{{ (' name ' + ipv4.name) if ipv4.name is defined else '' }}"
+            "{{ (' dhcp' ) if ipv4.dhcp|d(False) else '' }}",
             "result": {
+                "{{ dest }}_{{ vrf|d() }}_ipv4": [
+                    {
+                        "_vrf": "{{ vrf }}",
+                        "_afi": "ipv4",
+                        "_dest": "{{ dest }}",
+                        "interface": "{{ interface }}",
+                        "forward_router_address": "{{ forward_router_address }}",
+                        "distance_metric": "{{ distance_metric }}",
+                        "tag": "{{ tag }}",
+                        "dhcp": "{{ not not dhcp }}",
+                    },
+                ],
             },
-            "shared": True
+        },
+        {
+            "name": "ipv6",
+            "getval": re.compile(
+                r"""
+                ^ipv6\sroute
+                (\svrf\s(?P<vrf>\S+))?
+                (\s(?P<dest>\S+))?
+                (\s(?P<forward_router_address>(?!dhcp|tag)(?!(?<!\d\.)\b\d+\b(?!\.\d))(\d{1,3}(\.\d{1,3}){3}|\S+)))?
+                (\s(?P<interface>(Tunnel|Loopback|Null|Dialer|BVI|USB-Serial|BRI|GigaEthernet)\S+))?
+                (\s(?P<distance_metric>\d+))?
+                (\stag\s(?P<tag>\d+))?
+                (\s(?P<dhcp>dhcp))?
+                $""", re.VERBOSE,
+            ),
+            "setval": "ipv6 route"
+            "{{ (' vrf ' + ipv6.vrf) if ipv6.vrf is defined else '' }}"
+            "{{ (' ' + ipv6.dest) if ipv6.dest is defined else '' }}"
+            "{{ (' ' + ipv6.forward_router_address) if ipv6.forward_router_address is defined else '' }}"
+            "{{ (' ' + ipv6.interface) if ipv6.interface is defined else '' }}"
+            "{{ (' ' + ipv6.distance_metric|string) if ipv6.distance_metric is defined else '' }}"
+            "{{ (' tag ' + ipv6.tag|string) if ipv6.tag is defined else '' }}"
+            "{{ (' name ' + ipv6.name) if ipv6.name is defined else '' }}"
+            "{{ (' dhcp' ) if ipv6.dhcp|d(False) else '' }}",
+            "result": {
+                "{{ dest }}_{{ vrf|d() }}_ipv6": [
+                    {
+                        "_vrf": "{{ vrf }}",
+                        "_afi": "ipv6",
+                        "_dest": "{{ dest }}",
+                        "interface": "{{ interface }}",
+                        "forward_router_address": "{{ forward_router_address }}",
+                        "distance_metric": "{{ distance_metric }}",
+                        "tag": "{{ tag }}",
+                        "dhcp": "{{ not not dhcp }}",
+                    },
+                ],
+            },
         },
     ]
     # fmt: on
-
-

@@ -3,34 +3,32 @@
 # Copyright 2024 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-#
-
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
-
 """
-The ix_static_routes config file.
-It is in this file where the current configuration (as dict)
-is compared to the provided configuration (as dict) and the command set
-necessary to bring the current configuration to its desired end-state is
-created.
+The ix device_interfaces fact class
+It is in this file the configuration is collected from the device
+for a given resource, parsed, and the facts tree is populated
+based on the configuration.
 """
-
+import re
 from copy import deepcopy
-
 from ansible.module_utils.six import iteritems
+from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module import (
+    ResourceModule,
+)
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
     dict_merge,
 )
-from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module import (
-    ResourceModule,
+from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
+    to_list,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.facts import (
     Facts,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.static_routes import (
     Static_routesTemplate,
+)
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.utils.utils import (
+    validate_n_expand_ipv4,
 )
 
 
@@ -51,47 +49,136 @@ class Static_routes(ResourceModule):
         ]
 
     def execute_module(self):
-        """ Execute the module
+        """Execute the module
 
         :rtype: A dictionary
         :returns: The result from module execution
         """
         if self.state not in ["parsed", "gathered"]:
             self.generate_commands()
+            raise 
             self.run_commands()
         return self.result
 
     def generate_commands(self):
-        """ Generate configuration commands to send based on
-            want, have and desired state.
+        """Generate configuration commands to send based on
+        want, have and desired state.
         """
-        wantd = {entry['name']: entry for entry in self.want}
-        haved = {entry['name']: entry for entry in self.have}
+        wantd, delete_spcl = self.list_to_dict(self.want, "want")
+        haved, n_req = self.list_to_dict(self.have, "have")
 
-        # if state is merged, merge want onto have and then compare
-        if self.state == "merged":
-            wantd = dict_merge(haved, wantd)
+        if delete_spcl and haved and self.state == "deleted":
+            for pk, to_rem in delete_spcl.items():
+                if pk in ["ipv4", "ipv6"]:
+                    _afis = haved.get("(_afis_)")
+                    for k, v in _afis.get(pk, {}).items():
+                        for each_dest in to_rem:
+                            if k.split("_")[0] == each_dest:
+                                self.addcmd({pk: v}, pk, True)
+                else:
+                    _vrfs = haved.get(pk)
+                    for ak, v in _vrfs.items():
+                        for k, srts in v.items():
+                            for each_dest in to_rem.get(ak):
+                                if k.split("_")[0] == each_dest:
+                                    self.addcmd({ak: srts}, ak, True)
 
+        else:
+            # if state is merged, merge want onto have and then compare
+            if self.state == "merged":
+                wantd = dict_merge(haved, wantd)
+
+            for k, want in iteritems(wantd):
+                self._compare_top_level_keys(want=want, have=haved.pop(k, {}))
+
+            # if self.state in ["overridden", "deleted"]:
+            if (self.state == "deleted" and not wantd) or self.state == "overridden":
+                for k, have in iteritems(haved):
+                    self._compare_top_level_keys(want={}, have=have)
+
+    def _compare_top_level_keys(self, want, have):
         # if state is deleted, empty out wantd and set haved to wantd
-        if self.state == "deleted":
-            haved = {
-                k: v for k, v in iteritems(haved) if k in wantd or not wantd
-            }
-            wantd = {}
+        if self.state == "deleted" and have:
+            _have = {}
+            for addf in ["ipv4", "ipv6"]:
+                _temp_sr = {}
+                for k, ha in iteritems(have.get(addf, {})):
+                    if k in want.get(addf, {}):  # or not want.get(addf)
+                        _temp_sr[k] = ha
+                    if _temp_sr:
+                        _have[addf] = _temp_sr
+            if _have:
+                have = _have
+                want = {}
 
-        # remove superfluous config for overridden and deleted
+        if self.state != "deleted":
+            for _afi, routes in want.items():
+                self._compare(s_want=routes, s_have=have.pop(_afi, {}), afi=_afi)
+
         if self.state in ["overridden", "deleted"]:
-            for k, have in iteritems(haved):
-                if k not in wantd:
-                    self._compare(want={}, have=have)
+            for _afi, routes in have.items():
+                self._compare(s_want={}, s_have=routes, afi=_afi)
 
-        for k, want in iteritems(wantd):
-            self._compare(want=want, have=haved.pop(k, {}))
+    def _compare(self, s_want, s_have, afi):
+        for name, w_srs in s_want.items():
+            have_srs = s_have.pop(name, {})
+            self.compare(parsers=afi, want={afi: w_srs}, have={afi: have_srs})
 
-    def _compare(self, want, have):
-        """Leverages the base class `compare()` method and
-           populates the list of commands to be run by comparing
-           the `want` and `have` data with the `parsers` defined
-           for the Static_routes network resource.
-        """
-        self.compare(parsers=self.parsers, want=want, have=have)
+        # remove remaining items in have for replaced state
+        for name, h_srs in s_have.items():
+            self.compare(parsers=afi, want={}, have={afi: h_srs})
+
+    def list_to_dict(self, param, operation):
+        _static_rts = {}
+        _delete_spc = {}
+        if param:
+            for srs in param:
+                _vrf = srs.get("vrf")
+                _srts = {}
+                for adfs in srs.get("address_families", []):
+                    _afi = adfs.get("afi")
+                    _routes = {}
+                    for rts in adfs.get("routes", []):
+                        _dest = rts.get("dest", "")
+                        _sdest = rts.get("dest", "")
+                        #  below if specific to special deletes
+                        if (
+                            self.state == "deleted"
+                            and operation == "want"
+                            and not rts.get("next_hops")
+                        ):
+                            if _vrf:
+                                if not _delete_spc.get(_vrf):
+                                    _delete_spc[_vrf] = {}
+                                if not _delete_spc[_vrf].get(_afi):
+                                    _delete_spc[_vrf][_afi] = []
+                                _delete_spc[_vrf][_afi].append(_dest)
+                            else:
+                                if not _delete_spc.get(_afi):
+                                    _delete_spc[_afi] = []
+                                _delete_spc[_afi].append(_dest)
+
+                        for nxh in rts.get("next_hops", []):
+                            _forw_rtr_add = nxh.get("forward_router_address", "").upper()
+                            _intf = nxh.get("interface", "")
+                            _key = _sdest + "_" + _forw_rtr_add + _intf
+
+                            if _afi == "ipv4":
+                                _dest = validate_n_expand_ipv4(self._module, {"address": _dest})
+                            dummy_sr = {
+                                "afi": _afi,
+                                "dest": _dest,
+                            }
+
+                            if _vrf:
+                                dummy_sr["vrf"] = _vrf
+                            if _intf:
+                                dummy_sr["interface"] = _intf
+                            if _forw_rtr_add:
+                                dummy_sr["forward_router_address"] = _forw_rtr_add
+                            dummy_sr.update(nxh)
+
+                            _routes[_key] = dummy_sr
+                    _srts[_afi] = _routes
+                _static_rts[_vrf if _vrf else "(_afis_)"] = _srts
+        return _static_rts, _delete_spc

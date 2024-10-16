@@ -41,52 +41,56 @@ options:
     type: list
     elements: dict
     suboptions:
-      address_faimilies:
-        destination: "The destination IP address of the static route."
-        afi:
-          description: "The address family of the static route."
-          type: str
-          choices:
-            - ipv4
-            - ipv6
-          required: true
-        routes:
-          dest:
-            description: "The destination IP address of the static route."
+      address_families:
+        description: "The destination IP address of the static route."
+        type: list
+        elements: dict
+        suboptions:
+          afi:
+            description: "The address family of the static route."
             type: str
+            choices:
+              - ipv4
+              - ipv6
             required: true
-        next_hops:
-          description: "The next hop IP address of the static route."
-          type: str
-          required: true
-          suboptions:
-            forward_router_address:
-              description: "The forward router IP address of the static route."
-              type: str
-            interface:
-              description: "The interface of the static route."
-              type: str
-            dhcp:
-              description: "The DHCP of the static route."
-              type: bool
-            connected:
-              description: "The connected of the static route."
-              type: bool
-            distance:
-              description: "The distance of the static route."
-              type: int
-            metric:
-              description: "The metric of the static route."
-              type: int
-            tag:
-              description: "Use RA address as next-hop address."
-              type: int
-            ra:
-              description: "(IPv6 only)The Router Advertisement of the static route."
-              type: bool
-        default:
-          description: "The default route of the static route."
-          type: bool
+          routes:
+            description: "The destination IP address of the static route."
+            type: list
+            elements: dict
+            suboptions:
+              dest:
+                description: "The destination IP address of the static route."
+                type: str
+                required: true
+              next_hops:
+                description: "The next hop IP address of the static route."
+                type: list
+                elements: dict
+                suboptions:
+                  forward_router_address:
+                    description: "The forward router IP address of the static route."
+                    type: str
+                  interface:
+                    description: "The interface of the static route."
+                    type: str
+                  dhcp:
+                    description: "The DHCP of the static route."
+                    type: bool
+                  connected:
+                    description: "The connected of the static route."
+                    type: bool
+                  distance:
+                    description: "The distance of the static route."
+                    type: int
+                  metric:
+                    description: "The metric of the static route."
+                    type: int
+                  tag:
+                    description: "Use RA address as next-hop address."
+                    type: int
+                  ra:
+                    description: "(IPv6 only)The Router Advertisement of the static route."
+                    type: bool
       vrf:
         description: "The VRF name of the static route."
         type: str
