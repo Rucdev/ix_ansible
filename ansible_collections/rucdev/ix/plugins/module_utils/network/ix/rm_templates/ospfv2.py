@@ -218,7 +218,7 @@ class Ospfv2Template(NetworkTemplate):
             "name": "compatible",
             "getval": re.compile(
                 r"""
-                \s+compatible(\s(?P<rfc1583>rfc1583))?
+                \s+compatible(\s(?P<rfc1583>rfc1583))
                 $""",
                 re.VERBOSE
                 ),
@@ -239,7 +239,7 @@ class Ospfv2Template(NetworkTemplate):
                 r"""
                 \s+default-metric\s(?P<metric>\S+)
                 $""", re.VERBOSE),
-            "setval": "default-metric {{ metric }}",
+            "setval": "default-metric {{ default_metric }}",
             "result": {
                 "processes":{
                     "{{ pid }}": {

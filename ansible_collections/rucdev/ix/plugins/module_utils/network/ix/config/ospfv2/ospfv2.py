@@ -48,6 +48,11 @@ class Ospfv2(ResourceModule):
             tmplt=Ospfv2Template(),
         )
         self.parsers = [
+            "compatible",
+            "default_metric",
+            "distance",
+            "distribute_list",
+            "nssa_range",
         ]
 
     def execute_module(self):
@@ -65,8 +70,21 @@ class Ospfv2(ResourceModule):
         """ Generate configuration commands to send based on
             want, have and desired state.
         """
-        wantd = {entry['name']: entry for entry in self.want}
-        haved = {entry['name']: entry for entry in self.have}
+        wantd = dict()
+        haved = dict()
+
+        if self.want:
+            for entry in self.want.get("processes", []):
+                wantd.update({(entry["process_id"]): entry})
+        
+        if self.have:
+            for entry in self.have.get("processes", []):
+                haved.update({(entry["process_id"]): entry})
+
+        # turn all lists of dicts into dicts prior to merge
+        for each in wantd, haved:
+            if each:
+                self._list_to_dict(each)
 
         # if state is merged, merge want onto have and then compare
         if self.state == "merged":
@@ -85,6 +103,12 @@ class Ospfv2(ResourceModule):
                 if k not in wantd:
                     self._compare(want={}, have=have)
 
+        # delete processes first so we do run into "more than one" errors
+        if self.state in ["overridden", "deleted"]:
+            for k, have in iteritems(haved):
+                if k not in wantd:
+                    self.addcmd(have, "pid", True)
+
         for k, want in iteritems(wantd):
             self._compare(want=want, have=haved.pop(k, {}))
 
@@ -94,4 +118,37 @@ class Ospfv2(ResourceModule):
            the `want` and `have` data with the `parsers` defined
            for the Ospfv2 network resource.
         """
-        self.compare(parsers=self.parsers, want=want, have=have)
+        if want != have:
+            self.addcmd(want or have, "pid", False)
+            self.compare(parsers=self.parsers, want=want, have=have)
+    
+    def _area_compare(self, want, have):
+        wareas = want.get("areas", {})
+        hareas = have.get("areas", {})
+        for name, entry in iteritems(wareas):
+            self._area_compare(want=entry, have=hareas.pop(name, {}))
+        for name, entry in iteritems(hareas):
+            self._area_compare(want={}, have=entry)
+
+    def _area_compare(self, want, have):
+        parsers = [
+            "authentication",
+            "default_cost",
+            "nssa",
+            "stub",
+            "virtual_links",
+        ]
+        self.compare(parsers=parsers, want=want, have=have)
+        self._area_complex_compare(want, have, want.get("area_id"))
+
+    def _list_to_dict(self, param):
+        for _pid, proc in param.items():
+            # convert list to dict for areas
+            for area in proc.get("areas", []):
+                area["virtual_links"] = {entry["address"]: entry for entry in area.get("virtual_links", [])}
+
+            proc["areas"] = {entry["area_id"]: entry for entry in proc.get("areas", [])}
+
+            # list to dict for network
+            if proc.get("network"):
+                proc["network"] = {entry["address"]: entry for entry in proc["network"]}
