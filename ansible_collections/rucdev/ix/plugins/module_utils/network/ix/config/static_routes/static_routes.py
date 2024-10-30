@@ -46,6 +46,8 @@ class Static_routes(ResourceModule):
             tmplt=Static_routesTemplate(),
         )
         self.parsers = [
+            "ipv4",
+            "ipv6"
         ]
 
     def execute_module(self):
@@ -56,7 +58,6 @@ class Static_routes(ResourceModule):
         """
         if self.state not in ["parsed", "gathered"]:
             self.generate_commands()
-            raise 
             self.run_commands()
         return self.result
 
@@ -122,7 +123,10 @@ class Static_routes(ResourceModule):
     def _compare(self, s_want, s_have, afi):
         for name, w_srs in s_want.items():
             have_srs = s_have.pop(name, {})
+            # raise Exception(self.addcmd({afi: w_srs}, afi, False))
+            # raise Exception(self._tmplt.render({afi: w_srs}, afi, False))
             self.compare(parsers=afi, want={afi: w_srs}, have={afi: have_srs})
+        # raise Exception(self.commands)
 
         # remove remaining items in have for replaced state
         for name, h_srs in s_have.items():
@@ -163,8 +167,8 @@ class Static_routes(ResourceModule):
                             _intf = nxh.get("interface", "")
                             _key = _sdest + "_" + _forw_rtr_add + _intf
 
-                            if _afi == "ipv4":
-                                _dest = validate_n_expand_ipv4(self._module, {"address": _dest})
+                            # if _afi == "ipv4":
+                            #     _dest = validate_n_expand_ipv4(self._module, {"address": _dest})
                             dummy_sr = {
                                 "afi": _afi,
                                 "dest": _dest,

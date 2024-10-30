@@ -70,5 +70,19 @@ class Static_routesArgs(object):  # pylint: disable=R0903
                 },
                 "vrf": {"type": "str"},
             },
-        }
+        },
+        "state": {
+            "choices": [
+                "merged",
+                "replaced",
+                "overridden",
+                "deleted",
+                "rendered",
+                "gathered",
+                "purged",
+                "parsed",
+            ],
+            "default": "merged",
+            "type": "str",
+        },
     }  # pylint: disable=C0301
