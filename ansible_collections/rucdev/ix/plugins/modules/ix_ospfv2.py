@@ -90,34 +90,51 @@ options:
                   - Settings for configuring the area as a stub
                 type: dict
                 suboptions:
+                  set:
+                    description: Enable a stub area
+                    type: bool
                   no_summary:
                     description: Do not send summary LSA to stub area
                     type: bool
-              virtual-link:
+              virtual_links:
                 description:
                   - Setting configuration for virtual-link
-                type: dict
+                  - The maximum number of Virtual-links that can be configured is 16
+                type: list
+                elements: dict
                 suboptions:
+                  address:
+                    description: Opposite address of the virtual link
+                    type: str
                   authentication:
-                    description: Virtual link authentication type
-                    type: str
-                    default: "text"
-                    choices:
-                      - "text"
-                      - "message-digest"
-                      - "null"
-                  authentication_key:
-                    description: Authentication text password
-                    type: str
-                  message_digest_key:
-                    description: Message digest password
-                    type: str
+                    description: Virtual link authentication
+                    type: dict
+                    suboptions:
+                      auth_type:
+                        description: Virtual link authentication type
+                        type: str
+                        default: "null"
+                        choices:
+                          - "text"
+                          - "message-digest"
+                          - "null"
+                      text_password:
+                        description: Authentication text password
+                        type: str
+                      message_digest_key_id:
+                        description: Message digest key id(1~255)
+                        type: int
+                      message_digest_password:
+                        description: Message digest password
+                        type: str
                   dead_interval:
                     description: Dead interval (seconds)
                     type: int
+                    default: 40
                   hello_interval:
                     description: Hello interval (seconds)
                     type: int
+                    default: 10
                   retransmit_interval:
                     description: Retransmit interval (seconds)
                     type: int
@@ -135,7 +152,9 @@ options:
             description: Set metric of redistributed routes
             type: int
           distance:
-            description: Define an administrative distance
+            description:
+              - Define an administrative distance
+              - A process restart is required for the settings to take effect
             type: dict
             suboptions:
               external:
@@ -144,7 +163,7 @@ options:
               inter_area:
                 description: OSPF inter-area routes
                 type: int
-              intra:
+              intra_area:
                 description: OSPF intra-area routes
                 type: int
               nssa_external:
@@ -166,7 +185,7 @@ options:
           network:
             description: Enable routing on an OSPF network
             type: list
-            elements: dice
+            elements: dict
             suboptions:
               address:
                 description: Network number
@@ -174,17 +193,55 @@ options:
               area:
                 description: Set the OSPF area ID
                 type: str
+          nssa_range:
+            type: list
+            elements: dict
+            suboptions:
+              range:
+                description: The range of aggregated route
+                type: str
+              not_advertise:
+                description: Whether to distribute aggregated route
+                type: bool
+              tag:
+                description: The tag to attach to aggregated route
+                type: str
+          originate_default:
+            description: Setting of configure the default route
+            type: dict
+            suboptions:
+              always:
+                description: Always advertise default route
+                type: bool
+              metric:
+                description: OSPF default metric
+                type: int
+                default: 1
+              metric_type:
+                description: OSPF metric type for default routes
+                type: int
+                default: 2
+              route_map:
+                description: Route-map reference name
+                type: str
           passive_interface:
             description:
               - Setting of configure the specified interface not to send or receive OSPF packets
             type: str
           rib:
-            description: Setting of rib
+            description:
+              - Setting of rib
+              - A process restart is required for the settings to take effect
             type: dict
             suboptions:
               max_entries:
                 description: Setting of the max entries(64 ~ 65535)
                 type: int
+          router_id:
+            description: 
+              - Setting of router id
+              - A process restart is required for the settings to take effect
+            type: str
           timers:
             description: Adjust routing timers
             type: dict

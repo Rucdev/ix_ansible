@@ -21,29 +21,30 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.r
 
 
 def _tmplt_ospf_virtual_link(config_data):
-    if "virtual_link" in config_data:
-        virtual_link_data = config_data["virtual_link"]
-        command = "area {area_id} virtual-link {address}".format(**virtual_link_data)
-        if "authentication" in virtual_link_data:
-            command += " authentication {authentication}".format(**virtual_link_data)
-        if (
-            "message_digest" in virtual_link_data
-            and virtual_link_data.get("authentication") == "message-digest"
-        ):
-            command += " message-digest-key {key_id} {password}".format(
-                **virtual_link_data["message_digest"]
+    # if "virtual_links" in config_data:
+    virtual_links_data = config_data
+    command = "area {area_id} virtual-link {address}".format(**virtual_links_data)
+    if "authentication" in config_data:
+        authentication_data = virtual_links_data["authentication"]
+        if "text" == authentication_data.get("auth_type"):
+            command += " authentication authentication-key {text_password}".format(
+                **authentication_data
             )
-        if "dead_interval" in virtual_link_data:
-            command += " dead_interval {dead_interval}".format(**virtual_link_data)
-        if "hello_interval" in virtual_link_data:
-            command += " hello_interval {hello_interval}".format(**virtual_link_data)
-        if "retransmit_interval" in virtual_link_data:
-            command += " retransmit_interval {retransmit_interval}".format(
-                **virtual_link_data
+        elif "message-digest" == authentication_data.get("auth_type"):
+            command += " authentication message-digest message-digest-key {message_digest_key_id} {message_digest_password}".format(
+                **authentication_data
             )
-        if "transmit_delay" in virtual_link_data:
-            command += " transmit_delay {transmit_delay}".format(**virtual_link_data)
-        return command
+    if "dead_interval" in virtual_links_data:
+        command += " dead_interval {dead_interval}".format(**virtual_links_data)
+    if "hello_interval" in virtual_links_data:
+        command += " hello_interval {hello_interval}".format(**virtual_links_data)
+    if "retransmit_interval" in virtual_links_data:
+        command += " retransmit_interval {retransmit_interval}".format(
+            **virtual_links_data
+        )
+    if "transmit_delay" in virtual_links_data:
+        command += " transmit_delay {transmit_delay}".format(**virtual_links_data)
+    return command
 
 
 class Ospfv2Template(NetworkTemplate):
@@ -102,7 +103,7 @@ class Ospfv2Template(NetworkTemplate):
                         "areas": {
                             "{{ area_id }}": {
                                 "area_id": "{{ area_id }}",
-                                "default_cost": "{{ default_cost | int }}"
+                                "default_cost": "{{ default_cost }}"
                             }
                         },
                     },
@@ -153,7 +154,7 @@ class Ospfv2Template(NetworkTemplate):
                 re.VERBOSE,
             ),
             "setval": "area {{ area_id }} stub"
-            "{{ (' no-summary') if stub.no_summary else '' }}",
+            "{{ (' no-summary') if stub.no_summary is defined and stub.no_summary else '' }}",
             "result": {
                 "processes":{
                     "{{ pid }}": {
@@ -177,14 +178,14 @@ class Ospfv2Template(NetworkTemplate):
                 \s+area
                 (\s(?P<area_id>\S+))
                 \svirtual-link
-                (\s(?P<address>\S+))
-                (\s(?P<authentication>authentication)(\s(?P<auth_type>\S+))?)?
-                (\sauthentication-key\s(?P<password>\S+))?
-                (\smessage-digest-key\s(?P<message_digest_key_id>\d+)\s(?P<message_digest_password>\S+))?
+                (\s(?P<address>\S+))?
                 (\shello-interval\s(?P<hello_interval>\S+))?
                 (\sdead-interval\s(?P<dead_interval>\S+))?
                 (\sretransmit-interval\s(?P<retransmit_interval>\S+))?
                 (\stransmit-delay\s(?P<transmit_delay>\S+))?
+                (\s(?P<authentication>authentication)(\s(?P<auth_type>\S+))?)?
+                (\sauthentication-key\s(?P<password>\S+))?
+                (\smessage-digest-key\s(?P<message_digest_key_id>\d+)\s(?P<message_digest_password>\S+))?
                 $""",
                 re.VERBOSE,
             ),
@@ -206,6 +207,8 @@ class Ospfv2Template(NetworkTemplate):
                                         },
                                         "hello_interval": "{{ hello_interval }}",
                                         "dead_interval": "{{ dead_interval }}",
+                                        "retransmit_interval": "{{ retransmit_interval }}",
+                                        "transmit_delay": "{{ transmit_delay }}",
                                     }
                                 ]
                             }
@@ -258,7 +261,11 @@ class Ospfv2Template(NetworkTemplate):
                 (\sintra-area\s(?P<intra_area>\S+))?
                 (\snssa-external\s(?P<nssa_external>\S+))?
                 $""", re.VERBOSE),
-            "setval": "default-metric {{ metric }}",
+            "setval": "distance"
+            "{{ ' external ' + distance.external|string if distance.external is defined }}"
+            "{{ ' inter-area ' + distance.inter_area|string if distance.inter_area is defined }}"
+            "{{ ' intra-area ' + distance.intra_area|string if distance.intra_area is defined }}"
+            "{{ ' nssa-external ' + distance.nssa_external|string if distance.nssa_external is defined }}",
             "result": {
                 "processes":{
                     "{{ pid }}": {
@@ -282,7 +289,9 @@ class Ospfv2Template(NetworkTemplate):
                 $""",
                 re.VERBOSE
             ),
-            "setval": "",
+            "setval": "distribute-list"
+            "{{ ' prefix ' + distribute_list.prefix|string if distribute_list.prefix is defined else '' }}"
+            "{{ ' route-map ' + distribute_list.route_map|string if distribute_list.route_map is defined else '' }}",
             "result": {
                 "processes":{
                     "{{ pid }}": {
@@ -340,6 +349,97 @@ class Ospfv2Template(NetworkTemplate):
                                 "tag": "{{ tag if tag is defined }}"
                             }
                         ]
+                    }
+                }
+            }
+        },
+        {
+            "name": "originate_default",
+            "getval": re.compile(
+                r"""
+                \s+originate-default
+                (\s(?P<always>always))?
+                (\smetric\s(?P<metric>\S+))
+                (\smetric-type\s(?P<metric_type>\d))?
+                (\sroute-map\s(?P<route_map>\S+))?
+                $""",
+                re.VERBOSE
+            ),
+            "setval": "originate-default{{ ' always' if originate_default.always is defined and originate_default.always else '' }}"
+            " metric {{ originate_default.metric }}"
+            " metric-type {{ originate_default.metric_type }}"
+            " route-map {{ originate_default.route_map }}",
+            "result": {
+                "processes":{
+                    "{{ pid }}": {
+                        "originate_default": {
+                                "always": "{{ True if always is defined }}",
+                                "metric": "{{ metric }}",
+                                "metric_type": "{{ metric_type }}",
+                                "route_map": "{{ route_map }}",
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "rib",
+            "getval": re.compile(
+                r"""
+                \s+rib
+                (\smax-entries\s(?P<max_entries>\S+))?
+                $""",
+                re.VERBOSE
+            ),
+            "setval": "rib max-entries {{ rib.max_entries }}",
+            "result":{
+                "processes":{
+                    "{{ pid }}": {
+                        "rib": {
+                            "max_entries": "{{ max_entries }}",
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "router_id",
+            "getval": re.compile(
+                r"""
+                \s+router-id
+                (\s(?P<router_id>\S+))?
+                $""",
+                re.VERBOSE
+            ),
+            "setval": "router-id {{ router_id }}",
+            "result":{
+                "processes":{
+                    "{{ pid }}": {
+                        "router_id": "{{ router_id }}"
+                    }
+                }
+            }
+        },
+        {
+            "name": "timers",
+            "getval": re.compile(
+                r"""
+                \s+timers
+                (\sdelay\s(?P<delay>\S+))?
+                (\shold\s(?P<hold>\S+))?
+                $""",
+                re.VERBOSE
+            ),
+            "setval": "timers"
+            "{{ ' delay ' + timers.delay|string if timers.delay is defined else '' }}"
+            "{{ ' hold ' + timers.hold|string if timers.hold is defined else '' }}",
+            "result":{
+                "processes":{
+                    "{{ pid }}": {
+                        "timers": {
+                            "delay": "{{ delay }}",
+                            "hold": "{{ hold }}"
+                        }
                     }
                 }
             }

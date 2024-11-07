@@ -53,6 +53,10 @@ class Ospfv2(ResourceModule):
             "distance",
             "distribute_list",
             "nssa_range",
+            "originate_default",
+            "rib",
+            "router_id",
+            "timers",
         ]
 
     def execute_module(self):
@@ -85,6 +89,7 @@ class Ospfv2(ResourceModule):
         for each in wantd, haved:
             if each:
                 self._list_to_dict(each)
+        # raise Exception(wantd)
 
         # if state is merged, merge want onto have and then compare
         if self.state == "merged":
@@ -121,10 +126,27 @@ class Ospfv2(ResourceModule):
         if want != have:
             self.addcmd(want or have, "pid", False)
             self.compare(parsers=self.parsers, want=want, have=have)
+            self._complex_compare(want=want, have=have)
+            self._areas_compare(want, have)
     
-    def _area_compare(self, want, have):
+    def _complex_compare(self, want, have):
+        complex_parsers = ["network"]
+        for _parser in complex_parsers:
+            wdist = want.get(_parser, {})
+            hdist = have.get(_parser, {})
+            for key, wanting in iteritems(wdist):
+                haveing = hdist.pop(key, {})
+                if wanting != haveing:
+                    if haveing and self.state in ["overridden", "replaced"]:
+                        self.addcmd(haveing, _parser, negate=True)
+                    self.addcmd(wanting, _parser, False)
+            for key, haveing in iteritems(hdist):
+                self.addcmd(haveing, _parser, negate=True)
+
+    def _areas_compare(self, want, have):
         wareas = want.get("areas", {})
         hareas = have.get("areas", {})
+        # raise Exception(wareas)
         for name, entry in iteritems(wareas):
             self._area_compare(want=entry, have=hareas.pop(name, {}))
         for name, entry in iteritems(hareas):
@@ -132,21 +154,40 @@ class Ospfv2(ResourceModule):
 
     def _area_compare(self, want, have):
         parsers = [
-            "authentication",
-            "default_cost",
-            "nssa",
             "stub",
-            "virtual_links",
+            "nssa",
+            "default_cost",
+            "virtual_links"
         ]
+        self.addcmd(want, "area_id", False)
+        bcmdlen = len(self.commands)
         self.compare(parsers=parsers, want=want, have=have)
         self._area_complex_compare(want, have, want.get("area_id"))
+        acmdlen = len(self.commands)
+        if bcmdlen == acmdlen:
+            self.commands = self.commands[:-1]
+
+
+
+    def _area_complex_compare(self, want, have, area_id):
+        area_complex_parsers = []
+        for _parser in area_complex_parsers:
+            wantr = want.get(_parser, {})
+            haver = have.get(_parser, {})
+            for key, wanting in iteritems(wantr):
+                haveing = have.pop(key, {})
+                haveing["area_id"] = area_id
+                wanting["area_id"] = area_id
+                if wanting != haveing:
+                    if haveing and self.state in ["overridden", "replaced"]:
+                        self.addcmd(haveing, _parser, negate=True)
+                    self.addcmd(wanting, _parser, False)
+            for key, haveing in iteritems(haver):
+                haveing["area_id"] = area_id
+                self.addcmd(haveing, _parser, negate=True)
 
     def _list_to_dict(self, param):
         for _pid, proc in param.items():
-            # convert list to dict for areas
-            for area in proc.get("areas", []):
-                area["virtual_links"] = {entry["address"]: entry for entry in area.get("virtual_links", [])}
-
             proc["areas"] = {entry["area_id"]: entry for entry in proc.get("areas", [])}
 
             # list to dict for network

@@ -70,18 +70,18 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                                 "stub": {
                                     "type": "dict",
                                     "options": {
-                                            "set": {"type": "bool"},
-                                            "no_summary": {"type": "bool"}
-                                        },
+                                        "set": {"type": "bool"},
+                                        "no_summary": {"type": "bool"},
+                                    },
                                 },
                                 "virtual_links": {
                                     "type": "list",
-                                    "elements":"dict",
+                                    "elements": "dict",
                                     "options": {
                                         "address": {"type": "str"},
                                         "authentication": {
                                             "type": "dict",
-                                            "options":{
+                                            "options": {
                                                 "auth_type": {
                                                     "type": "str",
                                                     "default": "null",
@@ -92,17 +92,21 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                                                     ],
                                                 },
                                                 "text_password": {"type": "str"},
-                                                "message_digest_key_id": {"type": "int"},
-                                                "message_digest_password": {"type": "str"}
-                                            }
+                                                "message_digest_key_id": {
+                                                    "type": "int"
+                                                },
+                                                "message_digest_password": {
+                                                    "type": "str"
+                                                },
+                                            },
                                         },
                                         "dead_interval": {
                                             "type": "int",
-                                            "defautl": 40,
+                                            "default": 40,
                                         },
                                         "hello_interval": {
                                             "type": "int",
-                                            "defautl": 10,
+                                            "default": 10,
                                         },
                                         "retransmit_interval": {"type": "int"},
                                         "transmit_delay": {"type": "int"},
@@ -148,11 +152,21 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                                 "tag": {"type": "str"},
                             },
                         },
+                        "originate_default": {
+                            "type": "dict",
+                            "options": {
+                                "always": {"type": "bool"},
+                                "metric": {"type": "int", "default": 1},
+                                "metric_type": {"type": "int", "default": 2},
+                                "route_map": {"type": "str"},
+                            },
+                        },
                         "passive_interface": {"type": "str"},
                         "rib": {
                             "type": "dict",
                             "options": {"max_entries": {"type": "int"}},
                         },
+                        "router_id": {"type": "str"},
                         "timers": {
                             "type": "dict",
                             "options": {
