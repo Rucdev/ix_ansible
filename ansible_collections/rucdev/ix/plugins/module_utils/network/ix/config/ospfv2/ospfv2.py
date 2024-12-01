@@ -157,20 +157,19 @@ class Ospfv2(ResourceModule):
             "stub",
             "nssa",
             "default_cost",
-            "virtual_links"
         ]
         self.addcmd(want, "area_id", False)
         bcmdlen = len(self.commands)
         self.compare(parsers=parsers, want=want, have=have)
         self._area_complex_compare(want, have, want.get("area_id"))
-        acmdlen = len(self.commands)
-        if bcmdlen == acmdlen:
-            self.commands = self.commands[:-1]
+        # acmdlen = len(self.commands)
+        # if bcmdlen == acmdlen:
+        #     self.commands = self.commands[:-1]
 
 
 
     def _area_complex_compare(self, want, have, area_id):
-        area_complex_parsers = []
+        area_complex_parsers = ["ranges", "virtual_links"]
         for _parser in area_complex_parsers:
             wantr = want.get(_parser, {})
             haver = have.get(_parser, {})
@@ -188,6 +187,9 @@ class Ospfv2(ResourceModule):
 
     def _list_to_dict(self, param):
         for _pid, proc in param.items():
+            for area in proc.get("areas", []):
+                area["ranges"] = {entry["address"]: entry for entry in area.get("ranges", [])}
+                area["virtual_links"] = {entry["address"]: entry for entry in area.get("virtual_links", [])}
             proc["areas"] = {entry["area_id"]: entry for entry in proc.get("areas", [])}
 
             # list to dict for network

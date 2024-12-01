@@ -35,9 +35,9 @@ def _tmplt_ospf_virtual_link(config_data):
                 **authentication_data
             )
     if "dead_interval" in virtual_links_data:
-        command += " dead_interval {dead_interval}".format(**virtual_links_data)
+        command += " dead-interval {dead_interval}".format(**virtual_links_data)
     if "hello_interval" in virtual_links_data:
-        command += " hello_interval {hello_interval}".format(**virtual_links_data)
+        command += " hello-interval {hello_interval}".format(**virtual_links_data)
     if "retransmit_interval" in virtual_links_data:
         command += " retransmit_interval {retransmit_interval}".format(
             **virtual_links_data
@@ -143,6 +143,37 @@ class Ospfv2Template(NetworkTemplate):
             },
         },
         {
+            "name": "ranges",
+            "getval": re.compile(
+                r"""
+                \s+area
+                (\s(?P<area_id>\S+))
+                (\srange)
+                (\s(?P<address>\S+))
+                (\s(?P<advertise>advertise))?
+                $""",
+                re.VERBOSE
+            ),
+            "setval": "area {{ area_id }} range {{ address }} {{ 'advertise' if advertise else 'not-advertise' }}",
+            "result": {
+                "processes": {
+                    "{{ pid }}": {
+                        "areas": {
+                            "{{ area_id }}": {
+                                "area_id": "{{ area_id }}",
+                                "ranges": [
+                                    {
+                                        "address": "{{ address }}",
+                                        "advertise": "{{ advertise is defined }}"
+                                    }
+                                ]
+                            }
+                        },
+                    },
+                }
+            }
+        },
+        {
             "name": "stub",
             "getval": re.compile(
                 r"""
@@ -156,7 +187,7 @@ class Ospfv2Template(NetworkTemplate):
             "setval": "area {{ area_id }} stub"
             "{{ (' no-summary') if stub.no_summary is defined and stub.no_summary else '' }}",
             "result": {
-                "processes":{
+                "processes": {
                     "{{ pid }}": {
                         "areas": {
                             "{{ area_id }}": {

@@ -64,7 +64,7 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                                     "elements": "dict",
                                     "options": {
                                         "address": {"type": "str"},
-                                        "advertise": {"type": "bool"},
+                                        "advertise": {"type": "bool", "default": True},
                                     },
                                 },
                                 "stub": {
@@ -178,5 +178,6 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                 }
             },
         },
+        "running_config": {"type": "str"},
         "state": {"type": "str", "default": "merged"},
     }  # pylint: disable=C0301
