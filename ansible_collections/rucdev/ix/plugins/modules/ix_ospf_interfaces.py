@@ -56,8 +56,8 @@ options:
           dead_interval:
             description: Configure the value of dead-interval on the interface.
             type: int
-          message_digest:
-            description: Configure of md5 password
+          message_digest_key:
+            description: Configure of md5 password.(when you use this, the authentication must be message-digest.)
             type: dict
             suboptions:
               key_id:
@@ -82,10 +82,12 @@ options:
               interval:
                 description: The polling interval when adjacent router is down
                 type: int
+                default: 120
               priority:
                 description: Neighboring router priority
                 type: int
-          network:
+                default: 1
+          interface_type:
             description: Configure type of the interface
             type: str
             choices:

@@ -47,7 +47,7 @@ class Ospf_interfacesArgs(object):  # pylint: disable=R0903
                         "cost": {"type": "int"},
                         "hello_interval": {"type": "int"},
                         "dead_interval": {"type": "int"},
-                        "message_digest": {
+                        "message_digest_key": {
                             "type": "dict",
                             "options": {
                                 "key_id": {"type": "int"},
@@ -60,11 +60,11 @@ class Ospf_interfacesArgs(object):  # pylint: disable=R0903
                             "elements": "dict",
                             "options": {
                                 "address": {"type": "str"},
-                                "interval": {"type": "int"},
-                                "priority": {"type": "int"},
+                                "interval": {"type": "int", "default": 120},
+                                "priority": {"type": "int", "default": 1},
                             },
                         },
-                        "network": {
+                        "interface_type": {
                             "type": "str",
                             "choices": [
                                 "broadcast",
