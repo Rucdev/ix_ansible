@@ -174,10 +174,10 @@ class Ospf_interfacesTemplate(NetworkTemplate):
             "name": "neighbor",
             "getval": re.compile(
                 r"""
-                \sip\sospf\sneighbor
+                \s+ip\sospf\sneighbor
                 \s(?P<address>\S+)
-                (\spoll-interval(?P<interval>\S+))?
-                (\spriority(?P<priority>\S+))?
+                (\spoll-interval\s(?P<interval>\S+))?
+                (\spriority\s(?P<priority>\S+))?
                 $""",
                 re.VERBOSE
             ),
@@ -192,7 +192,7 @@ class Ospf_interfacesTemplate(NetworkTemplate):
                                 {
                                     "address": "{{ address }}",
                                     "interval": "{{ interval }}",
-                                    "interval": "{{ interval }}"
+                                    "priority": "{{ priority }}"
                                 }
                             ]
                         }
@@ -204,7 +204,7 @@ class Ospf_interfacesTemplate(NetworkTemplate):
             "name": "interface_type",
             "getval": re.compile(
                 r"""
-                \sip\sospf\snetwork\s(?P<interface_type>\S+)
+                \s+ip\sospf\snetwork\s(?P<interface_type>\S+)
                 $""",
                 re.VERBOSE
             ),
@@ -214,6 +214,64 @@ class Ospf_interfacesTemplate(NetworkTemplate):
                     "address_family": {
                         "ip": {
                             "interface_type": "{{ interface_type }}"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "priority",
+            "getval": re.compile(
+                r"""
+                \s+ip\sospf\spriority\s(?P<priority>\S+)
+                $""",
+                re.VERBOSE
+            ),
+            "setval": "ip ospf priority {{ priority }}",
+            "result": {
+                "{{ name }}": {
+                    "address_family": {
+                        "ip": {
+                            "priority": "{{ priority }}"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "retransmit_interval",
+            "getval": re.compile(
+                r"""
+                \s+ip\sospf\sretransmit-interval
+                \s(?P<retransmit_interval>\S+)
+                $""",
+                re.VERBOSE
+            ),
+            "setval": "ip ospf retransmit-interval {{ retransmit_interval }}",
+            "result": {
+                "{{ name }}": {
+                    "address_family": {
+                        "ip": {
+                            "retransmit_interval": "{{ retransmit_interval }}"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "transmit_delay",
+            "getval": re.compile(
+                r"""
+                \s+ip\sospf\stransmit-delay\s(?P<transmit_delay>\S+)
+                $""",
+                re.VERBOSE
+            ),
+            "setval": "ip ospf transmit-delay {{ transmit_delay }}",
+            "result": {
+                "{{ name }}": {
+                    "address_family": {
+                        "ip": {
+                            "transmit_delay": "{{ transmit_delay }}"
                         }
                     }
                 }

@@ -36,12 +36,12 @@ class Ospf_interfacesArgs(object):  # pylint: disable=R0903
             "type": "list",
             "elements": "dict",
             "options": {
-                "name": {},
+                "name": {"type": "str", "required": True},
                 "address_family": {
                     "type": "list",
                     "elements": "dict",
                     "options": {
-                        "afi": {"type": "str", "choices": ["ipv4", "ipv6"]},
+                        "afi": {"type": "str", "choices": ["ipv4", "ipv6"], "required": True},
                         "authentication": {"type": "str"},
                         "authentication_key": {"type": "str"},
                         "cost": {"type": "int"},

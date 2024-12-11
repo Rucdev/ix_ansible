@@ -35,6 +35,9 @@ class Ospf_interfacesFacts(object):
         self._module = module
         self.argument_spec = Ospf_interfacesArgs.argument_spec
 
+    def get_ospf_interfaces_data(self, connection):
+        return connection.configure_get("show running-config interface")
+
     def populate_facts(self, connection, ansible_facts, data=None):
         """ Populate the facts for Ospf_interfaces network resource
 
@@ -49,19 +52,37 @@ class Ospf_interfacesFacts(object):
         objs = []
 
         if not data:
-            data = connection.get()
+            data = self.get_ospf_interfaces_data(connection)
 
         # parse native config using the Ospf_interfaces template
         ospf_interfaces_parser = Ospf_interfacesTemplate(lines=data.splitlines(), module=self._module)
-        objs = list(ospf_interfaces_parser.parse().values())
 
-        ansible_facts['ansible_network_resources'].pop('ospf_interfaces', None)
+        objs = ospf_interfaces_parser.parse()
+        final_objs = []
+
+        for key, value in objs.items():
+            temp_af = []
+            if value["address_family"].get("ip"):
+                temp_af.append(value["address_family"].get("ip"))
+            if value["address_family"].get("ipv6"):
+                temp_af.append(value["address_family"].get("ipv6"))
+            if temp_af:
+                value["address_family"] = temp_af
+            if value:
+                value = utils.remove_empties(value)
+                final_objs.append(value)
+
+        ansible_facts["ansible_network_resources"].pop("ospf_interfaces", None)
 
         params = utils.remove_empties(
-            ospf_interfaces_parser.validate_config(self.argument_spec, {"config": objs}, redact=True)
+            ospf_interfaces_parser.validate_config(
+                self.argument_spec,
+                {"config": final_objs},
+                redact=True,
+            ),
         )
 
-        facts['ospf_interfaces'] = params['config']
-        ansible_facts['ansible_network_resources'].update(facts)
+        facts["ospf_interfaces"] = params.get("config", [])
+        ansible_facts["ansible_network_resources"].update(facts)
 
         return ansible_facts

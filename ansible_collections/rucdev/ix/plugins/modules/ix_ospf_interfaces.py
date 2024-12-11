@@ -30,6 +30,8 @@ options:
     suboptions:
       name:
         description: Full name of the interface including subinterface.
+        type: str
+        required: true
       address_family:
         description: OSPF interfaces settings on the interfaces in addres-family context.
         type: list

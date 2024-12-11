@@ -47,8 +47,7 @@ class Ospf_interfaces(ResourceModule):
             resource="ospf_interfaces",
             tmplt=Ospf_interfacesTemplate(),
         )
-        self.parsers = [
-        ]
+        self.parsers = [ ]
 
     def execute_module(self):
         """ Execute the module
@@ -65,8 +64,8 @@ class Ospf_interfaces(ResourceModule):
         """ Generate configuration commands to send based on
             want, have and desired state.
         """
-        wantd = {entry['name']: entry for entry in self.want}
-        haved = {entry['name']: entry for entry in self.have}
+        wantd = self._list_to_dict(self.want, "want")
+        haved = self._list_to_dict(self.have)
 
         # if state is merged, merge want onto have and then compare
         if self.state == "merged":
@@ -86,12 +85,47 @@ class Ospf_interfaces(ResourceModule):
                     self._compare(want={}, have=have)
 
         for k, want in iteritems(wantd):
-            self._compare(want=want, have=haved.pop(k, {}))
+            self._compare(want=want, have=haved.pop(k, {}), interface=k)
 
-    def _compare(self, want, have):
+    def _compare(self, want, have, interface):
         """Leverages the base class `compare()` method and
            populates the list of commands to be run by comparing
            the `want` and `have` data with the `parsers` defined
            for the Ospf_interfaces network resource.
         """
-        self.compare(parsers=self.parsers, want=want, have=have)
+        begin = len(self.commands)
+        self._compare_afi(want=want, have=have)
+        if len(self.commands) != begin:
+            self.commands.insert(begin, self._tmplt.render({"name": interface}, "name", False))
+    
+    def _compare_afi(self, want, have):
+        parsers=[
+            "name",
+            "interface_type",
+            "retransmit_interval",
+            "transmit_delay",
+        ]
+        for afi in ("ipv4", "ipv6"):
+            wafis = want.pop(afi, {})
+            hafis = have.pop(afi, {})
+
+            self.compare(parsers=parsers, want=wafis, have=hafis)
+
+    def _list_to_dict(self, entry, attr_type=None):
+        if self.state == "deleted" and attr_type == "want":
+            del_list = {}
+            for intf in entry:
+                del_list[intf.get("name")] = {}
+            return del_list
+        
+        list_to_dict = {}
+        for intf in entry:
+            if intf.get("address_family"):
+                list_to_dict[intf.get("name")] = self.process_list_attr(intf)
+        return list_to_dict
+
+    def process_list_attr(self, add_fam):
+        item = {}
+        for ag in add_fam.get("address_family", []):
+            item[ag.get("afi")] = ag
+        return item
