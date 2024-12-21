@@ -188,6 +188,7 @@ class Ospf_interfacesTemplate(NetworkTemplate):
                 "{{ name }}": {
                     "address_family": {
                         "ip": {
+                            "afi": "ipv4",
                             "neighbor": [
                                 {
                                     "address": "{{ address }}",
@@ -232,6 +233,7 @@ class Ospf_interfacesTemplate(NetworkTemplate):
                 "{{ name }}": {
                     "address_family": {
                         "ip": {
+                            "afi": "ipv4",
                             "priority": "{{ priority }}"
                         }
                     }
@@ -271,6 +273,7 @@ class Ospf_interfacesTemplate(NetworkTemplate):
                 "{{ name }}": {
                     "address_family": {
                         "ip": {
+                            "afi": "ipv4",
                             "transmit_delay": "{{ transmit_delay }}"
                         }
                     }
