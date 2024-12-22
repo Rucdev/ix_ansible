@@ -35,6 +35,46 @@ class Ospfv3Facts(object):
         self._module = module
         self.argument_spec = Ospfv3Args.argument_spec
 
+    def get_ospfv3_data(self, connection):
+        return connection.configure_get("show running-config ospf")
+
+    def dict_to_list(self, ospf_data):
+        """Converts areas in each process to list
+        :param ospf_data: ospf data
+        :rtype: dictionary
+        :returns: facts_output
+        """
+
+        facts_output = {"processes": []}
+
+        for process in ospf_data.get("processes", []):
+            if "areas" in process:
+                process["areas"] = list(process["areas"].values())
+            facts_output["processes"].append(process)
+
+        return facts_output
+
+
+
+    def preprocess_lines(self, lines):
+        """ Filters input lines to extract only the relevant OSPFv3 configuration
+        :param lines: A list of configuration lines.
+
+        :rtypes: list
+        :returns: lines
+        """
+        get_line = False
+        filtered_lines = []
+
+        for line in lines:
+            if line.startswith("ipv6 router ospf"):
+                get_line = True
+            if get_line:
+                filtered_lines.append(line)
+            if line.startswith("!"):
+                get_line = False
+        return filtered_lines
+
     def populate_facts(self, connection, ansible_facts, data=None):
         """ Populate the facts for Ospfv3 network resource
 
@@ -46,21 +86,28 @@ class Ospfv3Facts(object):
         :returns: facts
         """
         facts = {}
-        objs = []
 
         if not data:
-            data = connection.get()
+            data = self.get_ospfv3_data(connection)
 
+        # pick up 
         # parse native config using the Ospfv3 template
-        ospfv3_parser = Ospfv3Template(lines=data.splitlines(), module=self._module)
-        objs = list(ospfv3_parser.parse().values())
+        ospfv3_parser = Ospfv3Template(lines=self.preprocess_lines(data.splitlines()), module=self._module)
+        ospfv3_parsed = ospfv3_parser.parse()
+
+        # Convert dict to list
+        ospfv3_parsed["processes"] = (
+            ospfv3_parsed["processes"].values() if "processes" in ospfv3_parsed else []
+        )
+
+        # converts areas, interfaces in each process to list
+        facts_output = self.dict_to_list(ospfv3_parsed)
 
         ansible_facts['ansible_network_resources'].pop('ospfv3', None)
 
         params = utils.remove_empties(
-            ospfv3_parser.validate_config(self.argument_spec, {"config": objs}, redact=True)
+            ospfv3_parser.validate_config(self.argument_spec, {"config": facts_output}, redact=True)
         )
-
         facts['ospfv3'] = params['config']
         ansible_facts['ansible_network_resources'].update(facts)
 

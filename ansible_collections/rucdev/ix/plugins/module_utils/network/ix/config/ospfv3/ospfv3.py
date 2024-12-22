@@ -48,6 +48,10 @@ class Ospfv3(ResourceModule):
             tmplt=Ospfv3Template(),
         )
         self.parsers = [
+            "distance",
+            "router_id",
+            "originate_default",
+            "timers",
         ]
 
     def execute_module(self):
@@ -65,8 +69,22 @@ class Ospfv3(ResourceModule):
         """ Generate configuration commands to send based on
             want, have and desired state.
         """
-        wantd = {entry['name']: entry for entry in self.want}
-        haved = {entry['name']: entry for entry in self.have}
+        wantd = dict()
+        haved = dict()
+
+        if self.want:
+            for entry in self.want.get("processes", []):
+                wantd.update({(entry["process_id"]): entry})
+        
+        if self.have:
+            for entry in self.have.get("processes", []):
+                haved.update({(entry["process_id"]): entry})
+
+        # turn all lists of dicts into dicts prior to merge
+        for each in wantd, haved:
+            if each:
+                self._list_to_dict(each)
+        # raise Exception(wantd)
 
         # if state is merged, merge want onto have and then compare
         if self.state == "merged":
@@ -85,6 +103,12 @@ class Ospfv3(ResourceModule):
                 if k not in wantd:
                     self._compare(want={}, have=have)
 
+        # delete processes first so we do run into "more than one" errors
+        if self.state in ["overridden", "deleted"]:
+            for k, have in iteritems(haved):
+                if k not in wantd:
+                    self.addcmd(have, "pid", True)
+
         for k, want in iteritems(wantd):
             self._compare(want=want, have=haved.pop(k, {}))
 
@@ -92,6 +116,75 @@ class Ospfv3(ResourceModule):
         """Leverages the base class `compare()` method and
            populates the list of commands to be run by comparing
            the `want` and `have` data with the `parsers` defined
-           for the Ospfv3 network resource.
+           for the Ospfv2 network resource.
         """
-        self.compare(parsers=self.parsers, want=want, have=have)
+        if want != have:
+            self.addcmd(want or have, "pid", False)
+            self.compare(parsers=self.parsers, want=want, have=have)
+            self._complex_compare(want=want, have=have)
+            self._areas_compare(want, have)
+    
+    def _complex_compare(self, want, have):
+        complex_parsers = ["network"]
+        for _parser in complex_parsers:
+            wdist = want.get(_parser, {})
+            hdist = have.get(_parser, {})
+            for key, wanting in iteritems(wdist):
+                haveing = hdist.pop(key, {})
+                if wanting != haveing:
+                    if haveing and self.state in ["overridden", "replaced"]:
+                        self.addcmd(haveing, _parser, negate=True)
+                    self.addcmd(wanting, _parser, False)
+            for key, haveing in iteritems(hdist):
+                self.addcmd(haveing, _parser, negate=True)
+
+    def _areas_compare(self, want, have):
+        wareas = want.get("areas", {})
+        hareas = have.get("areas", {})
+        # raise Exception(wareas)
+        for name, entry in iteritems(wareas):
+            self._area_compare(want=entry, have=hareas.pop(name, {}))
+        for name, entry in iteritems(hareas):
+            self._area_compare(want={}, have=entry)
+
+    def _area_compare(self, want, have):
+        parsers = [
+            "stub",
+            "default_cost",
+        ]
+        self.addcmd(want, "area_id", False)
+        bcmdlen = len(self.commands)
+        self.compare(parsers=parsers, want=want, have=have)
+        self._area_complex_compare(want, have, want.get("area_id"))
+        # acmdlen = len(self.commands)
+        # if bcmdlen == acmdlen:
+        #     self.commands = self.commands[:-1]
+
+
+
+    def _area_complex_compare(self, want, have, area_id):
+        area_complex_parsers = ["ranges"]
+        for _parser in area_complex_parsers:
+            wantr = want.get(_parser, {})
+            haver = have.get(_parser, {})
+            for key, wanting in iteritems(wantr):
+                haveing = have.pop(key, {})
+                haveing["area_id"] = area_id
+                wanting["area_id"] = area_id
+                if wanting != haveing:
+                    if haveing and self.state in ["overridden", "replaced"]:
+                        self.addcmd(haveing, _parser, negate=True)
+                    self.addcmd(wanting, _parser, False)
+            for key, haveing in iteritems(haver):
+                haveing["area_id"] = area_id
+                self.addcmd(haveing, _parser, negate=True)
+
+    def _list_to_dict(self, param):
+        for _pid, proc in param.items():
+            for area in proc.get("areas", []):
+                area["ranges"] = {entry["address"]: entry for entry in area.get("ranges", [])}
+            proc["areas"] = {entry["area_id"]: entry for entry in proc.get("areas", [])}
+
+            # list to dict for network
+            if proc.get("network"):
+                proc["network"] = {entry["address"]: entry for entry in proc["network"]}
