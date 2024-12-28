@@ -8,5 +8,5 @@
     collection_org: rucdev
     collection_name: ix
     ansible_connection: local
-    resource: ospfv3
-    docstring: ../ix_rm_model/ospfv3/ix_ospfv3.yaml
+    resource: ospfv2
+    docstring: ../ix_rm_model/ospfv2/ix_ospfv2.yaml

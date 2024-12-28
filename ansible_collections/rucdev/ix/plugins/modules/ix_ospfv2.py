@@ -85,6 +85,7 @@ options:
                   advertise:
                     description: Advertise this range (default)
                     type: bool
+                    default: false
               stub:
                 description:
                   - Settings for configuring the area as a stub
@@ -224,10 +225,11 @@ options:
               route_map:
                 description: Route-map reference name
                 type: str
-          passive_interface:
+          passive_interfaces:
             description:
               - Setting of configure the specified interface not to send or receive OSPF packets
-            type: str
+            type: list
+            elements: str
           rib:
             description:
               - Setting of rib

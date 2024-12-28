@@ -150,7 +150,7 @@ class Ospfv2Template(NetworkTemplate):
                 (\s(?P<area_id>\S+))
                 (\srange)
                 (\s(?P<address>\S+))
-                (\s(?P<advertise>advertise))?
+                (\s(?P<not_advertise>not-advertise))?
                 $""",
                 re.VERBOSE
             ),
@@ -164,7 +164,7 @@ class Ospfv2Template(NetworkTemplate):
                                 "ranges": [
                                     {
                                         "address": "{{ address }}",
-                                        "advertise": "{{ advertise is defined }}"
+                                        "advertise": "{{ False if not_advertise is defined else True }}"
                                     }
                                 ]
                             }
@@ -412,6 +412,27 @@ class Ospfv2Template(NetworkTemplate):
                     }
                 }
             }
+        },
+        {
+            "name": "passive_interfaces",
+            "getval": re.compile(
+                r"""
+                \s+passive-interface
+                (\s(?P<interface>\S+))?
+                $""",
+                re.VERBOSE
+            ),
+            "setval": "passive-interface {{ interface }}",
+            "result": {
+                "processes": {
+                    "{{ pid }}": {
+                        "passive_interfaces": [
+                            "{{ interface }}",
+                        ]
+                    }
+                }
+            }
+            
         },
         {
             "name": "rib",

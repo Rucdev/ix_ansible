@@ -54,6 +54,24 @@ class Ospfv2Facts(object):
 
         return facts_output
 
+    def preprocess_lines(self, lines):
+        """ Filters input lines to extract only the relevant OSPFv3 configuration
+        :param lines: A list of configuration lines.
+
+        :rtypes: list
+        :returns: lines
+        """
+        get_line = False
+        filtered_lines = []
+
+        for line in lines:
+            if line.startswith("ip router ospf"):
+                get_line = True
+            if get_line:
+                filtered_lines.append(line)
+            if line.startswith("!"):
+                get_line = False
+        return filtered_lines
 
     def populate_facts(self, connection, ansible_facts, data=None):
         """ Populate the facts for Ospfv2 network resource
@@ -71,7 +89,7 @@ class Ospfv2Facts(object):
             data = self.get_ospfv2_data(connection)
 
         # parse native config using the Ospfv2 template
-        ospfv2_parser = Ospfv2Template(lines=data.splitlines(), module=self._module)
+        ospfv2_parser = Ospfv2Template(lines=self.preprocess_lines(data.splitlines()), module=self._module)
         ospfv2_parsed = ospfv2_parser.parse()
 
         # Convert dict to list

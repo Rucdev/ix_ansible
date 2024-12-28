@@ -64,7 +64,10 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                                     "elements": "dict",
                                     "options": {
                                         "address": {"type": "str"},
-                                        "advertise": {"type": "bool", "default": True},
+                                        "advertise": {
+                                            "type": "bool",
+                                            "default": False,
+                                        },
                                     },
                                 },
                                 "stub": {
@@ -161,7 +164,7 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                                 "route_map": {"type": "str"},
                             },
                         },
-                        "passive_interface": {"type": "str"},
+                        "passive_interfaces": {"type": "list", "elements": "str"},
                         "rib": {
                             "type": "dict",
                             "options": {"max_entries": {"type": "int"}},

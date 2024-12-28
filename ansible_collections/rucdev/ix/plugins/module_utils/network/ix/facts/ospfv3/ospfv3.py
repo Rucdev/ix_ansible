@@ -54,8 +54,6 @@ class Ospfv3Facts(object):
 
         return facts_output
 
-
-
     def preprocess_lines(self, lines):
         """ Filters input lines to extract only the relevant OSPFv3 configuration
         :param lines: A list of configuration lines.

@@ -69,16 +69,17 @@ class Ospf_interfacesTemplate(NetworkTemplate):
             "name": "cost",
             "getval": re.compile(
                 r"""
-                \s+ip\sospf\scost\s(?P<cost>\S+)
+                \s+(?P<afi>ip|ipv6)
+                \sospf\scost\s(?P<cost>\S+)
                 $""",
                 re.VERBOSE
             ),
-            "setval": "ip ospf cost {{ cost }}",
+            "setval": "{{ 'ip' if afi == 'ipv4' else 'ipv6' }} ospf cost {{ cost }}",
             "result": {
                 "{{ name }}": {
                     "address_family": {
-                        "ip": {
-                            "afi": "ipv4",
+                        "{{ afi }}": {
+                            "afi": "{{ 'ipv4' if afi == 'ip' else 'ipv6' }}",
                             "cost": "{{ cost }}"
                         }
                     }
@@ -89,16 +90,17 @@ class Ospf_interfacesTemplate(NetworkTemplate):
             "name": "dead_interval",
             "getval": re.compile(
                 r"""
-                \s+ip\sospf\sdead-interval\s(?P<dead_interval>\S+)
+                \s+(?P<afi>ip|ipv6)
+                \sospf\sdead-interval\s(?P<dead_interval>\S+)
                 $""",
                 re.VERBOSE
             ),
-            "setval": "ip ospf dead-interval {{ dead_interval }}",
+            "setval": "{{ 'ip' if afi == 'ipv4' else 'ipv6' }} ospf dead-interval {{ dead_interval }}",
             "result":  {
                 "{{ name }}": {
                     "address_family": {
-                        "ip": {
-                            "afi": "ipv4",
+                        "{{ afi }}": {
+                            "afi": "{{ 'ipv4' if afi == 'ip' else 'ipv6' }}",
                             "dead_interval": "{{ dead_interval }}"
                         }
                     }
@@ -109,16 +111,17 @@ class Ospf_interfacesTemplate(NetworkTemplate):
             "name": "hello_interval",
             "getval": re.compile(
                 r"""
-                \s+ip\sospf\shello-interval\s(?P<hello_interval>\S+)
+                \s+(?P<afi>ip|ipv6)
+                \sospf\shello-interval\s(?P<hello_interval>\S+)
                 $""",
                 re.VERBOSE
             ),
-            "setval": "ip ospf hello-interval {{ hello_interval }}",
+            "setval": "{{ 'ip' if afi == 'ipv4' else 'ipv6' }} ospf hello-interval {{ hello_interval }}",
             "result": {
                 "{{ name }}": {
                     "address_family": {
-                        "ip": {
-                            "afi": "ipv4",
+                        "{{ afi }}": {
+                            "afi": "{{ 'ipv4' if afi == 'ip' else 'ipv6' }}",
                             "hello_interval": "{{ hello_interval }}"
                         }
                     }
@@ -174,21 +177,22 @@ class Ospf_interfacesTemplate(NetworkTemplate):
             "name": "neighbor",
             "getval": re.compile(
                 r"""
-                \s+ip\sospf\sneighbor
+                \s+(?P<afi>ip|ipv6)
+                \sospf\sneighbor
                 \s(?P<address>\S+)
                 (\spoll-interval\s(?P<interval>\S+))?
                 (\spriority\s(?P<priority>\S+))?
                 $""",
                 re.VERBOSE
             ),
-            "setval": "ip ospf neighbor {{ address }}"
+            "setval": "{{ 'ip' if afi == 'ipv4' else 'ipv6' }} ospf neighbor {{ address }}"
             "{{ (' poll-interval' + interval) if interval is defined else '' }}"
             "{{ (' priority' + priority) if priority is defined else '' }}",
             "result": {
                 "{{ name }}": {
                     "address_family": {
-                        "ip": {
-                            "afi": "ipv4",
+                        "{{ afi }}": {
+                            "afi": "{{ 'ipv4' if afi == 'ip' else 'ipv6' }}",
                             "neighbor": [
                                 {
                                     "address": "{{ address }}",
@@ -224,16 +228,17 @@ class Ospf_interfacesTemplate(NetworkTemplate):
             "name": "priority",
             "getval": re.compile(
                 r"""
-                \s+ip\sospf\spriority\s(?P<priority>\S+)
+                \s+(?P<afi>ip|ipv6)
+                \spriority\s(?P<priority>\S+)
                 $""",
                 re.VERBOSE
             ),
-            "setval": "ip ospf priority {{ priority }}",
+            "setval": "{{ 'ip' if afi == 'ipv4' else 'ipv6' }} ospf priority {{ priority }}",
             "result": {
                 "{{ name }}": {
                     "address_family": {
-                        "ip": {
-                            "afi": "ipv4",
+                        "{{ afi }}": {
+                            "afi": "{{ 'ipv4' if afi == 'ip' else 'ipv6' }}",
                             "priority": "{{ priority }}"
                         }
                     }
@@ -244,16 +249,18 @@ class Ospf_interfacesTemplate(NetworkTemplate):
             "name": "retransmit_interval",
             "getval": re.compile(
                 r"""
-                \s+ip\sospf\sretransmit-interval
+                \s+(?P<afi>ip|ipv6)
+                \sospf\sretransmit-interval
                 \s(?P<retransmit_interval>\S+)
                 $""",
                 re.VERBOSE
             ),
-            "setval": "ip ospf retransmit-interval {{ retransmit_interval }}",
+            "setval": "{{ 'ip' if afi == 'ipv4' else 'ipv6' }} ospf retransmit-interval {{ retransmit_interval }}",
             "result": {
                 "{{ name }}": {
                     "address_family": {
-                        "ip": {
+                        "{{ afi }}": {
+                            "afi": "{{ 'ipv4' if afi == 'ip' else 'ipv6' }}",
                             "retransmit_interval": "{{ retransmit_interval }}"
                         }
                     }
@@ -264,16 +271,17 @@ class Ospf_interfacesTemplate(NetworkTemplate):
             "name": "transmit_delay",
             "getval": re.compile(
                 r"""
-                \s+ip\sospf\stransmit-delay\s(?P<transmit_delay>\S+)
+                \s+(?P<afi>ip|ipv6)
+                \sospf\stransmit-delay\s(?P<transmit_delay>\S+)
                 $""",
                 re.VERBOSE
             ),
-            "setval": "ip ospf transmit-delay {{ transmit_delay }}",
+            "setval": "{{ 'ip' if afi == 'ipv4' else 'ipv6' }} ospf transmit-delay {{ transmit_delay }}",
             "result": {
                 "{{ name }}": {
                     "address_family": {
-                        "ip": {
-                            "afi": "ipv4",
+                        "{{ afi }}": {
+                            "afi": "{{ 'ipv4' if afi == 'ip' else 'ipv6' }}",
                             "transmit_delay": "{{ transmit_delay }}"
                         }
                     }

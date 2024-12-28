@@ -130,7 +130,7 @@ class Ospfv2(ResourceModule):
             self._areas_compare(want, have)
     
     def _complex_compare(self, want, have):
-        complex_parsers = ["network"]
+        complex_parsers = ["network", "passive_interfaces"]
         for _parser in complex_parsers:
             wdist = want.get(_parser, {})
             hdist = have.get(_parser, {})
@@ -174,7 +174,7 @@ class Ospfv2(ResourceModule):
             wantr = want.get(_parser, {})
             haver = have.get(_parser, {})
             for key, wanting in iteritems(wantr):
-                haveing = have.pop(key, {})
+                haveing = haver.pop(key, {})
                 haveing["area_id"] = area_id
                 wanting["area_id"] = area_id
                 if wanting != haveing:
@@ -195,3 +195,5 @@ class Ospfv2(ResourceModule):
             # list to dict for network
             if proc.get("network"):
                 proc["network"] = {entry["address"]: entry for entry in proc["network"]}
+            if proc.get("passive_interfaces"):
+                proc["passive_interfaces"] = {entry: {"interface": entry} for entry in proc["passive_interfaces"]}

@@ -103,7 +103,7 @@ class Ospfv3Template(NetworkTemplate):
                                 "ranges": [
                                     {
                                         "address": "{{ address }}",
-                                        "advertise": "{{ not(not_advertise is defined) }}"
+                                        "advertise": "{{ False if not_advertise is defined else True }}"
                                     }
                                 ]
                             }
@@ -218,6 +218,27 @@ class Ospfv3Template(NetworkTemplate):
                     }
                 }
             }
+        },
+        {
+            "name": "passive_interfaces",
+            "getval": re.compile(
+                r"""
+                \s+passive-interface
+                (\s(?P<interface>\S+))?
+                $""",
+                re.VERBOSE
+            ),
+            "setval": "passive-interface {{ interface }}",
+            "result": {
+                "processes": {
+                    "{{ pid }}": {
+                        "passive_interfaces": [
+                            "{{ interface }}",
+                        ]
+                    }
+                }
+            }
+            
         },
         {
             "name": "router_id",

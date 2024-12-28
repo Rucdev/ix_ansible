@@ -168,7 +168,7 @@ class Ospfv3(ResourceModule):
             wantr = want.get(_parser, {})
             haver = have.get(_parser, {})
             for key, wanting in iteritems(wantr):
-                haveing = have.pop(key, {})
+                haveing = haver.pop(key, {})
                 haveing["area_id"] = area_id
                 wanting["area_id"] = area_id
                 if wanting != haveing:
