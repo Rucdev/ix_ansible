@@ -27,11 +27,11 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.ospfv
     Ospfv2Args,
 )
 
-class Ospfv2Facts(object):
-    """ The ix ospfv2 facts class
-    """
 
-    def __init__(self, module, subspec='config', options='options'):
+class Ospfv2Facts(object):
+    """The ix ospfv2 facts class"""
+
+    def __init__(self, module, subspec="config", options="options"):
         self._module = module
         self.argument_spec = Ospfv2Args.argument_spec
 
@@ -55,7 +55,7 @@ class Ospfv2Facts(object):
         return facts_output
 
     def preprocess_lines(self, lines):
-        """ Filters input lines to extract only the relevant OSPFv3 configuration
+        """Filters input lines to extract only the relevant OSPFv3 configuration
         :param lines: A list of configuration lines.
 
         :rtypes: list
@@ -74,7 +74,7 @@ class Ospfv2Facts(object):
         return filtered_lines
 
     def populate_facts(self, connection, ansible_facts, data=None):
-        """ Populate the facts for Ospfv2 network resource
+        """Populate the facts for Ospfv2 network resource
 
         :param connection: the device connection
         :param ansible_facts: Facts dictionary
@@ -89,7 +89,9 @@ class Ospfv2Facts(object):
             data = self.get_ospfv2_data(connection)
 
         # parse native config using the Ospfv2 template
-        ospfv2_parser = Ospfv2Template(lines=self.preprocess_lines(data.splitlines()), module=self._module)
+        ospfv2_parser = Ospfv2Template(
+            lines=self.preprocess_lines(data.splitlines()), module=self._module
+        )
         ospfv2_parsed = ospfv2_parser.parse()
 
         # Convert dict to list
@@ -100,13 +102,15 @@ class Ospfv2Facts(object):
         # converts areas, interfaces in each process to list
         facts_output = self.dict_to_list(ospfv2_parsed)
 
-        ansible_facts['ansible_network_resources'].pop('ospfv2', None)
+        ansible_facts["ansible_network_resources"].pop("ospfv2", None)
 
         params = utils.remove_empties(
-            ospfv2_parser.validate_config(self.argument_spec, {"config": facts_output}, redact=True)
+            ospfv2_parser.validate_config(
+                self.argument_spec, {"config": facts_output}, redact=True
+            )
         )
 
-        facts['ospfv2'] = params['config']
-        ansible_facts['ansible_network_resources'].update(facts)
+        facts["ospfv2"] = params["config"]
+        ansible_facts["ansible_network_resources"].update(facts)
 
         return ansible_facts

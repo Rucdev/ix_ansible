@@ -19,9 +19,12 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.r
     NetworkTemplate,
 )
 
+
 class Ospf_interfacesTemplate(NetworkTemplate):
     def __init__(self, lines=None, module=None):
-        super(Ospf_interfacesTemplate, self).__init__(lines=lines, tmplt=self, module=module)
+        super(Ospf_interfacesTemplate, self).__init__(
+            lines=lines, tmplt=self, module=module
+        )
 
     # fmt: off
     PARSERS = [
@@ -49,8 +52,8 @@ class Ospf_interfacesTemplate(NetworkTemplate):
                 (\s(?P<isnull>null))?
                 $""", re.VERBOSE),
             "setval": "ip ospf authentication"
-                "{{ (' ' + message-digest) if authentication.message_digest is defined else '' }}"
-                "{{ (' ' + null) if authentication.null is defined else '' }}",
+            "{{ (' ' + message-digest) if authentication.message_digest is defined else '' }}"
+            "{{ (' ' + null) if authentication.null is defined else '' }}",
             "result": {
                 "{{ name }}": {
                     "address_family": {
@@ -96,7 +99,7 @@ class Ospf_interfacesTemplate(NetworkTemplate):
                 re.VERBOSE
             ),
             "setval": "{{ 'ip' if afi == 'ipv4' else 'ipv6' }} ospf dead-interval {{ dead_interval }}",
-            "result":  {
+            "result": {
                 "{{ name }}": {
                     "address_family": {
                         "{{ afi }}": {
@@ -174,30 +177,64 @@ class Ospf_interfacesTemplate(NetworkTemplate):
             }
         },
         {
-            "name": "neighbor",
+            "name": "neighbor_v2",
             "getval": re.compile(
                 r"""
-                \s+(?P<afi>ip|ipv6)
-                \sospf\sneighbor
+                \s+ip\sospf\sneighbor
+                \s(?P<router_id>\S+)
+                (\spoll-interval\s(?P<interval>\S+))?
+                (\spriority\s(?P<priority>\S+))?
+                $""",
+                re.VERBOSE
+            ),
+            "setval": "ip ospf neighbor {{ router_id }}"
+            "{{ (' poll-interval' + interval) if interval is defined else '' }}"
+            "{{ (' priority' + priority) if priority is defined else '' }}",
+            "result": {
+                "{{ name }}": {
+                    "address_family": {
+                        "ip": {
+                            "afi": "ipv4",
+                            "neighbor_v2": [
+                                {
+                                    "interval": "{{ interval }}",
+                                    "priority": "{{ priority }}",
+                                    "router_id": "{{ router_id }}",
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "neighbor_v3",
+            "getval": re.compile(
+                r"""
+                \s+ipv6\sospf\sneighbor
+                \s(?P<process_id>\S+)
+                \s(?P<router_id>\S+)
                 \s(?P<address>\S+)
                 (\spoll-interval\s(?P<interval>\S+))?
                 (\spriority\s(?P<priority>\S+))?
                 $""",
                 re.VERBOSE
             ),
-            "setval": "{{ 'ip' if afi == 'ipv4' else 'ipv6' }} ospf neighbor {{ address }}"
+            "setval": "ipv6 ospf neighbor {{ process_id }} {{ router_id }} {{ address }}"
             "{{ (' poll-interval' + interval) if interval is defined else '' }}"
             "{{ (' priority' + priority) if priority is defined else '' }}",
             "result": {
                 "{{ name }}": {
                     "address_family": {
-                        "{{ afi }}": {
-                            "afi": "{{ 'ipv4' if afi == 'ip' else 'ipv6' }}",
-                            "neighbor": [
+                        "ipv6": {
+                            "afi": "ipv6",
+                            "neighbor_v3": [
                                 {
                                     "address": "{{ address }}",
                                     "interval": "{{ interval }}",
-                                    "priority": "{{ priority }}"
+                                    "priority": "{{ priority }}",
+                                    "process_id": "{{ process_id }}",
+                                    "router_id": "{{ router_id }}",
                                 }
                             ]
                         }

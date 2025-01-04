@@ -19,6 +19,7 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.r
     NetworkTemplate,
 )
 
+
 class Ospfv3Template(NetworkTemplate):
     def __init__(self, lines=None, module=None):
         super(Ospfv3Template, self).__init__(lines=lines, tmplt=self, module=module)
@@ -33,7 +34,7 @@ class Ospfv3Template(NetworkTemplate):
                 $""", re.VERBOSE),
             "setval": "ipv6 router ospf {{ process_id }}",
             "result": {
-                "processes":{
+                "processes": {
                     "{{ pid }}": {"process_id": "{{ pid | int }}"}
                 }
             },
@@ -48,7 +49,7 @@ class Ospfv3Template(NetworkTemplate):
                 $""", re.VERBOSE),
             "setval": "area {{ area_id }}",
             "result": {
-                "processes":{
+                "processes": {
                     "{{ pid }}": {
                         "areas": {
                             "{{ area_id }}": {
@@ -69,7 +70,7 @@ class Ospfv3Template(NetworkTemplate):
                 $""", re.VERBOSE),
             "setval": "area {{ area_id }} default-cost {{ default_cost }}",
             "result": {
-                "processes":{
+                "processes": {
                     "{{ pid }}": {
                         "areas": {
                             "{{ area_id }}": {
@@ -155,16 +156,16 @@ class Ospfv3Template(NetworkTemplate):
             "{{ ' inter-area ' + distance.inter_area|string if distance.inter_area is defined }}"
             "{{ ' intra-area ' + distance.intra_area|string if distance.intra_area is defined }}",
             "result": {
-                "processes":{
+                "processes": {
                     "{{ pid }}": {
-                            "distance": {
-                                "external": "{{ external }}",
-                                "inter_area": "{{ inter_area }}",
-                                "intra_area": "{{ intra_area }}",
-                            }
-                        },
+                        "distance": {
+                            "external": "{{ external }}",
+                            "inter_area": "{{ inter_area }}",
+                            "intra_area": "{{ intra_area }}",
+                        }
                     },
                 },
+            },
         },
         {
             "name": "network",
@@ -178,7 +179,7 @@ class Ospfv3Template(NetworkTemplate):
             ),
             "setval": "network {{ address }} area {{ area }}",
             "result": {
-                "processes":{
+                "processes": {
                     "{{ pid }}": {
                         "network": [
                             {
@@ -207,13 +208,13 @@ class Ospfv3Template(NetworkTemplate):
             " metric-type {{ originate_default.metric_type }}"
             " route-map {{ originate_default.route_map }}",
             "result": {
-                "processes":{
+                "processes": {
                     "{{ pid }}": {
                         "originate_default": {
-                                "always": "{{ True if always is defined }}",
-                                "metric": "{{ metric }}",
-                                "metric_type": "{{ metric_type }}",
-                                "route_map": "{{ route_map }}",
+                            "always": "{{ True if always is defined }}",
+                            "metric": "{{ metric }}",
+                            "metric_type": "{{ metric_type }}",
+                            "route_map": "{{ route_map }}",
                         }
                     }
                 }
@@ -238,7 +239,6 @@ class Ospfv3Template(NetworkTemplate):
                     }
                 }
             }
-            
         },
         {
             "name": "router_id",
@@ -250,8 +250,8 @@ class Ospfv3Template(NetworkTemplate):
                 re.VERBOSE
             ),
             "setval": "router-id {{ router_id }}",
-            "result":{
-                "processes":{
+            "result": {
+                "processes": {
                     "{{ pid }}": {
                         "router_id": "{{ router_id }}"
                     }
@@ -271,8 +271,8 @@ class Ospfv3Template(NetworkTemplate):
             "setval": "timers"
             "{{ ' delay ' + timers.delay|string if timers.delay is defined else '' }}"
             "{{ ' hold ' + timers.hold|string if timers.hold is defined else '' }}",
-            "result":{
-                "processes":{
+            "result": {
+                "processes": {
                     "{{ pid }}": {
                         "timers": {
                             "delay": "{{ delay }}",

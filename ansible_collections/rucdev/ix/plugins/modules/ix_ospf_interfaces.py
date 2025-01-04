@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Copyright 2024 Red Hat
+# Copyright 2025 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -71,10 +71,30 @@ options:
           mtu_ignore:
             description: Ignore MTU mismatch
             type: bool
-          neighbor:
+          neighbor_v2:
             description: 
               - Register adjacent routers on the NBMA(Non-Broadcast Multiple Access) interface.
               - Unicast transmission is performed only when the interface type is NBMA.
+              - Valid only when afi = ipv4.
+            type: list
+            elements: dict
+            suboptions:
+              interval:
+                description: The polling interval when adjacent router is down
+                type: int
+                default: 120
+              priority:
+                description: Neighboring router priority
+                type: int
+                default: 1
+              router_id:
+                description: Neighbor router ID
+                type: str
+          neighbor_v3:
+            description: 
+              - Register adjacent routers on the NBMA(Non-Broadcast Multiple Access) interface.
+              - Unicast transmission is performed only when the interface type is NBMA.
+              - Valid only when afi = ipv6.
             type: list
             elements: dict
             suboptions:
@@ -89,6 +109,12 @@ options:
                 description: Neighboring router priority
                 type: int
                 default: 1
+              process_id:
+                description: Process ID
+                type: int
+              router_id:
+                description: Neighbor router ID
+                type: str
           interface_type:
             description: Configure type of the interface
             type: str

@@ -13,5 +13,5 @@ dependencies = [
 
 [tool.uv]
 dev-dependencies = [
-    "black >= 23.7.0"
+    "black>=23.7.0",
 ]

@@ -47,10 +47,10 @@ class Ospf_interfaces(ResourceModule):
             resource="ospf_interfaces",
             tmplt=Ospf_interfacesTemplate(),
         )
-        self.parsers = [ ]
+        self.parsers = []
 
     def execute_module(self):
-        """ Execute the module
+        """Execute the module
 
         :rtype: A dictionary
         :returns: The result from module execution
@@ -61,8 +61,8 @@ class Ospf_interfaces(ResourceModule):
         return self.result
 
     def generate_commands(self):
-        """ Generate configuration commands to send based on
-            want, have and desired state.
+        """Generate configuration commands to send based on
+        want, have and desired state.
         """
         wantd = self._list_to_dict(self.want, "want")
         haved = self._list_to_dict(self.have)
@@ -73,37 +73,39 @@ class Ospf_interfaces(ResourceModule):
 
         # if state is deleted, empty out wantd and set haved to wantd
         if self.state == "deleted":
-            haved = {
-                k: v for k, v in iteritems(haved) if k in wantd or not wantd
-            }
+            haved = {k: v for k, v in iteritems(haved) if k in wantd or not wantd}
             wantd = {}
 
         # remove superfluous config for overridden and deleted
         if self.state in ["overridden", "deleted"]:
             for k, have in iteritems(haved):
                 if k not in wantd:
-                    self._compare(want={}, have=have)
+                    self._compare(want={}, have=have, interface=k)
 
         for k, want in iteritems(wantd):
             self._compare(want=want, have=haved.pop(k, {}), interface=k)
 
     def _compare(self, want, have, interface):
         """Leverages the base class `compare()` method and
-           populates the list of commands to be run by comparing
-           the `want` and `have` data with the `parsers` defined
-           for the Ospf_interfaces network resource.
+        populates the list of commands to be run by comparing
+        the `want` and `have` data with the `parsers` defined
+        for the Ospf_interfaces network resource.
         """
         begin = len(self.commands)
         self._compare_afi(want=want, have=have)
         if len(self.commands) != begin:
-            self.commands.insert(begin, self._tmplt.render({"name": interface}, "name", False))
-    
+            self.commands.insert(
+                begin, self._tmplt.render({"name": interface}, "name", False)
+            )
+
     def _compare_afi(self, want, have):
-        parsers=[
+        parsers = [
             "name",
             "interface_type",
             "retransmit_interval",
             "transmit_delay",
+            "neighbor_v2",
+            "neighbor_v3",
         ]
         for afi in ("ipv4", "ipv6"):
             wafis = want.pop(afi, {})
@@ -117,7 +119,7 @@ class Ospf_interfaces(ResourceModule):
             for intf in entry:
                 del_list[intf.get("name")] = {}
             return del_list
-        
+
         list_to_dict = {}
         for intf in entry:
             if intf.get("address_family"):

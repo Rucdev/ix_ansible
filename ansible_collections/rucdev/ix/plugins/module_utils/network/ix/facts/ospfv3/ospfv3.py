@@ -27,11 +27,11 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.ospfv
     Ospfv3Args,
 )
 
-class Ospfv3Facts(object):
-    """ The ix ospfv3 facts class
-    """
 
-    def __init__(self, module, subspec='config', options='options'):
+class Ospfv3Facts(object):
+    """The ix ospfv3 facts class"""
+
+    def __init__(self, module, subspec="config", options="options"):
         self._module = module
         self.argument_spec = Ospfv3Args.argument_spec
 
@@ -55,7 +55,7 @@ class Ospfv3Facts(object):
         return facts_output
 
     def preprocess_lines(self, lines):
-        """ Filters input lines to extract only the relevant OSPFv3 configuration
+        """Filters input lines to extract only the relevant OSPFv3 configuration
         :param lines: A list of configuration lines.
 
         :rtypes: list
@@ -74,7 +74,7 @@ class Ospfv3Facts(object):
         return filtered_lines
 
     def populate_facts(self, connection, ansible_facts, data=None):
-        """ Populate the facts for Ospfv3 network resource
+        """Populate the facts for Ospfv3 network resource
 
         :param connection: the device connection
         :param ansible_facts: Facts dictionary
@@ -88,9 +88,11 @@ class Ospfv3Facts(object):
         if not data:
             data = self.get_ospfv3_data(connection)
 
-        # pick up 
+        # pick up
         # parse native config using the Ospfv3 template
-        ospfv3_parser = Ospfv3Template(lines=self.preprocess_lines(data.splitlines()), module=self._module)
+        ospfv3_parser = Ospfv3Template(
+            lines=self.preprocess_lines(data.splitlines()), module=self._module
+        )
         ospfv3_parsed = ospfv3_parser.parse()
 
         # Convert dict to list
@@ -101,12 +103,14 @@ class Ospfv3Facts(object):
         # converts areas, interfaces in each process to list
         facts_output = self.dict_to_list(ospfv3_parsed)
 
-        ansible_facts['ansible_network_resources'].pop('ospfv3', None)
+        ansible_facts["ansible_network_resources"].pop("ospfv3", None)
 
         params = utils.remove_empties(
-            ospfv3_parser.validate_config(self.argument_spec, {"config": facts_output}, redact=True)
+            ospfv3_parser.validate_config(
+                self.argument_spec, {"config": facts_output}, redact=True
+            )
         )
-        facts['ospfv3'] = params['config']
-        ansible_facts['ansible_network_resources'].update(facts)
+        facts["ospfv3"] = params["config"]
+        ansible_facts["ansible_network_resources"].update(facts)
 
         return ansible_facts

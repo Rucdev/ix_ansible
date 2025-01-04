@@ -62,7 +62,7 @@ class Ospfv2Template(NetworkTemplate):
                 $""", re.VERBOSE),
             "setval": "ip router ospf {{ process_id }}",
             "result": {
-                "processes":{
+                "processes": {
                     "{{ pid }}": {"process_id": "{{ pid | int }}"}
                 }
             },
@@ -77,7 +77,7 @@ class Ospfv2Template(NetworkTemplate):
                 $""", re.VERBOSE),
             "setval": "area {{ area_id }}",
             "result": {
-                "processes":{
+                "processes": {
                     "{{ pid }}": {
                         "areas": {
                             "{{ area_id }}": {
@@ -98,7 +98,7 @@ class Ospfv2Template(NetworkTemplate):
                 $""", re.VERBOSE),
             "setval": "area {{ area_id }} default-cost {{ default_cost }}",
             "result": {
-                "processes":{
+                "processes": {
                     "{{ pid }}": {
                         "areas": {
                             "{{ area_id }}": {
@@ -111,7 +111,7 @@ class Ospfv2Template(NetworkTemplate):
             },
         },
         {
-            "name":"nssa",
+            "name": "nssa",
             "getval": re.compile(
                 r"""
                 \s+area\s(?P<area_id>\S+)
@@ -125,7 +125,7 @@ class Ospfv2Template(NetworkTemplate):
                 re.VERBOSE,
             ),
             "result": {
-                "processes":{
+                "processes": {
                     "{{ pid }}": {
                         "areas": {
                             "{{ area_id }}": {
@@ -255,7 +255,7 @@ class Ospfv2Template(NetworkTemplate):
                 \s+compatible(\s(?P<rfc1583>rfc1583))
                 $""",
                 re.VERBOSE
-                ),
+            ),
             "setval": "compatible {{ 'rfc1583' if rfc1583 }}",
             "result": {
                 "processes": {
@@ -275,12 +275,12 @@ class Ospfv2Template(NetworkTemplate):
                 $""", re.VERBOSE),
             "setval": "default-metric {{ default_metric }}",
             "result": {
-                "processes":{
+                "processes": {
                     "{{ pid }}": {
-                            "default_metric": "{{ metric }}"
-                        },
+                        "default_metric": "{{ metric }}"
                     },
                 },
+            },
         },
         {
             "name": "distance",
@@ -298,17 +298,17 @@ class Ospfv2Template(NetworkTemplate):
             "{{ ' intra-area ' + distance.intra_area|string if distance.intra_area is defined }}"
             "{{ ' nssa-external ' + distance.nssa_external|string if distance.nssa_external is defined }}",
             "result": {
-                "processes":{
+                "processes": {
                     "{{ pid }}": {
-                            "distance": {
-                                "external": "{{ external }}",
-                                "inter_area": "{{ inter_area }}",
-                                "intra_area": "{{ intra_area }}",
-                                "nssa_external": "{{ nssa_external }}",
-                            }
-                        },
+                        "distance": {
+                            "external": "{{ external }}",
+                            "inter_area": "{{ inter_area }}",
+                            "intra_area": "{{ intra_area }}",
+                            "nssa_external": "{{ nssa_external }}",
+                        }
                     },
                 },
+            },
         },
         {
             "name": "distribute_list",
@@ -324,7 +324,7 @@ class Ospfv2Template(NetworkTemplate):
             "{{ ' prefix ' + distribute_list.prefix|string if distribute_list.prefix is defined else '' }}"
             "{{ ' route-map ' + distribute_list.route_map|string if distribute_list.route_map is defined else '' }}",
             "result": {
-                "processes":{
+                "processes": {
                     "{{ pid }}": {
                         "distribute_list": {
                             "prefix": "{{ prefix_list}}",
@@ -346,7 +346,7 @@ class Ospfv2Template(NetworkTemplate):
             ),
             "setval": "network {{ address }} area {{ area }}",
             "result": {
-                "processes":{
+                "processes": {
                     "{{ pid }}": {
                         "network": [
                             {
@@ -371,7 +371,7 @@ class Ospfv2Template(NetworkTemplate):
             ),
             "setval": "nssa-range {{ range }}{{ ' not-advertise' if not_advertise }}{{ ' ' + tag if tag is defined}}",
             "result": {
-                "processes":{
+                "processes": {
                     "{{ pid }}": {
                         "nssa_range": [
                             {
@@ -401,13 +401,13 @@ class Ospfv2Template(NetworkTemplate):
             " metric-type {{ originate_default.metric_type }}"
             " route-map {{ originate_default.route_map }}",
             "result": {
-                "processes":{
+                "processes": {
                     "{{ pid }}": {
                         "originate_default": {
-                                "always": "{{ True if always is defined }}",
-                                "metric": "{{ metric }}",
-                                "metric_type": "{{ metric_type }}",
-                                "route_map": "{{ route_map }}",
+                            "always": "{{ True if always is defined }}",
+                            "metric": "{{ metric }}",
+                            "metric_type": "{{ metric_type }}",
+                            "route_map": "{{ route_map }}",
                         }
                     }
                 }
@@ -432,7 +432,6 @@ class Ospfv2Template(NetworkTemplate):
                     }
                 }
             }
-            
         },
         {
             "name": "rib",
@@ -444,8 +443,8 @@ class Ospfv2Template(NetworkTemplate):
                 re.VERBOSE
             ),
             "setval": "rib max-entries {{ rib.max_entries }}",
-            "result":{
-                "processes":{
+            "result": {
+                "processes": {
                     "{{ pid }}": {
                         "rib": {
                             "max_entries": "{{ max_entries }}",
@@ -464,8 +463,8 @@ class Ospfv2Template(NetworkTemplate):
                 re.VERBOSE
             ),
             "setval": "router-id {{ router_id }}",
-            "result":{
-                "processes":{
+            "result": {
+                "processes": {
                     "{{ pid }}": {
                         "router_id": "{{ router_id }}"
                     }
@@ -485,8 +484,8 @@ class Ospfv2Template(NetworkTemplate):
             "setval": "timers"
             "{{ ' delay ' + timers.delay|string if timers.delay is defined else '' }}"
             "{{ ' hold ' + timers.hold|string if timers.hold is defined else '' }}",
-            "result":{
-                "processes":{
+            "result": {
+                "processes": {
                     "{{ pid }}": {
                         "timers": {
                             "delay": "{{ delay }}",

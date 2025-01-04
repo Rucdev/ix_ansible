@@ -55,7 +55,7 @@ class Ospfv3(ResourceModule):
         ]
 
     def execute_module(self):
-        """ Execute the module
+        """Execute the module
 
         :rtype: A dictionary
         :returns: The result from module execution
@@ -66,8 +66,8 @@ class Ospfv3(ResourceModule):
         return self.result
 
     def generate_commands(self):
-        """ Generate configuration commands to send based on
-            want, have and desired state.
+        """Generate configuration commands to send based on
+        want, have and desired state.
         """
         wantd = dict()
         haved = dict()
@@ -75,7 +75,7 @@ class Ospfv3(ResourceModule):
         if self.want:
             for entry in self.want.get("processes", []):
                 wantd.update({(entry["process_id"]): entry})
-        
+
         if self.have:
             for entry in self.have.get("processes", []):
                 haved.update({(entry["process_id"]): entry})
@@ -92,9 +92,7 @@ class Ospfv3(ResourceModule):
 
         # if state is deleted, empty out wantd and set haved to wantd
         if self.state == "deleted":
-            haved = {
-                k: v for k, v in iteritems(haved) if k in wantd or not wantd
-            }
+            haved = {k: v for k, v in iteritems(haved) if k in wantd or not wantd}
             wantd = {}
 
         # remove superfluous config for overridden and deleted
@@ -114,16 +112,16 @@ class Ospfv3(ResourceModule):
 
     def _compare(self, want, have):
         """Leverages the base class `compare()` method and
-           populates the list of commands to be run by comparing
-           the `want` and `have` data with the `parsers` defined
-           for the Ospfv2 network resource.
+        populates the list of commands to be run by comparing
+        the `want` and `have` data with the `parsers` defined
+        for the Ospfv2 network resource.
         """
         if want != have:
             self.addcmd(want or have, "pid", False)
             self.compare(parsers=self.parsers, want=want, have=have)
             self._complex_compare(want=want, have=have)
             self._areas_compare(want, have)
-    
+
     def _complex_compare(self, want, have):
         complex_parsers = ["network"]
         for _parser in complex_parsers:
@@ -141,7 +139,6 @@ class Ospfv3(ResourceModule):
     def _areas_compare(self, want, have):
         wareas = want.get("areas", {})
         hareas = have.get("areas", {})
-        # raise Exception(wareas)
         for name, entry in iteritems(wareas):
             self._area_compare(want=entry, have=hareas.pop(name, {}))
         for name, entry in iteritems(hareas):
@@ -156,11 +153,6 @@ class Ospfv3(ResourceModule):
         bcmdlen = len(self.commands)
         self.compare(parsers=parsers, want=want, have=have)
         self._area_complex_compare(want, have, want.get("area_id"))
-        # acmdlen = len(self.commands)
-        # if bcmdlen == acmdlen:
-        #     self.commands = self.commands[:-1]
-
-
 
     def _area_complex_compare(self, want, have, area_id):
         area_complex_parsers = ["ranges"]
@@ -182,7 +174,9 @@ class Ospfv3(ResourceModule):
     def _list_to_dict(self, param):
         for _pid, proc in param.items():
             for area in proc.get("areas", []):
-                area["ranges"] = {entry["address"]: entry for entry in area.get("ranges", [])}
+                area["ranges"] = {
+                    entry["address"]: entry for entry in area.get("ranges", [])
+                }
             proc["areas"] = {entry["area_id"]: entry for entry in proc.get("areas", [])}
 
             # list to dict for network

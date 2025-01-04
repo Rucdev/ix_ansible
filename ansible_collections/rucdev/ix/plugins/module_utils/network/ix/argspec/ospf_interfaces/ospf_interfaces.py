@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2024 Red Hat
+# Copyright 2025 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -41,7 +41,7 @@ class Ospf_interfacesArgs(object):  # pylint: disable=R0903
                     "type": "list",
                     "elements": "dict",
                     "options": {
-                        "afi": {"type": "str", "choices": ["ipv4", "ipv6"], "required": True},
+                        "afi": {"type": "str", "choices": ["ipv4", "ipv6"]},
                         "authentication": {"type": "str"},
                         "authentication_key": {"type": "str"},
                         "cost": {"type": "int"},
@@ -55,13 +55,24 @@ class Ospf_interfacesArgs(object):  # pylint: disable=R0903
                             },
                         },
                         "mtu_ignore": {"type": "bool"},
-                        "neighbor": {
+                        "neighbor_v2": {
+                            "type": "list",
+                            "elements": "dict",
+                            "options": {
+                                "interval": {"type": "int", "default": 120},
+                                "priority": {"type": "int", "default": 1},
+                                "router_id": {"type": "str"},
+                            },
+                        },
+                        "neighbor_v3": {
                             "type": "list",
                             "elements": "dict",
                             "options": {
                                 "address": {"type": "str"},
                                 "interval": {"type": "int", "default": 120},
                                 "priority": {"type": "int", "default": 1},
+                                "process_id": {"type": "int"},
+                                "router_id": {"type": "str"},
                             },
                         },
                         "interface_type": {
