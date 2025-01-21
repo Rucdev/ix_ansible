@@ -39,4 +39,20 @@ class TestIxOspfv2Module(TestIxModule):
             ip router
             """,
         )
+    def test_ix_ospfv2_merged_independent(self):
+        """"""
+    def test_ix_ospfv2_replaced(self):
+        """"""
+    def test_ix_ospfv2_replaced_independent(self):
+        """"""
+    def test_ix_ospfv2_overriden(self):
+        """"""
+    def test_ix_ospfv2_overriden_independent(self):
+        """"""
+    def test_ix_ospfv2_deleted(self):
+        """"""
+    def test_ix_ospfv2_parsed(self):
+        """"""
+    def test_ix_ospfv2_rendered(self):
+        """"""
 
