@@ -130,5 +130,5 @@ class Static_routesFacts(object):
         )
         facts['static_routes'] = params['config']
         ansible_facts['ansible_network_resources'].update(facts)
-        
+
         return ansible_facts

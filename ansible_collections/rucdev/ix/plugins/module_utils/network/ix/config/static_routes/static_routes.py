@@ -126,7 +126,6 @@ class Static_routes(ResourceModule):
             # raise Exception(self.addcmd({afi: w_srs}, afi, False))
             # raise Exception(self._tmplt.render({afi: w_srs}, afi, False))
             self.compare(parsers=afi, want={afi: w_srs}, have={afi: have_srs})
-        # raise Exception(self.commands)
 
         # remove remaining items in have for replaced state
         for name, h_srs in s_have.items():
