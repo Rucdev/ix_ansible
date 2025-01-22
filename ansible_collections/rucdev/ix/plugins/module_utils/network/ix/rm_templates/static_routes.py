@@ -70,7 +70,7 @@ class Static_routesTemplate(NetworkTemplate):
                 ^ipv6\sroute
                 (\svrf\s(?P<vrf>\S+))?
                 (\s(?P<dest>\S+))?
-                (\s(?P<forward_router_address>(?!dhcp|tag)(?!(?<!\d\.)\b\d+\b(?!\.\d))(\d{1,3}(\.\d{1,3}){3}|\S+)))?
+                (\s(?P<forward_router_address>\S+))?
                 (\s(?P<interface>(Tunnel|Loopback|Null|Dialer|BVI|USB-Serial|BRI|GigaEthernet)\S+))?
                 (\s(?P<distance_metric>\d+))?
                 (\stag\s(?P<tag>\d+))?
