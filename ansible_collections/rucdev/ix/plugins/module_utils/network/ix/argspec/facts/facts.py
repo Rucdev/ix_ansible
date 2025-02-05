@@ -21,7 +21,8 @@ class FactsArgs(object):  # pylint: disable=R0903
         "l3_interfaces",
         "ospf_interfaces",
         "ospfv2",
-        "ospfv3"
+        "ospfv3",
+        "static_routes"
     ]
 
     argument_spec = {
