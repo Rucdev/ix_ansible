@@ -211,11 +211,11 @@ EXAMPLES = """
   rucdev.ix.ix_config:
     lines: hostname {{ inventory_hostname }}
 
-- name: Configure GigabitEthernet interface
+- name: Configure GigaEthernet interface
   rucdev.ix.ix_config:
     lines: ip address 192.168.1.1/24
     parents:
-      - interface GigabitEthernet0.0
+      - interface GigaEthernet0.0
 
 """
 
