@@ -1,1 +1,5 @@
-requires_ansible: ">=2.13.5"
+requires_ansible: ">=2.15.0"
+plugin_routing:
+  modules:
+    ix_config:
+      redirect: rucdev.ix.ix_config

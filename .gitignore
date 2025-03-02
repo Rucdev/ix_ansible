@@ -7,3 +7,5 @@ debugs/
 uv.lock
 
 collectons/
+
+ansible_collections/ansible/

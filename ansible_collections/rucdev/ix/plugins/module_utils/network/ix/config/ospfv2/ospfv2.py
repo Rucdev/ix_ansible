@@ -122,8 +122,8 @@ class Ospfv2(ResourceModule):
         if want != have:
             self.addcmd(want or have, "pid", False)
             self.compare(parsers=self.parsers, want=want, have=have)
-            self._complex_compare(want=want, have=have)
             self._areas_compare(want, have)
+            self._complex_compare(want=want, have=have)
 
     def _complex_compare(self, want, have):
         complex_parsers = ["network", "passive_interfaces"]
@@ -154,13 +154,10 @@ class Ospfv2(ResourceModule):
             "nssa",
             "default_cost",
         ]
-        self.addcmd(want, "area_id", False)
-        bcmdlen = len(self.commands)
+        if self.state in ["merged", "overridden", "replaced"]:
+            self.addcmd(want, "area_id", False)
         self.compare(parsers=parsers, want=want, have=have)
         self._area_complex_compare(want, have, want.get("area_id"))
-        # acmdlen = len(self.commands)
-        # if bcmdlen == acmdlen:
-        #     self.commands = self.commands[:-1]
 
     def _area_complex_compare(self, want, have, area_id):
         area_complex_parsers = ["ranges", "virtual_links"]
@@ -171,12 +168,13 @@ class Ospfv2(ResourceModule):
                 haveing = haver.pop(key, {})
                 haveing["area_id"] = area_id
                 wanting["area_id"] = area_id
+                # raise Exception(wanting ,haveing)
                 if wanting != haveing:
                     if haveing and self.state in ["overridden", "replaced"]:
                         self.addcmd(haveing, _parser, negate=True)
                     self.addcmd(wanting, _parser, False)
             for key, haveing in iteritems(haver):
-                haveing["area_id"] = area_id
+                # haveing["area_id"] = area_id
                 self.addcmd(haveing, _parser, negate=True)
 
     def _list_to_dict(self, param):

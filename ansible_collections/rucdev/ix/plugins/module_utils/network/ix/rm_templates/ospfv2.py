@@ -24,16 +24,6 @@ def _tmplt_ospf_virtual_link(config_data):
     # if "virtual_links" in config_data:
     virtual_links_data = config_data
     command = "area {area_id} virtual-link {address}".format(**virtual_links_data)
-    if "authentication" in config_data:
-        authentication_data = virtual_links_data["authentication"]
-        if "text" == authentication_data.get("auth_type"):
-            command += " authentication authentication-key {text_password}".format(
-                **authentication_data
-            )
-        elif "message-digest" == authentication_data.get("auth_type"):
-            command += " authentication message-digest message-digest-key {message_digest_key_id} {message_digest_password}".format(
-                **authentication_data
-            )
     if "dead_interval" in virtual_links_data:
         command += " dead-interval {dead_interval}".format(**virtual_links_data)
     if "hello_interval" in virtual_links_data:
@@ -44,6 +34,16 @@ def _tmplt_ospf_virtual_link(config_data):
         )
     if "transmit_delay" in virtual_links_data:
         command += " transmit_delay {transmit_delay}".format(**virtual_links_data)
+    if "authentication" in config_data:
+        authentication_data = virtual_links_data["authentication"]
+        if "text" == authentication_data.get("auth_type"):
+            command += " authentication authentication-key {text_password}".format(
+                **authentication_data
+            )
+        elif "message-digest" == authentication_data.get("auth_type"):
+            command += " authentication message-digest message-digest-key {message_digest_key_id} {message_digest_password}".format(
+                **authentication_data
+            )
     return command
 
 
@@ -124,6 +124,10 @@ class Ospfv2Template(NetworkTemplate):
                 $""",
                 re.VERBOSE,
             ),
+            "setval": "area {{ area_id }} nssa {{ 'no-summary' if no_summary is defined }}"
+            "{{ ' stability-interval ' + stability_interval if stability_interval is defined }}"
+            "{{ ' translate' + translate if translate is defined }}"
+            "{{ ' default-metric' + default_metric if default_metric is defined }}",
             "result": {
                 "processes": {
                     "{{ pid }}": {
@@ -148,8 +152,7 @@ class Ospfv2Template(NetworkTemplate):
                 r"""
                 \s+area
                 (\s(?P<area_id>\S+))
-                (\srange)
-                (\s(?P<address>\S+))
+                (\srange\s(?P<address>\S+))
                 (\s(?P<not_advertise>not-advertise))?
                 $""",
                 re.VERBOSE

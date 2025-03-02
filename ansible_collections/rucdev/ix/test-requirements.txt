@@ -1,0 +1,3 @@
+pytest-ansible
+pytest-xdist
+pytest-cov

@@ -60,9 +60,10 @@ class TestIxOspfv2Module(TestIxModule):
                                     area_id=0,
                                     virtual_links=[
                                         dict(
-                                            address="",
+                                            address="192.0.2.1",
                                             authentication=dict(
-                                                auth_type="text", text_passowrd="password"
+                                                auth_type="text",
+                                                text_passowrd="password",
                                             ),
                                         )
                                     ],
@@ -70,28 +71,61 @@ class TestIxOspfv2Module(TestIxModule):
                             ],
                             networks=[
                                 dict(
-                                    address="192.168.0.1"
+                                    address="192.0.2.128/25",
+                                    area=0,
                                 )
-                            ]
+                            ],
                         )
                     ]
                 ),
                 state="merged",
             )
         )
+        commands = [
+            "ip router ospf 1",
+            "network 192.0.2.128/25 area 0",
+            "passive-interface GigaEthernet1.0",
+            "area 0",
+            "area 0 virtual-link 192.0.2.1 authentication authentication-key password dead-interval 40 hello-interval 10",
+        ]
+        result = self.execute_module(changed=True)
+        self.assertEqual(sorted(commands), sorted(result["commands"]))
 
     def test_ix_ospfv2_merged_independent(self):
-        """
-        Test that the module does not fail when the configuration is merged
-        """
         self.execute_show_command.return_value = dedent(
             """\
-            ip router
+            ip router ospf 1
+              compatible rfc1583
+              default-metric 100
+              rib max-entries 128
+              passive-interface GigaEthernet1.0
+              area 0
+              area 1
+              area 2
+              area 2 nssa
+              area 0 virtual-link 192.0.2.1 hello-interval 20 dead-interval 100 authentication message-digest message-digest-key 1 ABCDEFGHIJK
+              network 192.0.2.128/25 area 0
+              network 198.51.100.0/24 area 1
             """,
         )
 
     def test_ix_ospfv2_replaced(self):
-        """"""
+        self.execute_show_command.return_value = dedent(
+            """\
+            ip router ospf 1
+              compatible rfc1583
+              default-metric 100
+              rib max-entries 128
+              passive-interface GigaEthernet1.0
+              area 0
+              area 1
+              area 2
+              area 2 nssa
+              area 0 virtual-link 192.0.2.1 hello-interval 20 dead-interval 100 authentication message-digest message-digest-key 1 ABCDEFGHIJK
+              network 192.0.2.128/25 area 0
+              network 198.51.100.0/24 area 1
+            """,
+        )
 
     def test_ix_ospfv2_replaced_independent(self):
         """"""
