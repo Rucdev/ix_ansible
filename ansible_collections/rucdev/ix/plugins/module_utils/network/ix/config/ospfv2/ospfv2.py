@@ -98,12 +98,6 @@ class Ospfv2(ResourceModule):
             haved = {k: v for k, v in iteritems(haved) if k in wantd or not wantd}
             wantd = {}
 
-        # remove superfluous config for overridden and deleted
-        if self.state in ["overridden", "deleted"]:
-            for k, have in iteritems(haved):
-                if k not in wantd:
-                    self._compare(want={}, have=have)
-
         # delete processes first so we do run into "more than one" errors
         if self.state in ["overridden", "deleted"]:
             for k, have in iteritems(haved):
@@ -150,12 +144,11 @@ class Ospfv2(ResourceModule):
 
     def _area_compare(self, want, have):
         parsers = [
+            "area_id",
             "stub",
             "nssa",
             "default_cost",
         ]
-        if self.state in ["merged", "overridden", "replaced"]:
-            self.addcmd(want, "area_id", False)
         self.compare(parsers=parsers, want=want, have=have)
         self._area_complex_compare(want, have, want.get("area_id"))
 
@@ -168,13 +161,11 @@ class Ospfv2(ResourceModule):
                 haveing = haver.pop(key, {})
                 haveing["area_id"] = area_id
                 wanting["area_id"] = area_id
-                # raise Exception(wanting ,haveing)
                 if wanting != haveing:
                     if haveing and self.state in ["overridden", "replaced"]:
                         self.addcmd(haveing, _parser, negate=True)
                     self.addcmd(wanting, _parser, False)
             for key, haveing in iteritems(haver):
-                # haveing["area_id"] = area_id
                 self.addcmd(haveing, _parser, negate=True)
 
     def _list_to_dict(self, param):

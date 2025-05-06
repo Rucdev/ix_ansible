@@ -1,12 +1,3 @@
-
-NEC Portable Internetwork Core Operating System Software
-Copyright Notices:
-Copyright (c) NEC Corporation 2001-2019. All rights reserved.
-Copyright (c) 1985-1998 OpenROUTE Networks, Inc.
-Copyright (c) 1984-1987, 1989 J. Noel Chiappa.
-ix-dev# 
-ix-dev# 
-ix-dev# show version 
 NEC Portable Internetwork Core Operating System Software
 IX Series IX2105 (magellan-sec) Software, Version 10.2.39, RELEASE SOFTWARE
 Compiled Apr 15-Fri-2022 12:16:29 JST #2 by sw-build, coregen-10.2(39)

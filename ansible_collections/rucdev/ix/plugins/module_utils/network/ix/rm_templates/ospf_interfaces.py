@@ -254,6 +254,7 @@ class Ospf_interfacesTemplate(NetworkTemplate):
             "result": {
                 "{{ name }}": {
                     "address_family": {
+                        "afi": "ipv4",
                         "ip": {
                             "interface_type": "{{ interface_type }}"
                         }

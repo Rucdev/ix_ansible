@@ -111,8 +111,14 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                                             "type": "int",
                                             "default": 10,
                                         },
-                                        "retransmit_interval": {"type": "int"},
-                                        "transmit_delay": {"type": "int"},
+                                        "retransmit_interval": {
+                                            "type": "int",
+                                            "default": 5,
+                                        },
+                                        "transmit_delay": {
+                                            "type": "int",
+                                            "default": 1,
+                                        },
                                     },
                                 },
                             },
@@ -125,10 +131,10 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                         "distance": {
                             "type": "dict",
                             "options": {
-                                "external": {"type": "int"},
-                                "inter_area": {"type": "int"},
-                                "intra_area": {"type": "int"},
-                                "nssa_external": {"type": "int"},
+                                "external": {"type": "int", "default": 110},
+                                "inter_area": {"type": "int", "default": 110},
+                                "intra_area": {"type": "int", "default": 110},
+                                "nssa_external": {"type": "int", "default": 110},
                             },
                         },
                         "distribute_list": {
@@ -173,8 +179,8 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                         "timers": {
                             "type": "dict",
                             "options": {
-                                "delay": {"type": "int"},
-                                "hold": {"type": "int"},
+                                "delay": {"type": "int", "default": 5},
+                                "hold": {"type": "int", "default": 10},
                             },
                         },
                     },

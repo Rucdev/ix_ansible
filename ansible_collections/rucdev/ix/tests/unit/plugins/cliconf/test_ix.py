@@ -20,7 +20,7 @@ from ansible.module_utils._text import to_bytes
 from ansible_collections.rucdev.ix.plugins.cliconf import ix
 
 
-b_FIXTURE_DIR = b"%s/fixtures/ios" % (
+b_FIXTURE_DIR = b"%s/fixtures/ix" % (
     to_bytes(path.dirname(path.abspath(__file__)), errors="surrogate_or_strict")
 )
 
@@ -68,9 +68,7 @@ class TestPluginCLIConfIOS(TestCase):
             "network_os": "ix",
             "network_os_model": "IX2105",
             "network_os_version": "10.2.39",
-            "network_os_hostname": "ix-dev",
-            "network_os_image": "bootflash:packages.conf",
-            "network_os_type": "L2",
+            "network_os_image": "ix2105-ms-10.2.39.ldc",
         }
 
         self.assertEqual(device_info, mock_device_info)
@@ -85,7 +83,6 @@ class TestPluginCLIConfIOS(TestCase):
                 "network_os_version": "10.2.39",
                 "network_os_hostname": "ix-dev",
                 "network_os_image": "bootflash:packages.conf",
-                "network_os_type": "L2",
             },
             "device_operations": {
                 "supports_commit": False,

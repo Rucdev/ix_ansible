@@ -29,11 +29,11 @@ def _tmplt_ospf_virtual_link(config_data):
     if "hello_interval" in virtual_links_data:
         command += " hello-interval {hello_interval}".format(**virtual_links_data)
     if "retransmit_interval" in virtual_links_data:
-        command += " retransmit_interval {retransmit_interval}".format(
+        command += " retransmit-interval {retransmit_interval}".format(
             **virtual_links_data
         )
     if "transmit_delay" in virtual_links_data:
-        command += " transmit_delay {transmit_delay}".format(**virtual_links_data)
+        command += " transmit-delay {transmit_delay}".format(**virtual_links_data)
     if "authentication" in config_data:
         authentication_data = virtual_links_data["authentication"]
         if "text" == authentication_data.get("auth_type"):
@@ -46,6 +46,23 @@ def _tmplt_ospf_virtual_link(config_data):
             )
     return command
 
+def _tmplt_ospf_area_nssa(config_data):
+    if "nssa" in config_data:
+        nssa_data = config_data["nssa"]
+        command = "area {area_id} nssa".format(**config_data)
+        if "no_summary" in nssa_data and nssa_data["no_summary"]:
+            command += " no-summary"
+        if "stability_interval" in nssa_data:
+            command += " stability-interval {stability_interval}".format(**nssa_data)
+        if "translate" in nssa_data and nssa_data["translate"]:
+            command += " translate"
+        if "default_metric" in nssa_data:
+            command += " default-metric {default_metric}".format(**nssa_data)
+        if "default_metric_type" in nssa_data:
+            command += " default-metric-type {default_metric_type}".format(
+                **nssa_data
+            )
+        return command
 
 class Ospfv2Template(NetworkTemplate):
     def __init__(self, lines=None, module=None):
@@ -124,10 +141,7 @@ class Ospfv2Template(NetworkTemplate):
                 $""",
                 re.VERBOSE,
             ),
-            "setval": "area {{ area_id }} nssa {{ 'no-summary' if no_summary is defined }}"
-            "{{ ' stability-interval ' + stability_interval if stability_interval is defined }}"
-            "{{ ' translate' + translate if translate is defined }}"
-            "{{ ' default-metric' + default_metric if default_metric is defined }}",
+            "setval": _tmplt_ospf_area_nssa,
             "result": {
                 "processes": {
                     "{{ pid }}": {
@@ -139,6 +153,7 @@ class Ospfv2Template(NetworkTemplate):
                                     "stability_interval": "{{ stability_interval }}",
                                     "translate": "{{ True if translate is defined }}",
                                     "default_metric": "{{ default_metric }}",
+                                    "default_metric_type": "{{ default_metric_type }}",
                                 }
                             }
                         },
@@ -197,7 +212,7 @@ class Ospfv2Template(NetworkTemplate):
                                 "area_id": "{{ area_id }}",
                                 "stub": {
                                     "set": "{{ True if stub is defined and no_sum is undefined }}",
-                                    "no_summary": "{{ True if no_sum is defined }}"
+                                    "no_summary": "{{ no_sum is defined }}"
                                 }
                             }
                         },
@@ -317,9 +332,9 @@ class Ospfv2Template(NetworkTemplate):
             "name": "distribute_list",
             "getval": re.compile(
                 r"""
-                \s+distribute-list\s
-                (prefix\s(?P<prefix_list>\S+))?
-                (route-map\s(?P<route_map>\S+))?
+                \s+distribute-list
+                (\sprefix\s(?P<prefix_list>\S+))?
+                (\sroute-map\s(?P<route_map>\S+))?
                 $""",
                 re.VERBOSE
             ),
