@@ -140,8 +140,11 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                         "distribute_list": {
                             "type": "dict",
                             "options": {
-                                "prefix": {"type": "str"},
-                                "route_map": {"type": "str"},
+                                "type": {
+                                    "type": "str",
+                                    "choices": ["prefix", "route-map"],
+                                },
+                                "name": {"type": "str"},
                             },
                         },
                         "network": {
@@ -152,7 +155,7 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                                 "area": {"type": "str"},
                             },
                         },
-                        "nssa_range": {
+                        "nssa_ranges": {
                             "type": "list",
                             "elements": "dict",
                             "options": {

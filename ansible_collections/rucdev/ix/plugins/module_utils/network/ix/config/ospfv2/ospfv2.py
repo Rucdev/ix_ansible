@@ -52,7 +52,6 @@ class Ospfv2(ResourceModule):
             "default_metric",
             "distance",
             "distribute_list",
-            "nssa_range",
             "originate_default",
             "rib",
             "router_id",
@@ -120,7 +119,7 @@ class Ospfv2(ResourceModule):
             self._complex_compare(want=want, have=have)
 
     def _complex_compare(self, want, have):
-        complex_parsers = ["network", "passive_interfaces"]
+        complex_parsers = ["network", "passive_interfaces", "nssa_ranges"]
         for _parser in complex_parsers:
             wdist = want.get(_parser, {})
             hdist = have.get(_parser, {})
@@ -179,10 +178,16 @@ class Ospfv2(ResourceModule):
                 }
             proc["areas"] = {entry["area_id"]: entry for entry in proc.get("areas", [])}
 
-            # list to dict for network
+            # list to dict 
             if proc.get("network"):
                 proc["network"] = {entry["address"]: entry for entry in proc["network"]}
             if proc.get("passive_interfaces"):
                 proc["passive_interfaces"] = {
                     entry: {"interface": entry} for entry in proc["passive_interfaces"]
+                }
+            if proc.get("nssa_ranges"):
+                proc["nssa_ranges"] = {
+                    f"{entry['range']}_"
+                    f"{entry['tag']}"
+                    f"{'_ad' if entry.get('not_advertise', False) else ''}": entry for entry in proc["nssa_ranges"]
                 }

@@ -274,7 +274,7 @@ class Ospfv2Template(NetworkTemplate):
                 $""",
                 re.VERBOSE
             ),
-            "setval": "compatible {{ 'rfc1583' if rfc1583 }}",
+            "setval": "compatible {{ 'rfc1583' if compatible.rfc1583 }}",
             "result": {
                 "processes": {
                     "{{ pid }}": {
@@ -332,21 +332,19 @@ class Ospfv2Template(NetworkTemplate):
             "name": "distribute_list",
             "getval": re.compile(
                 r"""
-                \s+distribute-list
-                (\sprefix\s(?P<prefix_list>\S+))?
-                (\sroute-map\s(?P<route_map>\S+))?
+                \s+distribute-list\s(?P<type>\S+)\s(?P<name>\S+)
                 $""",
                 re.VERBOSE
             ),
             "setval": "distribute-list"
-            "{{ ' prefix ' + distribute_list.prefix|string if distribute_list.prefix is defined else '' }}"
-            "{{ ' route-map ' + distribute_list.route_map|string if distribute_list.route_map is defined else '' }}",
+            " {{ 'prefix' if distribute_list.type == 'prefix' else 'route-map' }}"
+            " {{ distribute_list.name }}",
             "result": {
                 "processes": {
                     "{{ pid }}": {
                         "distribute_list": {
-                            "prefix": "{{ prefix_list}}",
-                            "route_map": "{{ route_map }}",
+                            "type": "{{ type }}",
+                            "name": "{{ name }}"
                         }
                     }
                 }
@@ -377,7 +375,7 @@ class Ospfv2Template(NetworkTemplate):
             }
         },
         {
-            "name": "nssa_range",
+            "name": "nssa_ranges",
             "getval": re.compile(
                 r"""
                 \s+nssa-range
@@ -387,11 +385,11 @@ class Ospfv2Template(NetworkTemplate):
                 $""",
                 re.VERBOSE
             ),
-            "setval": "nssa-range {{ range }}{{ ' not-advertise' if not_advertise }}{{ ' ' + tag if tag is defined}}",
+            "setval": "nssa-range {{ range }}{{ ' not-advertise' if not_advertise }}{{ ' tag ' + tag if tag is defined }}",
             "result": {
                 "processes": {
                     "{{ pid }}": {
-                        "nssa_range": [
+                        "nssa_ranges": [
                             {
                                 "range": "{{ range }}",
                                 "not_advertise": "{{ True if not_advertise is defined }}",

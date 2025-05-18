@@ -94,7 +94,6 @@ class TestIxOspfv2Module(TestIxModule):
         commands = [
             "ip router ospf 200",
             "network 10.0.0.0/24 area 10",
-            "area 0",
             "area 10",
             "area 10 default-cost 10",
             "area 10 nssa no-summary translate",
@@ -111,6 +110,7 @@ class TestIxOspfv2Module(TestIxModule):
              compatible rfc1583
              distribute-list prefix test_prefix
              network 192.168.0.0/24 area 0
+             area 0
              area 0 default-cost 10
              passive-interface GigaEthernet0.0
             """
@@ -124,7 +124,8 @@ class TestIxOspfv2Module(TestIxModule):
                             router_id="192.168.1.1",
                             compatible=dict(rfc1583=True),
                             distribute_list=dict(
-                                prefix="test_prefix",
+                                type="prefix",
+                                name="test_prefix",
                             ),
                             network=[
                                 dict(
@@ -155,6 +156,7 @@ class TestIxOspfv2Module(TestIxModule):
              compatible rfc1583
              distribute-list prefix test_prefix
              network 192.168.0.0/24 area 0
+             area 0
              area 0 default-cost 10
              passive-interface GigaEthernet0.0
             """
@@ -188,9 +190,9 @@ class TestIxOspfv2Module(TestIxModule):
         commands = [
             "ip router ospf 200",
             "router-id 192.168.2.1",
+            "no compatible rfc1583",
             "default-metric 10",
             "no distribute-list prefix test_prefix",
-            "area 0",
             "area 0 default-cost 20",
             "no passive-interface GigaEthernet0.0",
         ]
@@ -205,6 +207,7 @@ class TestIxOspfv2Module(TestIxModule):
              compatible rfc1583
              distribute-list prefix test_prefix
              network 192.168.0.0/24 area 0
+             area 0
              area 0 default-cost 10
              passive-interface GigaEthernet0.0
             """
@@ -223,7 +226,8 @@ class TestIxOspfv2Module(TestIxModule):
                                 intra_area=80,
                             ),
                             distribute_list=dict(
-                                route_map="new_route_map",
+                                type="route-map",
+                                name="new_route_map",
                             ),
                             network=[
                                 dict(
@@ -267,7 +271,7 @@ class TestIxOspfv2Module(TestIxModule):
             "ip router ospf 100",
             "router-id 10.10.10.10",
             "default-metric 20",
-            "distance external 110 inter-area 90 intra-area 80",
+            "distance external 110 inter-area 90 intra-area 80 nssa-external 110",
             "distribute-list route-map new_route_map",
             "network 10.0.0.0/24 area 5",
             "area 5",
@@ -357,8 +361,8 @@ class TestIxOspfv2Module(TestIxModule):
                                 nssa_external=100,
                             ),
                             distribute_list=dict(
-                                prefix="test_prefix",
-                                route_map="test_route_map",
+                                type="prefix",
+                                name="test_prefix",
                             ),
                             network=[
                                 dict(
@@ -370,7 +374,7 @@ class TestIxOspfv2Module(TestIxModule):
                                     area="10",
                                 ),
                             ],
-                            nssa_range=[
+                            nssa_ranges=[
                                 dict(
                                     range="192.168.1.0/24",
                                     not_advertise=True,
@@ -445,7 +449,6 @@ class TestIxOspfv2Module(TestIxModule):
             "default-metric 10",
             "distance external 110 inter-area 90 intra-area 80 nssa-external 100",
             "distribute-list prefix test_prefix",
-            "distribute-list route-map test_route_map",
             "network 192.168.0.0/24 area 5",
             "network 10.0.0.0/24 area 10",
             "nssa-range 192.168.1.0/24 not-advertise tag 100",
@@ -454,9 +457,12 @@ class TestIxOspfv2Module(TestIxModule):
             "passive-interface GigaEthernet0.1",
             "rib max-entries 10000",
             "timers delay 5 hold 10",
-            "area 0 virtual-link 192.168.2.1 authentication message-digest message-digest-key 1 md5password dead-interval 40 hello-interval 10 retransmit-interval 5 transmit-delay 1",
+            "area 0",
+            "area 0 virtual-link 192.168.2.1 dead-interval 40 hello-interval 10 retransmit-interval 5 transmit-delay 1 authentication message-digest message-digest-key 1 md5password",
+            "area 5",
             "area 5 nssa no-summary stability-interval 10 translate default-metric 20 default-metric-type 1",
             "area 5 range 192.168.10.0/24 advertise",
+            "area 10",
             "area 10 default-cost 20",
             "area 10 stub no-summary",
         ]

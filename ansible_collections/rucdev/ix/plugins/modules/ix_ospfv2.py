@@ -139,9 +139,11 @@ options:
                   retransmit_interval:
                     description: Retransmit interval (seconds)
                     type: int
+                    default: 5
                   transmit_delay:
                     description: Transit delay (seconds)
                     type: int
+                    default: 1
           compatible:
             description: OSPF router compatibility list
             type: dict
@@ -161,15 +163,19 @@ options:
               external:
                 description: OSPF external routes
                 type: int
+                default: 110
               inter_area:
                 description: OSPF inter-area routes
                 type: int
+                default: 110
               intra_area:
                 description: OSPF intra-area routes
                 type: int
+                default: 110
               nssa_external:
                 description: OSPF nssa-external routes
                 type: int
+                default: 110
           distribute_list:
             description:
               - Used for filtering when storing contents in the routing table
@@ -177,11 +183,14 @@ options:
               - The OSPF process must be restarted for the settings to take effectJJ;W
             type: dict
             suboptions:
-              prefix:
-                description: Use the prefix list
+              type: 
+                description: Type of distribute list
                 type: str
-              route_map:
-                description: Use the route map
+                choices:
+                  - prefix
+                  - route-map
+              name:
+                description: Name of the list for distribute
                 type: str
           network:
             description: Enable routing on an OSPF network
@@ -194,7 +203,7 @@ options:
               area:
                 description: Set the OSPF area ID
                 type: str
-          nssa_range:
+          nssa_ranges:
             type: list
             elements: dict
             suboptions:
@@ -251,9 +260,11 @@ options:
               delay:
                 description: The time between receipt of topology change and recalculation
                 type: int 
+                default: 5
               hold:
                 description: Consecutive calculation intervals
                 type: int
+                default: 10
   running_config:
     description: 
       - This option is used only with state I(parsed).
