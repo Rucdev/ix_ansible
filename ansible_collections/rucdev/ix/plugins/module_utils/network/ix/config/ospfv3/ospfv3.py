@@ -84,8 +84,6 @@ class Ospfv3(ResourceModule):
         for each in wantd, haved:
             if each:
                 self._list_to_dict(each)
-        # raise Exception(wantd)
-
         # if state is merged, merge want onto have and then compare
         if self.state == "merged":
             wantd = dict_merge(haved, wantd)
@@ -94,12 +92,6 @@ class Ospfv3(ResourceModule):
         if self.state == "deleted":
             haved = {k: v for k, v in iteritems(haved) if k in wantd or not wantd}
             wantd = {}
-
-        # remove superfluous config for overridden and deleted
-        if self.state in ["overridden", "deleted"]:
-            for k, have in iteritems(haved):
-                if k not in wantd:
-                    self._compare(want={}, have=have)
 
         # delete processes first so we do run into "more than one" errors
         if self.state in ["overridden", "deleted"]:
@@ -123,7 +115,7 @@ class Ospfv3(ResourceModule):
             self._areas_compare(want, have)
 
     def _complex_compare(self, want, have):
-        complex_parsers = ["network"]
+        complex_parsers = ["network", "passive_interfaces"]
         for _parser in complex_parsers:
             wdist = want.get(_parser, {})
             hdist = have.get(_parser, {})
@@ -146,11 +138,10 @@ class Ospfv3(ResourceModule):
 
     def _area_compare(self, want, have):
         parsers = [
+            "area_id",
             "stub",
             "default_cost",
         ]
-        self.addcmd(want, "area_id", False)
-        bcmdlen = len(self.commands)
         self.compare(parsers=parsers, want=want, have=have)
         self._area_complex_compare(want, have, want.get("area_id"))
 
@@ -179,6 +170,8 @@ class Ospfv3(ResourceModule):
                 }
             proc["areas"] = {entry["area_id"]: entry for entry in proc.get("areas", [])}
 
-            # list to dict for network
+            # list to dict
             if proc.get("network"):
-                proc["network"] = {entry["address"]: entry for entry in proc["network"]}
+                proc["network"] = {entry["interface"]: entry for entry in proc.get("network", [])}
+            if proc.get("passive_interfaces"):
+                proc["passive_interfaces"] = {entry: {"interface": entry} for entry in proc.get("passive_interfaces", [])}

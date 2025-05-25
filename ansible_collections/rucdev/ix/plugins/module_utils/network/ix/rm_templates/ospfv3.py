@@ -19,6 +19,18 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.r
     NetworkTemplate,
 )
 
+def _tmplt_ospfv3_originate_default(config_data):
+    if "originate_default" in config_data:
+        command = "originate-default"
+        if "metric" in config_data["originate_default"]:
+            command += " metric {metric}".format(**config_data["originate_default"])
+        if "metric_type" in config_data["originate_default"]:
+            command += " metric-type {metric_type}".format(**config_data["originate_default"])
+        if "route_map" in config_data["originate_default"]:
+            command += " route-map {route_map}".format(**config_data["originate_default"])
+        if "tag" in config_data["originate_default"]:
+            command += " tag {tag}".format(**config_data["originate_default"])
+        return command
 
 class Ospfv3Template(NetworkTemplate):
     def __init__(self, lines=None, module=None):
@@ -172,18 +184,18 @@ class Ospfv3Template(NetworkTemplate):
             "getval": re.compile(
                 r"""
                 \s+network
-                \s(?P<address>\S+)
+                \s(?P<interface>\S+)
                 \sarea\s(?P<area>\S+)
                 $""",
                 re.VERBOSE
             ),
-            "setval": "network {{ address }} area {{ area }}",
+            "setval": "network {{ interface }} area {{ area }}",
             "result": {
                 "processes": {
                     "{{ pid }}": {
                         "network": [
                             {
-                                "address": "{{ address }}",
+                                "interface": "{{ interface }}",
                                 "area": "{{ area }}"
                             }
                         ]
@@ -196,25 +208,22 @@ class Ospfv3Template(NetworkTemplate):
             "getval": re.compile(
                 r"""
                 \s+originate-default
-                (\s(?P<always>always))?
                 (\smetric\s(?P<metric>\S+))
                 (\smetric-type\s(?P<metric_type>\d))?
                 (\sroute-map\s(?P<route_map>\S+))?
+                (\stag\s(?P<tag>\d+))?
                 $""",
                 re.VERBOSE
             ),
-            "setval": "originate-default{{ ' always' if originate_default.always is defined and originate_default.always else '' }}"
-            " metric {{ originate_default.metric }}"
-            " metric-type {{ originate_default.metric_type }}"
-            " route-map {{ originate_default.route_map }}",
+            "setval": _tmplt_ospfv3_originate_default,
             "result": {
                 "processes": {
                     "{{ pid }}": {
                         "originate_default": {
-                            "always": "{{ True if always is defined }}",
                             "metric": "{{ metric }}",
                             "metric_type": "{{ metric_type }}",
                             "route_map": "{{ route_map }}",
+                            "tag": "{{ tag }}"
                         }
                     }
                 }

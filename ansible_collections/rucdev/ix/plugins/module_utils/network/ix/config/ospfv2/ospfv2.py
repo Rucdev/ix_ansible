@@ -115,8 +115,8 @@ class Ospfv2(ResourceModule):
         if want != have:
             self.addcmd(want or have, "pid", False)
             self.compare(parsers=self.parsers, want=want, have=have)
-            self._areas_compare(want, have)
             self._complex_compare(want=want, have=have)
+            self._areas_compare(want, have)
 
     def _complex_compare(self, want, have):
         complex_parsers = ["network", "passive_interfaces", "nssa_ranges"]
@@ -135,7 +135,6 @@ class Ospfv2(ResourceModule):
     def _areas_compare(self, want, have):
         wareas = want.get("areas", {})
         hareas = have.get("areas", {})
-        # raise Exception(wareas)
         for name, entry in iteritems(wareas):
             self._area_compare(want=entry, have=hareas.pop(name, {}))
         for name, entry in iteritems(hareas):
@@ -178,12 +177,12 @@ class Ospfv2(ResourceModule):
                 }
             proc["areas"] = {entry["area_id"]: entry for entry in proc.get("areas", [])}
 
-            # list to dict 
+            # list to dict
             if proc.get("network"):
-                proc["network"] = {entry["address"]: entry for entry in proc["network"]}
+                proc["network"] = {entry["address"]: entry for entry in proc.get("network", [])}
             if proc.get("passive_interfaces"):
                 proc["passive_interfaces"] = {
-                    entry: {"interface": entry} for entry in proc["passive_interfaces"]
+                    entry: {"interface": entry} for entry in proc.get("passive_interfaces", [])
                 }
             if proc.get("nssa_ranges"):
                 proc["nssa_ranges"] = {
