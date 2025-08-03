@@ -43,9 +43,12 @@ options:
             choices:
               - ipv4
               - ipv6
-          authentication:
+          authentication_type:
             description: Enable authentication
             type: str
+            choices:
+              - message-digest
+              - text
           authentication_key:
             description: Sets the password if encryption is not used.
             type: str

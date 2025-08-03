@@ -1,4 +1,3 @@
-
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Copyright 2025 Red Hat
@@ -28,7 +27,9 @@ class TestIxOspfv3Module(TestIxModule):
             "ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module_base."
             "get_resource_connection"
         )
-        self.get_resource_connection_facts = self.mock_get_resource_connection_facts.start()
+        self.get_resource_connection_facts = (
+            self.mock_get_resource_connection_facts.start()
+        )
 
         self.mock_execute_show_command = patch(
             "ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.ospfv3.ospfv3."
@@ -79,7 +80,7 @@ class TestIxOspfv3Module(TestIxModule):
                                     stub=dict(
                                         set=True,
                                         no_summary=True,
-                                    )
+                                    ),
                                 ),
                             ],
                             passive_interfaces=["GigaEthernet0.0", "GigaEthernet0.2"],
@@ -220,7 +221,7 @@ class TestIxOspfv3Module(TestIxModule):
                                 metric=100,
                                 metric_type=1,
                                 route_map="default_map",
-                                tag="20"
+                                tag="20",
                             ),
                         )
                     ]
@@ -291,7 +292,7 @@ class TestIxOspfv3Module(TestIxModule):
                             "interface": "GigaEhternet0.0",
                             "area": "5",
                         }
-                    ]
+                    ],
                 }
             ]
         }

@@ -42,7 +42,10 @@ class Ospf_interfacesArgs(object):  # pylint: disable=R0903
                     "elements": "dict",
                     "options": {
                         "afi": {"type": "str", "choices": ["ipv4", "ipv6"]},
-                        "authentication": {"type": "str"},
+                        "authentication_type": {
+                            "type": "str",
+                            "choices": ["message-digest", "text"],
+                        },
                         "authentication_key": {"type": "str"},
                         "cost": {"type": "int"},
                         "hello_interval": {"type": "int"},
