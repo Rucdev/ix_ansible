@@ -81,7 +81,6 @@ EXAMPLES = """
 """
 
 RETURN = """
-See the respective resource module parameters for the tree.
 """
 
 from ansible.module_utils.basic import AnsibleModule
