@@ -164,7 +164,7 @@ options:
         executed on device. For state I(parsed) active
         connection to remote host is not required.
     type: str
-    choice:
+    choices:
       - merged
       - replaced
       - overridden

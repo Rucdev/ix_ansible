@@ -203,7 +203,8 @@ options:
               area:
                 description: Set the OSPF area ID
                 type: str
-          nssa_ranges:
+          nssa_range:
+            description: Setting configuration of address range for nssa
             type: list
             elements: dict
             suboptions:
@@ -294,7 +295,7 @@ options:
         executed on device. For state I(parsed) active
         connection to remote host is not required.
     type: str
-    choice:
+    choices:
       - merged
       - replaced
       - overridden

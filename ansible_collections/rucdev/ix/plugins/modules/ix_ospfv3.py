@@ -13,7 +13,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 DOCUMENTATION = """
-module: ix_ospfv2
+module: ix_ospfv3
 short_description: Resource module to configure OSPF.
 description:
   - This module provides declarative management of OSPF on NEC IX devices.

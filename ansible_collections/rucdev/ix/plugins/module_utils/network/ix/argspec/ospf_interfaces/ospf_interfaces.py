@@ -28,7 +28,8 @@ The arg spec for the ix_ospf_interfaces module
 
 
 class Ospf_interfacesArgs(object):  # pylint: disable=R0903
-    """The arg spec for the ix_ospf_interfaces module"""
+    """The arg spec for the ix_ospf_interfaces module
+    """
 
     argument_spec = {
         "config": {
@@ -45,15 +46,16 @@ class Ospf_interfacesArgs(object):  # pylint: disable=R0903
                             "type": "str",
                             "choices": ["message-digest", "text"],
                         },
-                        "authentication_key": {"type": "str"},
+                        "authentication_key": {"type": "str", "no_log": True},
                         "cost": {"type": "int"},
                         "hello_interval": {"type": "int"},
                         "dead_interval": {"type": "int"},
                         "message_digest_key": {
                             "type": "dict",
+                            "no_log": True,
                             "options": {
                                 "key_id": {"type": "int"},
-                                "password": {"type": "str"},
+                                "password": {"type": "str", "no_log": True},
                             },
                         },
                         "mtu_ignore": {"type": "bool"},
@@ -94,5 +96,17 @@ class Ospf_interfacesArgs(object):  # pylint: disable=R0903
             },
         },
         "running_config": {"type": "str"},
-        "state": {"type": "str", "default": "merged"},
+        "state": {
+            "type": "str",
+            "choices": [
+                "merged",
+                "replaced",
+                "overridden",
+                "deleted",
+                "gathered",
+                "rendered",
+                "parsed",
+            ],
+            "default": "merged",
+        },
     }  # pylint: disable=C0301

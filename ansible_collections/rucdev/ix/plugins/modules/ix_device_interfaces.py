@@ -105,15 +105,16 @@ options:
           sampling_rate:
             description:
             - The sampling rate of the sFlow.
-              suboptions:
-                in:
-                  description:
-                  - The sampling rate in.
-                  type: int
-                out:
-                  description:
-                  - The sampling rate out.
-                  type: int
+            type: dict
+            suboptions:
+              in:
+                description:
+                - The sampling rate in.
+                type: int
+              out:
+                description:
+                - The sampling rate out.
+                type: int
       speed:
         description:
         - The speed of the interface.

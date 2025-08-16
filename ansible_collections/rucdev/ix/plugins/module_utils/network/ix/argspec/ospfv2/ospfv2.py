@@ -28,7 +28,8 @@ The arg spec for the ix_ospfv2 module
 
 
 class Ospfv2Args(object):  # pylint: disable=R0903
-    """The arg spec for the ix_ospfv2 module"""
+    """The arg spec for the ix_ospfv2 module
+    """
 
     argument_spec = {
         "config": {
@@ -93,12 +94,16 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                                                         "null",
                                                     ],
                                                 },
-                                                "text_password": {"type": "str"},
+                                                "text_password": {
+                                                    "type": "str",
+                                                    "no_log": False,
+                                                },
                                                 "message_digest_key_id": {
                                                     "type": "int"
                                                 },
                                                 "message_digest_password": {
-                                                    "type": "str"
+                                                    "type": "str",
+                                                    "no_log": False,
                                                 },
                                             },
                                         },
@@ -154,7 +159,7 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                                 "area": {"type": "str"},
                             },
                         },
-                        "nssa_ranges": {
+                        "nssa_range": {
                             "type": "list",
                             "elements": "dict",
                             "options": {
@@ -190,5 +195,17 @@ class Ospfv2Args(object):  # pylint: disable=R0903
             },
         },
         "running_config": {"type": "str"},
-        "state": {"type": "str", "default": "merged"},
+        "state": {
+            "type": "str",
+            "choices": [
+                "merged",
+                "replaced",
+                "overridden",
+                "deleted",
+                "gathered",
+                "rendered",
+                "parsed",
+            ],
+            "default": "merged",
+        },
     }  # pylint: disable=C0301
