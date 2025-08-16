@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#
 # -*- coding: utf-8 -*-
 # Copyright 2025 Red Hat
 # GNU General Public License v3.0+
@@ -27,7 +27,9 @@ class TestIxOspfv2Module(TestIxModule):
             "ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module_base."
             "get_resource_connection"
         )
-        self.get_resource_connection_facts = self.mock_get_resource_connection_facts.start()
+        self.get_resource_connection_facts = (
+            self.mock_get_resource_connection_facts.start()
+        )
 
         self.mock_execute_show_command = patch(
             "ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.ospfv2.ospfv2."
@@ -458,7 +460,8 @@ class TestIxOspfv2Module(TestIxModule):
             "rib max-entries 10000",
             "timers delay 5 hold 10",
             "area 0",
-            "area 0 virtual-link 192.168.2.1 dead-interval 40 hello-interval 10 retransmit-interval 5 transmit-delay 1 authentication message-digest message-digest-key 1 md5password",
+            "area 0 virtual-link 192.168.2.1 dead-interval 40 hello-interval 10 retransmit-interval"
+            " 5 transmit-delay 1 authentication message-digest message-digest-key 1 md5password",
             "area 5",
             "area 5 nssa no-summary stability-interval 10 translate default-metric 20 default-metric-type 1",
             "area 5 range 192.168.10.0/24 advertise",

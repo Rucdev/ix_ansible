@@ -172,6 +172,11 @@ class Ospfv3(ResourceModule):
 
             # list to dict
             if proc.get("network"):
-                proc["network"] = {entry["interface"]: entry for entry in proc.get("network", [])}
+                proc["network"] = {
+                    entry["interface"]: entry for entry in proc.get("network", [])
+                }
             if proc.get("passive_interfaces"):
-                proc["passive_interfaces"] = {entry: {"interface": entry} for entry in proc.get("passive_interfaces", [])}
+                proc["passive_interfaces"] = {
+                    entry: {"interface": entry}
+                    for entry in proc.get("passive_interfaces", [])
+                }

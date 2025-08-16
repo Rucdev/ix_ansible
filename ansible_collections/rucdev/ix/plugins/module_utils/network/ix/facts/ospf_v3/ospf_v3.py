@@ -27,16 +27,16 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.ospf_
     Ospf_v3Args,
 )
 
-class Ospf_v3Facts(object):
-    """ The ix ospf_v3 facts class
-    """
 
-    def __init__(self, module, subspec='config', options='options'):
+class Ospf_v3Facts(object):
+    """The ix ospf_v3 facts class"""
+
+    def __init__(self, module, subspec="config", options="options"):
         self._module = module
         self.argument_spec = Ospf_v3Args.argument_spec
 
     def populate_facts(self, connection, ansible_facts, data=None):
-        """ Populate the facts for Ospf_v3 network resource
+        """Populate the facts for Ospf_v3 network resource
 
         :param connection: the device connection
         :param ansible_facts: Facts dictionary
@@ -55,13 +55,15 @@ class Ospf_v3Facts(object):
         ospf_v3_parser = Ospf_v3Template(lines=data.splitlines(), module=self._module)
         objs = list(ospf_v3_parser.parse().values())
 
-        ansible_facts['ansible_network_resources'].pop('ospf_v3', None)
+        ansible_facts["ansible_network_resources"].pop("ospf_v3", None)
 
         params = utils.remove_empties(
-            ospf_v3_parser.validate_config(self.argument_spec, {"config": objs}, redact=True)
+            ospf_v3_parser.validate_config(
+                self.argument_spec, {"config": objs}, redact=True
+            )
         )
 
-        facts['ospf_v3'] = params['config']
-        ansible_facts['ansible_network_resources'].update(facts)
+        facts["ospf_v3"] = params["config"]
+        ansible_facts["ansible_network_resources"].update(facts)
 
         return ansible_facts

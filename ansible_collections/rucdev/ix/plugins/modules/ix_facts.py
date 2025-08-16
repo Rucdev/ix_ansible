@@ -80,8 +80,7 @@ EXAMPLES = """
     gather_network_resources: interfaces
 """
 
-RETURN = """
-"""
+RETURN = """"""
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.facts.facts import (

@@ -183,7 +183,7 @@ options:
               - The OSPF process must be restarted for the settings to take effectJJ;W
             type: dict
             suboptions:
-              type: 
+              type:
                 description: Type of distribute list
                 type: str
                 choices:
@@ -249,7 +249,7 @@ options:
                 description: Setting of the max entries(64 ~ 65535)
                 type: int
           router_id:
-            description: 
+            description:
               - Setting of router id
               - A process restart is required for the settings to take effect
             type: str
@@ -259,14 +259,14 @@ options:
             suboptions:
               delay:
                 description: The time between receipt of topology change and recalculation
-                type: int 
+                type: int
                 default: 5
               hold:
                 description: Consecutive calculation intervals
                 type: int
                 default: 10
   running_config:
-    description: 
+    description:
       - This option is used only with state I(parsed).
       - The value of this option should be the output received from the ix
         device by executing the command B(show running-config ospf).

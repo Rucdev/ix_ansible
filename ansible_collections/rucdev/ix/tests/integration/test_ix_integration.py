@@ -1,5 +1,6 @@
 import pytest
 
+
 def test_integration_sample():
     """
     Integration test for the Ansible Collection.

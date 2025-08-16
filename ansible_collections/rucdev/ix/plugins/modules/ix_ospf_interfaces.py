@@ -75,7 +75,7 @@ options:
             description: Ignore MTU mismatch
             type: bool
           neighbor_v2:
-            description: 
+            description:
               - Register adjacent routers on the NBMA(Non-Broadcast Multiple Access) interface.
               - Unicast transmission is performed only when the interface type is NBMA.
               - Valid only when afi = ipv4.
@@ -94,7 +94,7 @@ options:
                 description: Neighbor router ID
                 type: str
           neighbor_v3:
-            description: 
+            description:
               - Register adjacent routers on the NBMA(Non-Broadcast Multiple Access) interface.
               - Unicast transmission is performed only when the interface type is NBMA.
               - Valid only when afi = ipv6.
@@ -136,7 +136,7 @@ options:
             description: Configuration of transmit-delay on the interface
             type: int
   running_config:
-    description: 
+    description:
       - This option is used only with state I(parsed).
       - The value of this option should be the output received from the ix
         device by executing the command B(show running-config interfaces <name>).

@@ -47,11 +47,10 @@ class Ospf_v3(ResourceModule):
             resource="ospf_v3",
             tmplt=Ospf_v3Template(),
         )
-        self.parsers = [
-        ]
+        self.parsers = []
 
     def execute_module(self):
-        """ Execute the module
+        """Execute the module
 
         :rtype: A dictionary
         :returns: The result from module execution
@@ -62,11 +61,11 @@ class Ospf_v3(ResourceModule):
         return self.result
 
     def generate_commands(self):
-        """ Generate configuration commands to send based on
-            want, have and desired state.
+        """Generate configuration commands to send based on
+        want, have and desired state.
         """
-        wantd = {entry['name']: entry for entry in self.want}
-        haved = {entry['name']: entry for entry in self.have}
+        wantd = {entry["name"]: entry for entry in self.want}
+        haved = {entry["name"]: entry for entry in self.have}
 
         # if state is merged, merge want onto have and then compare
         if self.state == "merged":
@@ -74,9 +73,7 @@ class Ospf_v3(ResourceModule):
 
         # if state is deleted, empty out wantd and set haved to wantd
         if self.state == "deleted":
-            haved = {
-                k: v for k, v in iteritems(haved) if k in wantd or not wantd
-            }
+            haved = {k: v for k, v in iteritems(haved) if k in wantd or not wantd}
             wantd = {}
 
         # remove superfluous config for overridden and deleted
@@ -90,8 +87,8 @@ class Ospf_v3(ResourceModule):
 
     def _compare(self, want, have):
         """Leverages the base class `compare()` method and
-           populates the list of commands to be run by comparing
-           the `want` and `have` data with the `parsers` defined
-           for the Ospf_v3 network resource.
+        populates the list of commands to be run by comparing
+        the `want` and `have` data with the `parsers` defined
+        for the Ospf_v3 network resource.
         """
         self.compare(parsers=self.parsers, want=want, have=have)

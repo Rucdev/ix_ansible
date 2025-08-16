@@ -9,6 +9,7 @@ It is in this file the configuration is collected from the device
 for a given resource, parsed, and the facts tree is populated
 based on the configuration.
 """
+
 import re
 from copy import deepcopy
 from ansible.module_utils.six import iteritems
@@ -45,10 +46,7 @@ class Static_routes(ResourceModule):
             resource="static_routes",
             tmplt=Static_routesTemplate(),
         )
-        self.parsers = [
-            "ipv4",
-            "ipv6"
-        ]
+        self.parsers = ["ipv4", "ipv6"]
 
     def execute_module(self):
         """Execute the module
@@ -162,7 +160,9 @@ class Static_routes(ResourceModule):
                                 _delete_spc[_afi].append(_dest)
 
                         for nxh in rts.get("next_hops", []):
-                            _forw_rtr_add = nxh.get("forward_router_address", "").upper()
+                            _forw_rtr_add = nxh.get(
+                                "forward_router_address", ""
+                            ).upper()
                             _intf = nxh.get("interface", "")
                             _key = _sdest + "_" + _forw_rtr_add + _intf
 

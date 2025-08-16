@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#
 # -*- coding: utf-8 -*-
 # Copyright 2025 Red Hat
 # GNU General Public License v3.0+
@@ -27,7 +27,9 @@ class TestIxOspfInterfacesModule(TestIxModule):
             "ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module_base."
             "get_resource_connection"
         )
-        self.get_resource_connection_facts = self.mock_get_resource_connection_facts.start()
+        self.get_resource_connection_facts = (
+            self.mock_get_resource_connection_facts.start()
+        )
 
         self.mock_execute_show_command = patch(
             "ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.ospf_interfaces.ospf_interfaces."
@@ -54,7 +56,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         )
         set_module_args(
             dict(
-                config=[ 
+                config=[
                     dict(
                         name="GigaEthernet0.0",
                         address_family=[
@@ -72,9 +74,9 @@ class TestIxOspfInterfacesModule(TestIxModule):
                                 afi="ipv6",
                                 priority=80,
                             )
-                        ]
-                    )
-                 ],
+                        ],
+                    ),
+                ],
                 state="merged",
             )
         )
@@ -118,8 +120,8 @@ class TestIxOspfInterfacesModule(TestIxModule):
                                 afi="ipv6",
                                 priority=60,
                             )
-                        ]
-                    )
+                        ],
+                    ),
                 ],
                 state="merged",
             )
@@ -259,7 +261,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
                     {
                         "afi": "ipv6",
                         "priority": 40,
-                    }
+                    },
                 ],
             }
         ]
@@ -295,8 +297,8 @@ class TestIxOspfInterfacesModule(TestIxModule):
                                 hello_interval=10,
                                 dead_interval=40,
                             )
-                        ]
-                    )
+                        ],
+                    ),
                 ],
                 state="rendered",
             )
@@ -318,4 +320,3 @@ class TestIxOspfInterfacesModule(TestIxModule):
         ]
         result = self.execute_module(changed=False)
         self.assertEqual(sorted(result["rendered"]), sorted(commands))
-

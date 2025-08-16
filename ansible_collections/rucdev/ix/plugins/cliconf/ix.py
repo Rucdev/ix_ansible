@@ -156,11 +156,10 @@ class Cliconf(CliconfBase):
             if match:
                 device_info["network_os_model"] = match.group(1)
                 device_info["network_os_version"] = match.group(2)
-            
+
             match = re.search(r"System image file is \"(\S*)\"", data, re.M)
             if match:
                 device_info["network_os_image"] = match.group(1)
-
 
             self.send_command(SVINTR_CONFIG)
             self.send_command("configure")

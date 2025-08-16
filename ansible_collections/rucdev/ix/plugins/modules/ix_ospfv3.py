@@ -119,7 +119,7 @@ options:
                 description: Route-map reference name
                 type: str
               tag:
-                description: Tag value to be assigned 
+                description: Tag value to be assigned
                 type: int
                 default: 0
           passive_interfaces:
@@ -128,7 +128,7 @@ options:
             type: list
             elements: str
           router_id:
-            description: 
+            description:
               - Setting of router id
               - A process restart is required for the settings to take effect
             type: str
@@ -138,14 +138,14 @@ options:
             suboptions:
               delay:
                 description: The time between receipt of topology change and recalculation
-                type: int 
+                type: int
                 default: 5
               hold:
                 description: Consecutive calculation intervals
                 type: int
                 default: 10
   running_config:
-    description: 
+    description:
       - This option is used only with state I(parsed).
       - The value of this option should be the output received from the ix
         device by executing the command B(show running-config ospf).

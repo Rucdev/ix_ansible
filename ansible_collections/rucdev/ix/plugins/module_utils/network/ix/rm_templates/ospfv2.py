@@ -46,6 +46,7 @@ def _tmplt_ospf_virtual_link(config_data):
             )
     return command
 
+
 def _tmplt_ospf_area_nssa(config_data):
     if "nssa" in config_data:
         nssa_data = config_data["nssa"]
@@ -59,10 +60,9 @@ def _tmplt_ospf_area_nssa(config_data):
         if "default_metric" in nssa_data:
             command += " default-metric {default_metric}".format(**nssa_data)
         if "default_metric_type" in nssa_data:
-            command += " default-metric-type {default_metric_type}".format(
-                **nssa_data
-            )
+            command += " default-metric-type {default_metric_type}".format(**nssa_data)
         return command
+
 
 class Ospfv2Template(NetworkTemplate):
     def __init__(self, lines=None, module=None):

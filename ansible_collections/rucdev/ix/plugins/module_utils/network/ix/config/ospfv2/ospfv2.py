@@ -179,14 +179,18 @@ class Ospfv2(ResourceModule):
 
             # list to dict
             if proc.get("network"):
-                proc["network"] = {entry["address"]: entry for entry in proc.get("network", [])}
+                proc["network"] = {
+                    entry["address"]: entry for entry in proc.get("network", [])
+                }
             if proc.get("passive_interfaces"):
                 proc["passive_interfaces"] = {
-                    entry: {"interface": entry} for entry in proc.get("passive_interfaces", [])
+                    entry: {"interface": entry}
+                    for entry in proc.get("passive_interfaces", [])
                 }
             if proc.get("nssa_ranges"):
                 proc["nssa_ranges"] = {
                     f"{entry['range']}_"
                     f"{entry['tag']}"
-                    f"{'_ad' if entry.get('not_advertise', False) else ''}": entry for entry in proc["nssa_ranges"]
+                    f"{'_ad' if entry.get('not_advertise', False) else ''}": entry
+                    for entry in proc["nssa_ranges"]
                 }

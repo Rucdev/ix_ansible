@@ -19,6 +19,7 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.r
     NetworkTemplate,
 )
 
+
 class Ospf_v3Template(NetworkTemplate):
     def __init__(self, lines=None, module=None):
         super(Ospf_v3Template, self).__init__(lines=lines, tmplt=self, module=module)

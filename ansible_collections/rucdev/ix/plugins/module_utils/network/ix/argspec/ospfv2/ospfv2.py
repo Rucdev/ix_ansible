@@ -28,8 +28,7 @@ The arg spec for the ix_ospfv2 module
 
 
 class Ospfv2Args(object):  # pylint: disable=R0903
-    """The arg spec for the ix_ospfv2 module
-    """
+    """The arg spec for the ix_ospfv2 module"""
 
     argument_spec = {
         "config": {

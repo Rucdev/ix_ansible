@@ -19,18 +19,24 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.r
     NetworkTemplate,
 )
 
+
 def _tmplt_ospfv3_originate_default(config_data):
     if "originate_default" in config_data:
         command = "originate-default"
         if "metric" in config_data["originate_default"]:
             command += " metric {metric}".format(**config_data["originate_default"])
         if "metric_type" in config_data["originate_default"]:
-            command += " metric-type {metric_type}".format(**config_data["originate_default"])
+            command += " metric-type {metric_type}".format(
+                **config_data["originate_default"]
+            )
         if "route_map" in config_data["originate_default"]:
-            command += " route-map {route_map}".format(**config_data["originate_default"])
+            command += " route-map {route_map}".format(
+                **config_data["originate_default"]
+            )
         if "tag" in config_data["originate_default"]:
             command += " tag {tag}".format(**config_data["originate_default"])
         return command
+
 
 class Ospfv3Template(NetworkTemplate):
     def __init__(self, lines=None, module=None):
