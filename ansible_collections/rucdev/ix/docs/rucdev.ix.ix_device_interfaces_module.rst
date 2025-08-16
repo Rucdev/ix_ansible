@@ -1,11 +1,11 @@
-.. _rucdev.ix.ix_l3_interfaces_module:
+.. _rucdev.ix.ix_device_interfaces_module:
 
 
-**************************
-rucdev.ix.ix_l3_interfaces
-**************************
+******************************
+rucdev.ix.ix_device_interfaces
+******************************
 
-**Resource module to configure L3 interfaces.**
+**Configures interfaces on NEC IX switches.**
 
 
 Version added: 1.1.0
@@ -17,7 +17,7 @@ Version added: 1.1.0
 
 Synopsis
 --------
-- This module provides declarative management of Layer-3 interface on NEC IX devices.
+- This module configures interfaces on NEC IX switches.
 
 
 
@@ -46,89 +46,52 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A dictionary of Layer-3 interface options.</div>
+                        <div>A dictionary of interface options.</div>
                 </td>
             </tr>
                                 <tr>
                     <td class="elbow-placeholder"></td>
                 <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>ipv4</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=dictionary</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>IPv4 address to be set for the Layer-3 interface mentioned in <em>name</em> option. The address format is &lt;ipv4 address&gt;/&lt;mask&gt;, the mask is number in range 0-32 eg. 192.168.0.1/24.</div>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>address</b>
+                    <b>duplex</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
                     </div>
                 </td>
                 <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>auto</b>&nbsp;&larr;</div></li>
+                                    <li>full</li>
+                                    <li>half</li>
+                        </ul>
                 </td>
                 <td>
-                        <div>Configure ipv4 address for interfaces.</div>
+                        <div>The duplex mode of the interface.</div>
                 </td>
             </tr>
             <tr>
                     <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="2">
+                <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>dhcp</b>
+                    <b>keepalive</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
+                        <span style="color: purple">-</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
-                        <div>IP address negotiated via DHCP.</div>
+                        <div>Enable device keepalive</div>
                 </td>
             </tr>
                                 <tr>
                     <td class="elbow-placeholder"></td>
                     <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>enable</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
-                                    <li>yes</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>Enable DHCP.</div>
-                </td>
-            </tr>
-
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>mtu</b>
+                    <b>down_notification_count</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">integer</span>
@@ -137,8 +100,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>MTU for a specific interface. Applicable for Ethernet interfaces only.</div>
-                        <div>Refer to vendor documentation for valid values.</div>
+                        <div>The notification count of the keepalive.</div>
                 </td>
             </tr>
             <tr>
@@ -146,20 +108,16 @@ Parameters
                     <td class="elbow-placeholder"></td>
                 <td colspan="2">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>secondary</b>
+                    <b>down_notification_time</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
+                        <span style="color: purple">integer</span>
                     </div>
                 </td>
                 <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
-                                    <li>yes</li>
-                        </ul>
                 </td>
                 <td>
-                        <div>Configure the IP address as a secondary address.</div>
+                        <div>The notification time of the keepalive.</div>
                 </td>
             </tr>
 
@@ -167,142 +125,22 @@ Parameters
                     <td class="elbow-placeholder"></td>
                 <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>ipv6</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">list</span>
-                         / <span style="color: purple">elements=dictionary</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>IPv6 address to be set for the Layer-3 logical interface mentioned in <em>name</em> option.</div>
-                        <div>The address format is &lt;ipv6 address&gt;/&lt;mask&gt;, the mask is number in range 0-128 eg. fd5d:12c9:2201:1::1/64</div>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>address</b>
+                    <b>mdix</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
                     </div>
                 </td>
                 <td>
-                </td>
-                <td>
-                        <div>Configures the IPv6 address for Interface.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>anycast</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
-                                    <li>yes</li>
+                                    <li>mdi</li>
+                                    <li>mdix</li>
                         </ul>
                 </td>
                 <td>
-                        <div>Configure as an anycast</div>
+                        <div>The MDI/MDIX mode of the interface.</div>
                 </td>
             </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>autoconfig</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">dictionary</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>Obtain address using auto-configuration.</div>
-                </td>
-            </tr>
-                                <tr>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>default</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
-                                    <li>yes</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>Insert default route.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>enable</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
-                                    <li>yes</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>enable auto-configuration.</div>
-                </td>
-            </tr>
-
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="2">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>eui</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">boolean</span>
-                    </div>
-                </td>
-                <td>
-                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li>no</li>
-                                    <li>yes</li>
-                        </ul>
-                </td>
-                <td>
-                        <div>Use eui-64 interface identifier</div>
-                </td>
-            </tr>
-
             <tr>
                     <td class="elbow-placeholder"></td>
                 <td colspan="3">
@@ -317,7 +155,182 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Full name of the interface excluding any logical unit number, i.e. GigaEthernet1.1</div>
+                        <div>The name of the interface, e.g. GitEthernet0.0, Loopback0, etc.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>output-buffer</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The number of output buffers.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>sflow</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">-</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The sFlow configuration of the interface.</div>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>max_header_size</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The maximum header size of the sFlow.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>polling_interval</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The polling interval of the sFlow.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="2">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>sampling_rate</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The sampling rate of the sFlow.</div>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>in</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The sampling rate in.</div>
+                </td>
+            </tr>
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="1">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>out</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">integer</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The sampling rate out.</div>
+                </td>
+            </tr>
+
+
+            <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>speed</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>10</li>
+                                    <li>100</li>
+                                    <li>1000</li>
+                                    <li>auto</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>The speed of the interface.</div>
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="4">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>reset</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">dictionary</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>Reset the interface configuration to the default.</div>
+                </td>
+            </tr>
+                                <tr>
+                    <td class="elbow-placeholder"></td>
+                <td colspan="3">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>name</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>The name of the interface, e.g. GitEthernet0.0, Loopback0, etc.</div>
                 </td>
             </tr>
 
@@ -338,15 +351,12 @@ Parameters
                                     <li>deleted</li>
                                     <li>rendered</li>
                                     <li>gathered</li>
+                                    <li>purged</li>
                                     <li>parsed</li>
                         </ul>
                 </td>
                 <td>
-                        <div>The state the configuration should be left in</div>
-                        <div>The states <em>rendered</em>, <em>gathered</em> and <em>parsed</em> does not perform any change on the device.</div>
-                        <div>The state <em>rendered</em> will transform the configuration in <code>config</code> option to platform specific CLI commands which will be returned in the <em>rendered</em> key within the result. For state <em>rendered</em> active connection to remote host is not required.</div>
-                        <div>The state <em>gathered</em> will fetch the running configuration from device and transform it into structured data in the format as per the resource module argspec and the value is returned in the <em>gathered</em> key within the result.</div>
-                        <div>The state <em>parsed</em> reads the configuration from <code>running_config</code> option and transforms it into JSON format as per the resource module parameters and the value is returned in the <em>parsed</em> key within the result. The value of <code>running_config</code> option should be the same format as the output of command <em>show running-config | section ^interface</em> executed on device. For state <em>parsed</em> active connection to remote host is not required.</div>
+                        <div>The state of the interface configuration.</div>
                 </td>
             </tr>
     </table>
@@ -357,7 +367,8 @@ Notes
 -----
 
 .. note::
-   - Tested against NEC IX version 10.2.39 on IX 2105.
+   - Tested against NEC IX2215 Version 10.8.21.
+   - This module works with connection network_cli.
 
 
 
@@ -366,53 +377,12 @@ Examples
 
 .. code-block:: yaml
 
-    # Using merged
-    #
-    #
-    - name: Merge provided configuration with device configuration
-      rucdev.ix.ix_l3_interfaces:
+    - name: Example device_interface module
+      rucdev.ix.device_interface:
         config:
-          - name: GigaEthernet0.0
-            ipv4:
-              address: 192.168.1.1/24
-        state: merged
-
-
-    # Using deleted
-
-    #
-    - name: Delete or return interface parameters to default settings
-      rucdev.ix.ix_l3_interfaces:
-        config:
-          - name: GigaEthernet0.0
-        state: deleted
-
-
-
-    # Using overridden
-
-    - name: Overrides all device configuration with provided configuration
-      rucdev.ix.ix_l3_interfaces:
-        config:
-          - name: GigaEthernet0.0
-            ipv4:
-              address: 192.168.1.1/24
-          - name: GigaEthernet1.0
-            ipv6:
-              autoconfig:
-                enable: true
-        state: overridden
-
-
-    # Using replaced
-
-    - name: Replaces device configuration of listed interfaces with provided configuration
-      rucdev.ix.ix_l3_interfaces:
-        config:
-          - name: GigaEthernet0.0
-            ipv4:
-              address: 192.168.1.1/24
-        state: replaced
+          name: GigaEthernet0
+          duplex: full
+          speed: auto
 
 
 
@@ -434,7 +404,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <b>after</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
+                      <span style="color: purple">-</span>
                     </div>
                 </td>
                 <td>when changed</td>
@@ -452,7 +422,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <b>before</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
+                      <span style="color: purple">-</span>
                     </div>
                 </td>
                 <td>always</td>
@@ -492,4 +462,4 @@ Status
 Authors
 ~~~~~~~
 
-- Yushi Takeda(@Rucdev)
+- Chihiro Nakayama (@nakayumc0278)
