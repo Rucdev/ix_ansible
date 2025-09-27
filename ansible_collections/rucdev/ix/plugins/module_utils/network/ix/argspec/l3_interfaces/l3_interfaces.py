@@ -70,7 +70,6 @@ class L3_interfacesArgs(object):  # pylint: disable=R0903
                 },
                 "name": {"required": True, "type": "str"},
             },
-            "type": "list",
         },
         "running_config": {"type": "str"},
         "state": {

@@ -1,0 +1,12 @@
+---
+- hosts: localhost
+  gather_facts: true
+  roles:
+    - ansible_network.cli_rm_builder.run
+  vars:
+    rm_dest: ansible_collections/rucdev/ix/
+    collection_org: rucdev
+    collection_name: ix
+    ansible_connection: local
+    resource: ospf_interfaces
+    docstring: ../ix_rm_model/ospf_interfaces/ix_ospf_interfaces.yaml

@@ -4,6 +4,7 @@ __pycache__/
 example/
 debugs/
 *.py[cod]
+uv.lock
 
 collectons/
 tests/output

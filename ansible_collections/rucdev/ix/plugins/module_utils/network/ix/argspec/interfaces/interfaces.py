@@ -45,7 +45,6 @@ class InterfacesArgs(object):  # pylint: disable=R0903
                 "mtu": {"type": "int"},
                 "name": {"required": True, "type": "str"},
             },
-            "type": "list",
         },
         "running_config": {"type": "str"},
         "state": {
