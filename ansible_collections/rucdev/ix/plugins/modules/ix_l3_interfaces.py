@@ -42,7 +42,7 @@ module: ix_l3_interfaces
 short_description: Resource module to configure L3 interfaces.
 description:
   - This module provides declarative management of Layer-3 interface on NEC IX devices.
-version_added: 1.1.0
+version_added: 0.2.0
 author:
   - Yushi Takeda(@Rucdev)
 notes:
@@ -201,12 +201,14 @@ RETURN = """
 before:
   description: The configuration prior to the model invocation.
   returned: always
+  type: dict
   sample: >
     The configuration returned will always be in the same format
      of the parameters above.
 after:
   description: The resulting configuration model invocation.
   returned: when changed
+  type: dict
   sample: >
     The configuration returned will always be in the same format
      of the parameters above.

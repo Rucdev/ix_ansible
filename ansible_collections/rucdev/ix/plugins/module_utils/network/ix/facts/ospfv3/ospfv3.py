@@ -110,7 +110,7 @@ class Ospfv3Facts(object):
                 self.argument_spec, {"config": facts_output}, redact=True
             )
         )
-        facts["ospfv3"] = params["config"]
+        facts["ospfv3"] = params.get("config")
         ansible_facts["ansible_network_resources"].update(facts)
 
         return ansible_facts

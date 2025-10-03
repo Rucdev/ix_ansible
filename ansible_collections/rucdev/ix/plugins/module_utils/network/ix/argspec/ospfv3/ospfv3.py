@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2024 Red Hat
+# Copyright 2025 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -62,65 +62,42 @@ class Ospfv3Args(object):  # pylint: disable=R0903
                                     "options": {
                                         "set": {"type": "bool"},
                                         "no_summary": {"type": "bool"},
-                                        "dead_interval": {
-                                            "type": "int",
-                                            "default": 40,
-                                        },
-                                        "hello_interval": {
-                                            "type": "int",
-                                            "default": 10,
-                                        },
-                                        "retransmit_interval": {"type": "int"},
-                                        "transmit_delay": {"type": "int"},
                                     },
                                 },
                             },
                         },
-                        "compatible": {
-                            "type": "dict",
-                            "options": {"rfc1583": {"type": "bool"}},
-                        },
-                        "default_metric": {"type": "int"},
                         "distance": {
                             "type": "dict",
                             "options": {
-                                "external": {"type": "int"},
-                                "inter_area": {"type": "int"},
-                                "intra_area": {"type": "int"},
-                                "nssa_external": {"type": "int"},
-                            },
-                        },
-                        "distribute_list": {
-                            "type": "dict",
-                            "options": {
-                                "prefix": {"type": "str"},
-                                "route_map": {"type": "str"},
+                                "external": {"type": "int", "default": 110},
+                                "inter_area": {"type": "int", "default": 110},
+                                "intra_area": {"type": "int", "default": 110},
                             },
                         },
                         "network": {
                             "type": "list",
                             "elements": "dict",
                             "options": {
-                                "address": {"type": "str"},
+                                "interface": {"type": "str"},
                                 "area": {"type": "str"},
                             },
                         },
                         "originate_default": {
                             "type": "dict",
                             "options": {
-                                "always": {"type": "bool"},
                                 "metric": {"type": "int", "default": 1},
                                 "metric_type": {"type": "int", "default": 2},
                                 "route_map": {"type": "str"},
+                                "tag": {"type": "int", "default": 0},
                             },
                         },
-                        "passive_interface": {"type": "str"},
+                        "passive_interfaces": {"type": "list", "elements": "str"},
                         "router_id": {"type": "str"},
                         "timers": {
                             "type": "dict",
                             "options": {
-                                "delay": {"type": "int"},
-                                "hold": {"type": "int"},
+                                "delay": {"type": "int", "default": 5},
+                                "hold": {"type": "int", "default": 10},
                             },
                         },
                     },
@@ -128,5 +105,17 @@ class Ospfv3Args(object):  # pylint: disable=R0903
             },
         },
         "running_config": {"type": "str"},
-        "state": {"type": "str", "default": "merged"},
+        "state": {
+            "type": "str",
+            "choices": [
+                "merged",
+                "replaced",
+                "overridden",
+                "deleted",
+                "gathered",
+                "rendered",
+                "parsed",
+            ],
+            "default": "merged",
+        },
     }  # pylint: disable=C0301

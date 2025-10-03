@@ -44,25 +44,39 @@ class Ospf_interfacesTemplate(NetworkTemplate):
             "shared": True
         },
         {
-            "name": "authentication",
+            "name": "authentication_type",
             "getval": re.compile(
                 r"""
                 \s+ip\sospf\sauthentication
                 (\s(?P<message_digest>message-digest))?
-                (\s(?P<isnull>null))?
                 $""", re.VERBOSE),
             "setval": "ip ospf authentication"
-            "{{ (' ' + message-digest) if authentication.message_digest is defined else '' }}"
-            "{{ (' ' + null) if authentication.null is defined else '' }}",
+            "{{ ' message-digest' if authentication.message_digest is defined else '' }}",
             "result": {
                 "{{ name }}": {
                     "address_family": {
                         "ip": {
                             "afi": "ipv4",
-                            "authentication": {
-                                "message_digest": "{{ not not message_digest }}",
-                                "null": "{{ not not isnull }}",
-                            },
+                            "authentication_type": "{{ 'message_digest' if message_digest is defined else 'text' }}"
+                        },
+                    },
+                },
+            },
+        },
+        {
+            "name": "authentication_key",
+            "getval": re.compile(
+                r"""
+                \s+ip\sospf\sauthentication-key
+                \s(?P<authentication_key>\S+)
+                $""", re.VERBOSE),
+            "setval": "ip ospf authentication-key {{ authentication_key }}",
+            "result": {
+                "{{ name }}": {
+                    "address_family": {
+                        "ip": {
+                            "afi": "ipv4",
+                            "authentication_key": "{{ authentication_key }}"
                         },
                     },
                 },
@@ -141,7 +155,8 @@ class Ospf_interfacesTemplate(NetworkTemplate):
                 $""",
                 re.VERBOSE
             ),
-            "setval": "ip ospf message-digest {{ key_id }} {{ password}}",
+            "setval": "ip ospf message-digest "
+            "{{ message_digest_key.key_id }} {{ message_digest_key.password }}",
             "result": {
                 "{{ name }}": {
                     "address_family": {
@@ -254,6 +269,7 @@ class Ospf_interfacesTemplate(NetworkTemplate):
             "result": {
                 "{{ name }}": {
                     "address_family": {
+                        "afi": "ipv4",
                         "ip": {
                             "interface_type": "{{ interface_type }}"
                         }
@@ -265,8 +281,7 @@ class Ospf_interfacesTemplate(NetworkTemplate):
             "name": "priority",
             "getval": re.compile(
                 r"""
-                \s+(?P<afi>ip|ipv6)
-                \spriority\s(?P<priority>\S+)
+                \s+(?P<afi>ip|ipv6)\sospf\spriority\s(?P<priority>\S+)
                 $""",
                 re.VERBOSE
             ),

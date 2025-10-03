@@ -17,7 +17,7 @@ module: ix_ospfv2
 short_description: Resource module to configure OSPF.
 description:
   - This module provides declarative management of OSPF on NEC IX devices.
-version_added: 1.1.0
+version_added: 0.2.0
 author:
   - Yushi Takeda(@Rucdev)
 notes:
@@ -139,9 +139,11 @@ options:
                   retransmit_interval:
                     description: Retransmit interval (seconds)
                     type: int
+                    default: 5
                   transmit_delay:
                     description: Transit delay (seconds)
                     type: int
+                    default: 1
           compatible:
             description: OSPF router compatibility list
             type: dict
@@ -161,15 +163,19 @@ options:
               external:
                 description: OSPF external routes
                 type: int
+                default: 110
               inter_area:
                 description: OSPF inter-area routes
                 type: int
+                default: 110
               intra_area:
                 description: OSPF intra-area routes
                 type: int
+                default: 110
               nssa_external:
                 description: OSPF nssa-external routes
                 type: int
+                default: 110
           distribute_list:
             description:
               - Used for filtering when storing contents in the routing table
@@ -177,11 +183,14 @@ options:
               - The OSPF process must be restarted for the settings to take effectJJ;W
             type: dict
             suboptions:
-              prefix:
-                description: Use the prefix list
+              type:
+                description: Type of distribute list
                 type: str
-              route_map:
-                description: Use the route map
+                choices:
+                  - prefix
+                  - route-map
+              name:
+                description: Name of the list for distribute
                 type: str
           network:
             description: Enable routing on an OSPF network
@@ -195,6 +204,7 @@ options:
                 description: Set the OSPF area ID
                 type: str
           nssa_range:
+            description: Setting configuration of address range for nssa
             type: list
             elements: dict
             suboptions:
@@ -240,7 +250,7 @@ options:
                 description: Setting of the max entries(64 ~ 65535)
                 type: int
           router_id:
-            description: 
+            description:
               - Setting of router id
               - A process restart is required for the settings to take effect
             type: str
@@ -250,12 +260,14 @@ options:
             suboptions:
               delay:
                 description: The time between receipt of topology change and recalculation
-                type: int 
+                type: int
+                default: 5
               hold:
                 description: Consecutive calculation intervals
                 type: int
+                default: 10
   running_config:
-    description: 
+    description:
       - This option is used only with state I(parsed).
       - The value of this option should be the output received from the ix
         device by executing the command B(show running-config ospf).
@@ -283,7 +295,7 @@ options:
         executed on device. For state I(parsed) active
         connection to remote host is not required.
     type: str
-    choice:
+    choices:
       - merged
       - replaced
       - overridden

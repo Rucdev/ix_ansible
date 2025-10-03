@@ -41,7 +41,7 @@ DOCUMENTATION = """
 module: ix_interfaces
 short_description: Resource module to configure interface.
 description: This module manages the interface attributes of Nec Univerge IX network devices.
-version_added: 1.1.0
+version_added: 0.2.0
 author:
   - Yushi Takeda (@Rucdev)
 note:

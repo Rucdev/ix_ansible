@@ -1,14 +1,15 @@
 namespace: rucdev
 name: ix
-version: 0.1.2
+version: 0.2.0
 readme: README.md
 authors:
-  - Yushi Takeda
+  - Yushi Takeda (@rucdev)
+  - Chihiro Nakayama(@nakayumc0278)
 description: Ansible collection for NEC IX series
 license_file: LICENSE
 tags: [nec, ix, networking]
 dependencies:
-  "ansible.netcommon": ">=2.5.1"
+  "ansible.netcommon": ">=7.1.0"
 repository: https://github.com/Rucdev/ix_ansible.git
 homepage: https://github.com/Rucdev/ix_ansible
 issues: https://github.com/Rucdev/ix_ansible/issues

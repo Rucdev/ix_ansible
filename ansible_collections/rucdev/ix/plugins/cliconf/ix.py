@@ -150,13 +150,17 @@ class Cliconf(CliconfBase):
 
             reply = self.get(command="show version")
             data = to_text(reply, errors="surrogate_or_strict")
-            version_pattern = r"IX Series (.+) Software, Version (\S+),"
+            version_pattern = r"IX Series (\S+).*Software, Version (\S+),"
 
             match = re.search(version_pattern, data, re.M)
             if match:
+                device_info["network_os_model"] = match.group(1)
                 device_info["network_os_version"] = match.group(2)
 
-            # TODO: hostnameとnetwork_os_modelの取得方法を追加する
+            match = re.search(r"System image file is \"(\S*)\"", data, re.M)
+            if match:
+                device_info["network_os_image"] = match.group(1)
+
             self.send_command(SVINTR_CONFIG)
             self.send_command("configure")
             self.send_command("terminal length 0")
@@ -218,6 +222,7 @@ class Cliconf(CliconfBase):
         result = super(Cliconf, self).get_capabilities()
         result["rpc"] += ["get_diff", "run_commands"]
         result["device_operations"] = self.get_device_operations()
+        result.update(self.get_option_values())
         return json.dumps(result)
 
     def get_device_operations(self) -> dict:

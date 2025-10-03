@@ -22,7 +22,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ix_facts
-version_added: 1.1.0
+version_added: 0.2.0
 short_description: Get facts about ix devices.
 description:
   - Collects facts from network devices running the ix operating
@@ -80,9 +80,7 @@ EXAMPLES = """
     gather_network_resources: interfaces
 """
 
-RETURN = """
-See the respective resource module parameters for the tree.
-"""
+RETURN = """"""
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.facts.facts import (

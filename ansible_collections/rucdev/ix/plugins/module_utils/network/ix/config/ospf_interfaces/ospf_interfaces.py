@@ -101,11 +101,19 @@ class Ospf_interfaces(ResourceModule):
     def _compare_afi(self, want, have):
         parsers = [
             "name",
+            "authentication_type",
+            "authentication_key",
+            "cost",
+            "dead_interval",
+            "hello_interval",
             "interface_type",
-            "retransmit_interval",
-            "transmit_delay",
+            "message_digest_key",
+            "mtu_ignore",
             "neighbor_v2",
             "neighbor_v3",
+            "priority",
+            "retransmit_interval",
+            "transmit_delay",
         ]
         for afi in ("ipv4", "ipv6"):
             wafis = want.pop(afi, {})

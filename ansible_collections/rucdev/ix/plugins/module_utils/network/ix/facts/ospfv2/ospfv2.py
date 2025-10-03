@@ -110,7 +110,7 @@ class Ospfv2Facts(object):
             )
         )
 
-        facts["ospfv2"] = params["config"]
+        facts["ospfv2"] = params.get("config")
         ansible_facts["ansible_network_resources"].update(facts)
 
         return ansible_facts

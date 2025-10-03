@@ -27,6 +27,13 @@ class TerminalModule(TerminalBase):
         re.compile(rb"% .* Invalid command\."),
         re.compile(rb"% .* -- Ambiguous command."),
         re.compile(rb"% Expects a subcommand or item selection."),
+        re.compile(rb"% Another OSPF process is already running."),
+        re.compile(rb"% This network is already registered."),
+        re.compile(rb"% This range is already registered."),
+        re.compile(rb"% Area not found."),
+        re.compile(rb"% Area is a stub area or nssa, so virtual links are not allowed"),
+        re.compile(rb"% Area contains some interfaces or virtual-links."),
+        re.compile(rb"% Same instance ID is already used."),
     ]
 
     terminal_config_prompt = re.compile(r"^.+\(config\)#$")

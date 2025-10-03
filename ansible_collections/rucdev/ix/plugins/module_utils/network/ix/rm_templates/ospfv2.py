@@ -24,6 +24,16 @@ def _tmplt_ospf_virtual_link(config_data):
     # if "virtual_links" in config_data:
     virtual_links_data = config_data
     command = "area {area_id} virtual-link {address}".format(**virtual_links_data)
+    if "dead_interval" in virtual_links_data:
+        command += " dead-interval {dead_interval}".format(**virtual_links_data)
+    if "hello_interval" in virtual_links_data:
+        command += " hello-interval {hello_interval}".format(**virtual_links_data)
+    if "retransmit_interval" in virtual_links_data:
+        command += " retransmit-interval {retransmit_interval}".format(
+            **virtual_links_data
+        )
+    if "transmit_delay" in virtual_links_data:
+        command += " transmit-delay {transmit_delay}".format(**virtual_links_data)
     if "authentication" in config_data:
         authentication_data = virtual_links_data["authentication"]
         if "text" == authentication_data.get("auth_type"):
@@ -34,17 +44,24 @@ def _tmplt_ospf_virtual_link(config_data):
             command += " authentication message-digest message-digest-key {message_digest_key_id} {message_digest_password}".format(
                 **authentication_data
             )
-    if "dead_interval" in virtual_links_data:
-        command += " dead-interval {dead_interval}".format(**virtual_links_data)
-    if "hello_interval" in virtual_links_data:
-        command += " hello-interval {hello_interval}".format(**virtual_links_data)
-    if "retransmit_interval" in virtual_links_data:
-        command += " retransmit_interval {retransmit_interval}".format(
-            **virtual_links_data
-        )
-    if "transmit_delay" in virtual_links_data:
-        command += " transmit_delay {transmit_delay}".format(**virtual_links_data)
     return command
+
+
+def _tmplt_ospf_area_nssa(config_data):
+    if "nssa" in config_data:
+        nssa_data = config_data["nssa"]
+        command = "area {area_id} nssa".format(**config_data)
+        if "no_summary" in nssa_data and nssa_data["no_summary"]:
+            command += " no-summary"
+        if "stability_interval" in nssa_data:
+            command += " stability-interval {stability_interval}".format(**nssa_data)
+        if "translate" in nssa_data and nssa_data["translate"]:
+            command += " translate"
+        if "default_metric" in nssa_data:
+            command += " default-metric {default_metric}".format(**nssa_data)
+        if "default_metric_type" in nssa_data:
+            command += " default-metric-type {default_metric_type}".format(**nssa_data)
+        return command
 
 
 class Ospfv2Template(NetworkTemplate):
@@ -124,6 +141,7 @@ class Ospfv2Template(NetworkTemplate):
                 $""",
                 re.VERBOSE,
             ),
+            "setval": _tmplt_ospf_area_nssa,
             "result": {
                 "processes": {
                     "{{ pid }}": {
@@ -135,6 +153,7 @@ class Ospfv2Template(NetworkTemplate):
                                     "stability_interval": "{{ stability_interval }}",
                                     "translate": "{{ True if translate is defined }}",
                                     "default_metric": "{{ default_metric }}",
+                                    "default_metric_type": "{{ default_metric_type }}",
                                 }
                             }
                         },
@@ -148,8 +167,7 @@ class Ospfv2Template(NetworkTemplate):
                 r"""
                 \s+area
                 (\s(?P<area_id>\S+))
-                (\srange)
-                (\s(?P<address>\S+))
+                (\srange\s(?P<address>\S+))
                 (\s(?P<not_advertise>not-advertise))?
                 $""",
                 re.VERBOSE
@@ -194,7 +212,7 @@ class Ospfv2Template(NetworkTemplate):
                                 "area_id": "{{ area_id }}",
                                 "stub": {
                                     "set": "{{ True if stub is defined and no_sum is undefined }}",
-                                    "no_summary": "{{ True if no_sum is defined }}"
+                                    "no_summary": "{{ no_sum is defined }}"
                                 }
                             }
                         },
@@ -256,7 +274,7 @@ class Ospfv2Template(NetworkTemplate):
                 $""",
                 re.VERBOSE
             ),
-            "setval": "compatible {{ 'rfc1583' if rfc1583 }}",
+            "setval": "compatible {{ 'rfc1583' if compatible.rfc1583 }}",
             "result": {
                 "processes": {
                     "{{ pid }}": {
@@ -314,21 +332,19 @@ class Ospfv2Template(NetworkTemplate):
             "name": "distribute_list",
             "getval": re.compile(
                 r"""
-                \s+distribute-list\s
-                (prefix\s(?P<prefix_list>\S+))?
-                (route-map\s(?P<route_map>\S+))?
+                \s+distribute-list\s(?P<type>\S+)\s(?P<name>\S+)
                 $""",
                 re.VERBOSE
             ),
             "setval": "distribute-list"
-            "{{ ' prefix ' + distribute_list.prefix|string if distribute_list.prefix is defined else '' }}"
-            "{{ ' route-map ' + distribute_list.route_map|string if distribute_list.route_map is defined else '' }}",
+            " {{ 'prefix' if distribute_list.type == 'prefix' else 'route-map' }}"
+            " {{ distribute_list.name }}",
             "result": {
                 "processes": {
                     "{{ pid }}": {
                         "distribute_list": {
-                            "prefix": "{{ prefix_list}}",
-                            "route_map": "{{ route_map }}",
+                            "type": "{{ type }}",
+                            "name": "{{ name }}"
                         }
                     }
                 }
@@ -359,7 +375,7 @@ class Ospfv2Template(NetworkTemplate):
             }
         },
         {
-            "name": "nssa_range",
+            "name": "nssa_ranges",
             "getval": re.compile(
                 r"""
                 \s+nssa-range
@@ -369,11 +385,11 @@ class Ospfv2Template(NetworkTemplate):
                 $""",
                 re.VERBOSE
             ),
-            "setval": "nssa-range {{ range }}{{ ' not-advertise' if not_advertise }}{{ ' ' + tag if tag is defined}}",
+            "setval": "nssa-range {{ range }}{{ ' not-advertise' if not_advertise }}{{ ' tag ' + tag if tag is defined }}",
             "result": {
                 "processes": {
                     "{{ pid }}": {
-                        "nssa_range": [
+                        "nssa_ranges": [
                             {
                                 "range": "{{ range }}",
                                 "not_advertise": "{{ True if not_advertise is defined }}",
