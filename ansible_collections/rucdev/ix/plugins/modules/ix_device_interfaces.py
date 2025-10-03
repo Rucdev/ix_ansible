@@ -41,7 +41,7 @@ DOCUMENTATION = """
 module: ix_device_interfaces
 short_description: "Configures interfaces on NEC IX switches."
 description: "This module configures interfaces on NEC IX switches."
-version_added: "1.1.0"
+version_added: "0.2.0"
 author:
   - "Chihiro Nakayama (@nakayumc0278)"
 notes:

@@ -22,7 +22,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ix_facts
-version_added: 1.1.0
+version_added: 0.2.0
 short_description: Get facts about ix devices.
 description:
   - Collects facts from network devices running the ix operating

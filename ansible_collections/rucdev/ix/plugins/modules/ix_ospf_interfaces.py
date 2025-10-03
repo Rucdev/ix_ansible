@@ -17,7 +17,7 @@ module: ix_ospf_interfaces
 short_description: Resource module to configure OSPF interfaces.
 description:
   - This module provides declarative management of OSPF on NEC IX devices.
-version_added: 1.1.0
+version_added: 0.2.0
 author:
   - Yushi Takeda(@Rucdev)
 notes:

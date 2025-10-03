@@ -29,7 +29,7 @@ DOCUMENTATION: |
 module: ix_static_routes
 short_description: "Configure static routes on NEC IX switches."
 description: "This module configures static routes on NEC IX switches."
-version_added: "1.1.0"
+version_added: "0.2.0"
 author:
   - "Chihiro Nakayama (@nakayumc0278)"
 notes:

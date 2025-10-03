@@ -42,7 +42,7 @@ module: ix_l3_interfaces
 short_description: Resource module to configure L3 interfaces.
 description:
   - This module provides declarative management of Layer-3 interface on NEC IX devices.
-version_added: 1.1.0
+version_added: 0.2.0
 author:
   - Yushi Takeda(@Rucdev)
 notes:
