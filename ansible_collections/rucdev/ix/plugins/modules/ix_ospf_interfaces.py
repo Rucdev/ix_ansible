@@ -43,12 +43,16 @@ options:
             choices:
               - ipv4
               - ipv6
-          authentication:
+          authentication_type:
             description: Enable authentication
             type: str
+            choices:
+              - message-digest
+              - text
           authentication_key:
             description: Sets the password if encryption is not used.
             type: str
+            no_log: true
           cost:
             description: Sets the value of cost on the interface.(1~65535)
             type: int
@@ -61,6 +65,7 @@ options:
           message_digest_key:
             description: Configure of md5 password.(when you use this, the authentication must be message-digest.)
             type: dict
+            no_log: true
             suboptions:
               key_id:
                 description: md5 key id(1~255)
@@ -68,11 +73,12 @@ options:
               password:
                 description: md5 password
                 type: str
+                no_log: true
           mtu_ignore:
             description: Ignore MTU mismatch
             type: bool
           neighbor_v2:
-            description: 
+            description:
               - Register adjacent routers on the NBMA(Non-Broadcast Multiple Access) interface.
               - Unicast transmission is performed only when the interface type is NBMA.
               - Valid only when afi = ipv4.
@@ -91,7 +97,7 @@ options:
                 description: Neighbor router ID
                 type: str
           neighbor_v3:
-            description: 
+            description:
               - Register adjacent routers on the NBMA(Non-Broadcast Multiple Access) interface.
               - Unicast transmission is performed only when the interface type is NBMA.
               - Valid only when afi = ipv6.
@@ -133,7 +139,7 @@ options:
             description: Configuration of transmit-delay on the interface
             type: int
   running_config:
-    description: 
+    description:
       - This option is used only with state I(parsed).
       - The value of this option should be the output received from the ix
         device by executing the command B(show running-config interfaces <name>).
@@ -161,7 +167,7 @@ options:
         executed on device. For state I(parsed) active
         connection to remote host is not required.
     type: str
-    choice:
+    choices:
       - merged
       - replaced
       - overridden

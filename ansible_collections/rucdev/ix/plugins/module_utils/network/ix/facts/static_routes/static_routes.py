@@ -9,6 +9,7 @@ It is in this file the configuration is collected from the device
 for a given resource, parsed, and the facts tree is populated
 based on the configuration.
 """
+
 import re
 from copy import deepcopy
 
@@ -24,9 +25,9 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 
 
 class Static_routesFacts(object):
-    """ The ix static_routes facts class"""
+    """The ix static_routes facts class"""
 
-    def __init__(self, module, subspec='config', options='options'):
+    def __init__(self, module, subspec="config", options="options"):
         self._module = module
         self.argument_spec = Static_routesArgs.argument_spec
 
@@ -77,9 +78,13 @@ class Static_routesFacts(object):
             _triv_static_route = {"address_families": []}
 
             if afi_v4:
-                _triv_static_route["address_families"].append({"afi": "ipv4", "routes": afi_v4})
+                _triv_static_route["address_families"].append(
+                    {"afi": "ipv4", "routes": afi_v4}
+                )
             if afi_v6:
-                _triv_static_route["address_families"].append({"afi": "ipv6", "routes": afi_v6})
+                _triv_static_route["address_families"].append(
+                    {"afi": "ipv6", "routes": afi_v6}
+                )
 
             _static_route_facts.append(_triv_static_route)
 
@@ -93,15 +98,19 @@ class Static_routesFacts(object):
             }
 
             if afi_v4:
-                _vrf_static_route["address_families"].append({"afi": "ipv4", "routes": afi_v4})
+                _vrf_static_route["address_families"].append(
+                    {"afi": "ipv4", "routes": afi_v4}
+                )
             if afi_v6:
-                _vrf_static_route["address_families"].append({"afi": "ipv6", "routes": afi_v6})
+                _vrf_static_route["address_families"].append(
+                    {"afi": "ipv6", "routes": afi_v6}
+                )
 
             _static_route_facts.append(_vrf_static_route)
         return _static_route_facts
 
     def populate_facts(self, connection, ansible_facts, data=None):
-        """ Populate the facts for Static_routes network resource
+        """Populate the facts for Static_routes network resource
         :param connection: the device connection
         :param ansible_facts: Facts dictionary
         :param data: previously collected conf
@@ -121,14 +130,14 @@ class Static_routesFacts(object):
         strout = self.process_static_routes(objs)
         objs = self.structure_static_routes(strout)
 
-        ansible_facts['ansible_network_resources'].pop('static_routes', None)
-        facts = {'static_routes': []}
+        ansible_facts["ansible_network_resources"].pop("static_routes", None)
+        facts = {"static_routes": []}
         params = utils.remove_empties(
             static_routes_parser.validate_config(
                 self.argument_spec, {"config": objs}, redact=True
             )
         )
-        facts['static_routes'] = params['config']
-        ansible_facts['ansible_network_resources'].update(facts)
+        facts["static_routes"] = params["config"]
+        ansible_facts["ansible_network_resources"].update(facts)
 
         return ansible_facts

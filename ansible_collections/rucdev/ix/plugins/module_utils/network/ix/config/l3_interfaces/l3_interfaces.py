@@ -32,7 +32,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 )
 
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.utils.utils import (
-    validate_n_expand_ipv4,
+    validate_ipv4,
     validate_ipv6,
 )
 
@@ -181,7 +181,7 @@ class L3_interfaces(ResourceModule):
     def validate_ips(self, afi, want=None, have=None):
         if afi == "ipv4" and want:
             v4_addr = (
-                validate_n_expand_ipv4(self._module, want)
+                validate_ipv4(self._module, want["address"])
                 if want.get("address")
                 else {}
             )
@@ -193,7 +193,7 @@ class L3_interfaces(ResourceModule):
 
         if afi == "ipv4" and have:
             v4_addr_h = (
-                validate_n_expand_ipv4(self._module, have)
+                validate_ipv4(self._module, have["address"])
                 if have.get("address")
                 else {}
             )

@@ -94,12 +94,16 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                                                         "null",
                                                     ],
                                                 },
-                                                "text_password": {"type": "str"},
+                                                "text_password": {
+                                                    "type": "str",
+                                                    "no_log": False,
+                                                },
                                                 "message_digest_key_id": {
                                                     "type": "int"
                                                 },
                                                 "message_digest_password": {
-                                                    "type": "str"
+                                                    "type": "str",
+                                                    "no_log": False,
                                                 },
                                             },
                                         },
@@ -111,8 +115,14 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                                             "type": "int",
                                             "default": 10,
                                         },
-                                        "retransmit_interval": {"type": "int"},
-                                        "transmit_delay": {"type": "int"},
+                                        "retransmit_interval": {
+                                            "type": "int",
+                                            "default": 5,
+                                        },
+                                        "transmit_delay": {
+                                            "type": "int",
+                                            "default": 1,
+                                        },
                                     },
                                 },
                             },
@@ -125,17 +135,20 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                         "distance": {
                             "type": "dict",
                             "options": {
-                                "external": {"type": "int"},
-                                "inter_area": {"type": "int"},
-                                "intra_area": {"type": "int"},
-                                "nssa_external": {"type": "int"},
+                                "external": {"type": "int", "default": 110},
+                                "inter_area": {"type": "int", "default": 110},
+                                "intra_area": {"type": "int", "default": 110},
+                                "nssa_external": {"type": "int", "default": 110},
                             },
                         },
                         "distribute_list": {
                             "type": "dict",
                             "options": {
-                                "prefix": {"type": "str"},
-                                "route_map": {"type": "str"},
+                                "type": {
+                                    "type": "str",
+                                    "choices": ["prefix", "route-map"],
+                                },
+                                "name": {"type": "str"},
                             },
                         },
                         "network": {
@@ -173,8 +186,8 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                         "timers": {
                             "type": "dict",
                             "options": {
-                                "delay": {"type": "int"},
-                                "hold": {"type": "int"},
+                                "delay": {"type": "int", "default": 5},
+                                "hold": {"type": "int", "default": 10},
                             },
                         },
                     },
@@ -182,5 +195,17 @@ class Ospfv2Args(object):  # pylint: disable=R0903
             },
         },
         "running_config": {"type": "str"},
-        "state": {"type": "str", "default": "merged"},
+        "state": {
+            "type": "str",
+            "choices": [
+                "merged",
+                "replaced",
+                "overridden",
+                "deleted",
+                "gathered",
+                "rendered",
+                "parsed",
+            ],
+            "default": "merged",
+        },
     }  # pylint: disable=C0301

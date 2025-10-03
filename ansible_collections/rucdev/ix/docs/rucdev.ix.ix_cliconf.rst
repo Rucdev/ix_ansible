@@ -36,7 +36,7 @@ Status
 Authors
 ~~~~~~~
 
-- Yushi Takeda
+- Yushi Takeda (@ruc_dev)
 
 
 .. hint::

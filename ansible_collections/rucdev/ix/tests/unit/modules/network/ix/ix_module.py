@@ -25,7 +25,7 @@ import os
 from ansible_collections.rucdev.ix.tests.unit.modules.utils import (
     AnsibleExitJson,
     AnsibleFailJson,
-    ModuleTestCase
+    ModuleTestCase,
 )
 
 fixture_path = os.path.join(os.path.dirname(__file__), "fixtures")
@@ -49,8 +49,11 @@ def load_fixture(name):
     fixture_data[path] = data
     return data
 
+
 class TestIxModule(ModuleTestCase):
-    def execute_module(self, failed=False, changed=False, commands=None, sort=True, defaults=False):
+    def execute_module(
+        self, failed=False, changed=False, commands=None, sort=True, defaults=False
+    ):
         self.load_fixtures(commands)
 
         if failed:
@@ -62,7 +65,9 @@ class TestIxModule(ModuleTestCase):
 
         if commands is not None:
             if sort:
-                self.assertEqual(sorted(commands), sorted(result["commands"]), result["commands"])
+                self.assertEqual(
+                    sorted(commands), sorted(result["commands"]), result["commands"]
+                )
             else:
                 self.assertEqual(commands, result["commands"], result["commands"])
 

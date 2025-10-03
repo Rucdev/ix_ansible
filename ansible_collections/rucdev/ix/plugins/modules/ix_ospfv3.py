@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Copyright 2024 Red Hat
+# Copyright 2025 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -13,7 +13,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 DOCUMENTATION = """
-module: ix_ospfv2
+module: ix_ospfv3
 short_description: Resource module to configure OSPF.
 description:
   - This module provides declarative management of OSPF on NEC IX devices.
@@ -49,7 +49,7 @@ options:
                 type: str
               default_cost:
                 description:
-                  - The default cost vaule of area
+                  - The default cost vaule of stub area
                 type: int
               ranges:
                 description: Setting configuration of address range for area
@@ -74,30 +74,6 @@ options:
                   no_summary:
                     description: Do not send summary LSA to stub area
                     type: bool
-                  dead_interval:
-                    description: Dead interval (seconds)
-                    type: int
-                    default: 40
-                  hello_interval:
-                    description: Hello interval (seconds)
-                    type: int
-                    default: 10
-                  retransmit_interval:
-                    description: Retransmit interval (seconds)
-                    type: int
-                  transmit_delay:
-                    description: Transit delay (seconds)
-                    type: int
-          compatible:
-            description: OSPF router compatibility list
-            type: dict
-            suboptions:
-              rfc1583:
-                description: compatible with RFC 1583
-                type: bool
-          default_metric:
-            description: Set metric of redistributed routes
-            type: int
           distance:
             description:
               - Define an administrative distance
@@ -107,35 +83,22 @@ options:
               external:
                 description: OSPF external routes
                 type: int
+                default: 110
               inter_area:
                 description: OSPF inter-area routes
                 type: int
+                default: 110
               intra_area:
                 description: OSPF intra-area routes
                 type: int
-              nssa_external:
-                description: OSPF nssa-external routes
-                type: int
-          distribute_list:
-            description:
-              - Used for filtering when storing contents in the routing table
-              - Specify a prefix list or route map
-              - The OSPF process must be restarted for the settings to take effectJJ;W
-            type: dict
-            suboptions:
-              prefix:
-                description: Use the prefix list
-                type: str
-              route_map:
-                description: Use the route map
-                type: str
+                default: 110
           network:
             description: Enable routing on an OSPF network
             type: list
             elements: dict
             suboptions:
-              address:
-                description: Network number
+              interface:
+                description: Interface name
                 type: str
               area:
                 description: Set the OSPF area ID
@@ -144,9 +107,6 @@ options:
             description: Setting of configure the default route
             type: dict
             suboptions:
-              always:
-                description: Always advertise default route
-                type: bool
               metric:
                 description: OSPF default metric
                 type: int
@@ -158,12 +118,17 @@ options:
               route_map:
                 description: Route-map reference name
                 type: str
-          passive_interface:
+              tag:
+                description: Tag value to be assigned
+                type: int
+                default: 0
+          passive_interfaces:
             description:
               - Setting of configure the specified interface not to send or receive OSPF packets
-            type: str
+            type: list
+            elements: str
           router_id:
-            description: 
+            description:
               - Setting of router id
               - A process restart is required for the settings to take effect
             type: str
@@ -173,12 +138,14 @@ options:
             suboptions:
               delay:
                 description: The time between receipt of topology change and recalculation
-                type: int 
+                type: int
+                default: 5
               hold:
                 description: Consecutive calculation intervals
                 type: int
+                default: 10
   running_config:
-    description: 
+    description:
       - This option is used only with state I(parsed).
       - The value of this option should be the output received from the ix
         device by executing the command B(show running-config ospf).
@@ -206,7 +173,7 @@ options:
         executed on device. For state I(parsed) active
         connection to remote host is not required.
     type: str
-    choice:
+    choices:
       - merged
       - replaced
       - overridden

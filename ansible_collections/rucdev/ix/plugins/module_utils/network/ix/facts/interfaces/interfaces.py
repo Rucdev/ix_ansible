@@ -32,7 +32,7 @@ class InterfacesFacts(object):
         self.argument_spec = InterfacesArgs.argument_spec
 
     def get_interfaces_data(self, connection):
-        return connection.configure_get("show running-config")
+        return connection.configure_get("show running-config interface")
 
     def populate_facts(self, connection, ansible_facts, data=None):
         """Populate the facts for Interfaces network resource

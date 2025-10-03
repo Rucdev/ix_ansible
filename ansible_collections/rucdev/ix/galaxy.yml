@@ -3,7 +3,7 @@ name: ix
 version: 0.1.2
 readme: README.md
 authors:
-  - Yushi Takeda
+  - Yushi Takeda (@rucdev)
 description: Ansible collection for NEC IX series
 license_file: LICENSE
 tags: [nec, ix, networking]

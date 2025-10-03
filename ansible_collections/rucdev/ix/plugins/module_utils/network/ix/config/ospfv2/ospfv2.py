@@ -52,7 +52,6 @@ class Ospfv2(ResourceModule):
             "default_metric",
             "distance",
             "distribute_list",
-            "nssa_range",
             "originate_default",
             "rib",
             "router_id",
@@ -98,12 +97,6 @@ class Ospfv2(ResourceModule):
             haved = {k: v for k, v in iteritems(haved) if k in wantd or not wantd}
             wantd = {}
 
-        # remove superfluous config for overridden and deleted
-        if self.state in ["overridden", "deleted"]:
-            for k, have in iteritems(haved):
-                if k not in wantd:
-                    self._compare(want={}, have=have)
-
         # delete processes first so we do run into "more than one" errors
         if self.state in ["overridden", "deleted"]:
             for k, have in iteritems(haved):
@@ -126,7 +119,7 @@ class Ospfv2(ResourceModule):
             self._areas_compare(want, have)
 
     def _complex_compare(self, want, have):
-        complex_parsers = ["network", "passive_interfaces"]
+        complex_parsers = ["network", "passive_interfaces", "nssa_ranges"]
         for _parser in complex_parsers:
             wdist = want.get(_parser, {})
             hdist = have.get(_parser, {})
@@ -142,7 +135,6 @@ class Ospfv2(ResourceModule):
     def _areas_compare(self, want, have):
         wareas = want.get("areas", {})
         hareas = have.get("areas", {})
-        # raise Exception(wareas)
         for name, entry in iteritems(wareas):
             self._area_compare(want=entry, have=hareas.pop(name, {}))
         for name, entry in iteritems(hareas):
@@ -150,17 +142,13 @@ class Ospfv2(ResourceModule):
 
     def _area_compare(self, want, have):
         parsers = [
+            "area_id",
             "stub",
             "nssa",
             "default_cost",
         ]
-        self.addcmd(want, "area_id", False)
-        bcmdlen = len(self.commands)
         self.compare(parsers=parsers, want=want, have=have)
         self._area_complex_compare(want, have, want.get("area_id"))
-        # acmdlen = len(self.commands)
-        # if bcmdlen == acmdlen:
-        #     self.commands = self.commands[:-1]
 
     def _area_complex_compare(self, want, have, area_id):
         area_complex_parsers = ["ranges", "virtual_links"]
@@ -176,7 +164,6 @@ class Ospfv2(ResourceModule):
                         self.addcmd(haveing, _parser, negate=True)
                     self.addcmd(wanting, _parser, False)
             for key, haveing in iteritems(haver):
-                haveing["area_id"] = area_id
                 self.addcmd(haveing, _parser, negate=True)
 
     def _list_to_dict(self, param):
@@ -190,10 +177,20 @@ class Ospfv2(ResourceModule):
                 }
             proc["areas"] = {entry["area_id"]: entry for entry in proc.get("areas", [])}
 
-            # list to dict for network
+            # list to dict
             if proc.get("network"):
-                proc["network"] = {entry["address"]: entry for entry in proc["network"]}
+                proc["network"] = {
+                    entry["address"]: entry for entry in proc.get("network", [])
+                }
             if proc.get("passive_interfaces"):
                 proc["passive_interfaces"] = {
-                    entry: {"interface": entry} for entry in proc["passive_interfaces"]
+                    entry: {"interface": entry}
+                    for entry in proc.get("passive_interfaces", [])
+                }
+            if proc.get("nssa_ranges"):
+                proc["nssa_ranges"] = {
+                    f"{entry['range']}_"
+                    f"{entry['tag']}"
+                    f"{'_ad' if entry.get('not_advertise', False) else ''}": entry
+                    for entry in proc["nssa_ranges"]
                 }
