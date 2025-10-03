@@ -35,6 +35,7 @@ FACT_RESOURCE_SUBSETS = dict(
     ospf_interfaces=Ospf_interfacesFacts,
     ospfv2=Ospfv2Facts,
     ospfv3=Ospfv3Facts,
+    static_routes=Static_routesFacts
 )
 
 
