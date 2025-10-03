@@ -52,6 +52,7 @@ options:
           authentication_key:
             description: Sets the password if encryption is not used.
             type: str
+            no_log: true
           cost:
             description: Sets the value of cost on the interface.(1~65535)
             type: int
@@ -64,6 +65,7 @@ options:
           message_digest_key:
             description: Configure of md5 password.(when you use this, the authentication must be message-digest.)
             type: dict
+            no_log: true
             suboptions:
               key_id:
                 description: md5 key id(1~255)
@@ -71,6 +73,7 @@ options:
               password:
                 description: md5 password
                 type: str
+                no_log: true
           mtu_ignore:
             description: Ignore MTU mismatch
             type: bool
