@@ -471,3 +471,134 @@ class TestIxOspfv2Module(TestIxModule):
         ]
         result = self.execute_module(changed=False)
         self.assertEqual(sorted(result["rendered"]), sorted(commands))
+
+    NSSA_RANGES_CONFIG = dedent("""\
+        ip router ospf 1
+          area 1
+          nssa-range 192.168.1.0/24 tag 100
+          nssa-range 192.168.2.0/24 not-advertise
+        !
+        """)
+
+    def test_ix_ospfv2_nssa_ranges_parsed(self):
+        set_module_args(dict(running_config=self.NSSA_RANGES_CONFIG, state="parsed"))
+        result = self.execute_module(changed=False)
+        self.assertEqual(
+            result["parsed"]["processes"][0]["nssa_ranges"],
+            [
+                dict(range="192.168.1.0/24", tag="100"),
+                dict(range="192.168.2.0/24", not_advertise=True),
+            ],
+        )
+
+    def test_ix_ospfv2_nssa_ranges_gathered(self):
+        self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
+        set_module_args(dict(state="gathered"))
+        result = self.execute_module(changed=False)
+        self.assertEqual(
+            result["gathered"]["processes"][0]["nssa_ranges"],
+            [
+                dict(range="192.168.1.0/24", tag="100"),
+                dict(range="192.168.2.0/24", not_advertise=True),
+            ],
+        )
+
+    def test_ix_ospfv2_nssa_ranges_merged(self):
+        self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
+        set_module_args(
+            dict(
+                config=dict(
+                    processes=[
+                        dict(
+                            process_id=1,
+                            nssa_ranges=[dict(range="10.0.0.0/8", tag="200")],
+                        )
+                    ]
+                ),
+                state="merged",
+            )
+        )
+        self.execute_module(
+            changed=True,
+            commands=["ip router ospf 1", "nssa-range 10.0.0.0/8 tag 200"],
+        )
+
+    def test_ix_ospfv2_nssa_ranges_merged_idempotent(self):
+        self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
+        set_module_args(
+            dict(
+                config=dict(
+                    processes=[
+                        dict(
+                            process_id=1,
+                            nssa_ranges=[
+                                dict(range="192.168.1.0/24", tag="100"),
+                                dict(range="192.168.2.0/24", not_advertise=True),
+                            ],
+                            areas=[dict(area_id="1")],
+                        )
+                    ]
+                ),
+                state="merged",
+            )
+        )
+        self.execute_module(changed=False, commands=[])
+
+    def test_ix_ospfv2_nssa_ranges_replaced(self):
+        self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
+        set_module_args(
+            dict(
+                config=dict(
+                    processes=[
+                        dict(
+                            process_id=1,
+                            nssa_ranges=[dict(range="192.168.1.0/24", tag="300")],
+                            areas=[dict(area_id="1")],
+                        )
+                    ]
+                ),
+                state="replaced",
+            )
+        )
+        # IX rejects re-registering an existing prefix, so the old entry
+        # must be removed before the new one is added (order is checked).
+        self.execute_module(
+            changed=True,
+            sort=False,
+            commands=[
+                "ip router ospf 1",
+                "no nssa-range 192.168.1.0/24 tag 100",
+                "nssa-range 192.168.1.0/24 tag 300",
+                "no nssa-range 192.168.2.0/24 not-advertise",
+            ],
+        )
+
+    def test_ix_ospfv2_nssa_ranges_merged_change_tag(self):
+        self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
+        set_module_args(
+            dict(
+                config=dict(
+                    processes=[
+                        dict(
+                            process_id=1,
+                            nssa_ranges=[dict(range="192.168.1.0/24", tag="300")],
+                        )
+                    ]
+                ),
+                state="merged",
+            )
+        )
+        self.execute_module(
+            changed=True,
+            sort=False,
+            commands=[
+                "ip router ospf 1",
+                "no nssa-range 192.168.1.0/24 tag 100",
+                "nssa-range 192.168.1.0/24 tag 300",
+            ],
+        )
+
+    def test_ix_ospfv2_nssa_ranges_deleted(self):
+        self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
+        set_module_args(dict(state="deleted"))
+        self.execute_module(changed=True, commands=["no ip router ospf 1"])

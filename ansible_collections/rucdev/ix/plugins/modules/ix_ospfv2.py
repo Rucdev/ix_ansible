@@ -22,6 +22,7 @@ author:
   - Yushi Takeda(@Rucdev)
 notes:
   - Tested against NEC IX version 10.2.39 on IX 2105.
+  - Tested against NEC IX version 10.10.29 on IX 2215 (nssa_ranges).
 options:
   config:
     description: A dictionary of OSPF options.
@@ -203,7 +204,7 @@ options:
               area:
                 description: Set the OSPF area ID
                 type: str
-          nssa_range:
+          nssa_ranges:
             description: Setting configuration of address range for nssa
             type: list
             elements: dict

@@ -126,7 +126,13 @@ class Ospfv2(ResourceModule):
             for key, wanting in iteritems(wdist):
                 haveing = hdist.pop(key, {})
                 if wanting != haveing:
-                    if haveing and self.state in ["overridden", "replaced"]:
+                    # IX identifies an nssa-range by its prefix and rejects
+                    # re-registering it ("This range is already registered."),
+                    # so the existing entry must always be removed first.
+                    if haveing and (
+                        self.state in ["overridden", "replaced"]
+                        or _parser == "nssa_ranges"
+                    ):
                         self.addcmd(haveing, _parser, negate=True)
                     self.addcmd(wanting, _parser, False)
             for key, haveing in iteritems(hdist):
@@ -188,9 +194,7 @@ class Ospfv2(ResourceModule):
                     for entry in proc.get("passive_interfaces", [])
                 }
             if proc.get("nssa_ranges"):
+                # keyed by prefix only: IX allows one nssa-range per prefix
                 proc["nssa_ranges"] = {
-                    f"{entry['range']}_"
-                    f"{entry['tag']}"
-                    f"{'_ad' if entry.get('not_advertise', False) else ''}": entry
-                    for entry in proc["nssa_ranges"]
+                    entry["range"]: entry for entry in proc["nssa_ranges"]
                 }
