@@ -12,12 +12,61 @@ The Static_routes parser templates file. This contains
 a list of parser definitions and associated functions that
 facilitates both facts gathering and native command generation for
 the given network resource.
+
+IX syntax (verified on IX2215 10.10.29). Options are keywords; the device
+accepts them in any order but shows them in this order in running-config,
+and omits default values (distance 1, metric 1):
+
+  ip route [vrf V] <dest|default> [<gateway>] [<interface>]
+           [connected] [dhcp] [distance N] [metric N] [tag N]
+  ipv6 route <dest|default> [<gateway>[%<interface>]] [<interface>]
+           [dhcp] [ra] [distance N] [metric N] [tag N]
+
+A route is identified by dest + gateway + interface (+ connected/dhcp/ra).
+Re-entering the same route REPLACES its options, and "no ip route <dest>
+<gateway>" removes it regardless of options.
 """
 
 import re
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.network_template import (
     NetworkTemplate,
 )
+
+INTERFACE_RE = r"(?:Tunnel|Loopback|Null|Dialer|BVI|USB-Serial|BRI|GigaEthernet)\S+"
+
+# Parts of a route that identify it (used for deletion, see remval).
+IDENTITY_FLAGS = {"ipv4": ("connected", "dhcp"), "ipv6": ("dhcp", "ra")}
+
+
+def _route_head(data):
+    afi = data["afi"]
+    cmd = "ip route" if afi == "ipv4" else "ipv6 route"
+    if data.get("vrf"):
+        cmd += " vrf {vrf}".format(**data)
+    cmd += " {dest}".format(**data)
+    if data.get("forward_router_address"):
+        cmd += " {forward_router_address}".format(**data)
+    if data.get("interface"):
+        cmd += " {interface}".format(**data)
+    for flag in IDENTITY_FLAGS[afi]:
+        if data.get(flag):
+            cmd += " " + flag
+    return cmd
+
+
+def _tmplt_route(data):
+    """Full command in running-config order. Default values are omitted."""
+    cmd = _route_head(data)
+    for opt in ("distance", "metric", "tag"):
+        if data.get(opt) is not None:
+            cmd += " {0} {1}".format(opt, data[opt])
+    return cmd
+
+
+def _tmplt_route_remove(data):
+    """Identity only; IX removes the route regardless of its options."""
+    return _route_head(data)
 
 
 class Static_routesTemplate(NetworkTemplate):
@@ -34,34 +83,31 @@ class Static_routesTemplate(NetworkTemplate):
                 r"""
                 ^ip\sroute
                 (\svrf\s(?P<vrf>\S+))?
-                (\s(?P<dest>\S+))?
-                (\s(?P<forward_router_address>(?!dhcp|tag)(?!(?<!\d\.)\b\d+\b(?!\.\d))(\d{1,3}(\.\d{1,3}){3}|\S+)))?
-                (\s(?P<interface>(Tunnel|Loopback|Null|Dialer|BVI|USB-Serial|BRI|GigaEthernet)\S+))?
-                (\s(?P<distance_metric>\d+))?
-                (\stag\s(?P<tag>\d+))?
+                \s(?P<dest>\S+)
+                (\s(?P<forward_router_address>\d+\.\d+\.\d+\.\d+))?
+                (\s(?P<interface>""" + INTERFACE_RE + r"""))?
+                (\s(?P<connected>connected))?
                 (\s(?P<dhcp>dhcp))?
-                $""", re.VERBOSE,
+                (\sdistance\s(?P<distance>\d+))?
+                (\smetric\s(?P<metric>\d+))?
+                (\stag\s(?P<tag>\d+))?
+                \s*$""", re.VERBOSE,
             ),
-            "setval": "ip route"
-            "{{ (' vrf ' + ipv4.vrf) if ipv4.vrf is defined else '' }}"
-            "{{ (' ' + ipv4.dest) if ipv4.dest is defined else '' }}"
-            "{{ (' ' + ipv4.forward_router_address) if ipv4.forward_router_address is defined else '' }}"
-            "{{ (' ' + ipv4.interface) if ipv4.interface is defined else '' }}"
-            "{{ (' ' + ipv4.distance_metric|string) if ipv4.distance_metric is defined else '' }}"
-            "{{ (' tag ' + ipv4.tag|string) if ipv4.tag is defined else '' }}"
-            "{{ (' name ' + ipv4.name) if ipv4.name is defined else '' }}"
-            "{{ (' dhcp' ) if ipv4.dhcp|d(False) else '' }}",
+            "setval": _tmplt_route,
+            "remval": _tmplt_route_remove,
             "result": {
                 "{{ dest }}_{{ vrf|d() }}_ipv4": [
                     {
                         "_vrf": "{{ vrf }}",
                         "_afi": "ipv4",
                         "_dest": "{{ dest }}",
-                        "interface": "{{ interface }}",
                         "forward_router_address": "{{ forward_router_address }}",
-                        "distance_metric": "{{ distance_metric }}",
+                        "interface": "{{ interface }}",
+                        "connected": "{{ True if connected is defined }}",
+                        "dhcp": "{{ True if dhcp is defined }}",
+                        "distance": "{{ distance }}",
+                        "metric": "{{ metric }}",
                         "tag": "{{ tag }}",
-                        "dhcp": "{{ not not dhcp }}",
                     },
                 ],
             },
@@ -71,35 +117,31 @@ class Static_routesTemplate(NetworkTemplate):
             "getval": re.compile(
                 r"""
                 ^ipv6\sroute
-                (\svrf\s(?P<vrf>\S+))?
-                (\s(?P<dest>\S+))?
-                (\s(?P<forward_router_address>\S+))?
-                (\s(?P<interface>(Tunnel|Loopback|Null|Dialer|BVI|USB-Serial|BRI|GigaEthernet)\S+))?
-                (\s(?P<distance_metric>\d+))?
-                (\stag\s(?P<tag>\d+))?
+                \s(?P<dest>\S+)
+                (\s(?P<forward_router_address>[0-9A-Fa-f]*:[0-9A-Fa-f:.]*(%\S+)?))?
+                (\s(?P<interface>""" + INTERFACE_RE + r"""))?
                 (\s(?P<dhcp>dhcp))?
-                $""", re.VERBOSE,
+                (\s(?P<ra>ra))?
+                (\sdistance\s(?P<distance>\d+))?
+                (\smetric\s(?P<metric>\d+))?
+                (\stag\s(?P<tag>\d+))?
+                \s*$""", re.VERBOSE,
             ),
-            "setval": "ipv6 route"
-            "{{ (' vrf ' + ipv6.vrf) if ipv6.vrf is defined else '' }}"
-            "{{ (' ' + ipv6.dest) if ipv6.dest is defined else '' }}"
-            "{{ (' ' + ipv6.forward_router_address) if ipv6.forward_router_address is defined else '' }}"
-            "{{ (' ' + ipv6.interface) if ipv6.interface is defined else '' }}"
-            "{{ (' ' + ipv6.distance_metric|string) if ipv6.distance_metric is defined else '' }}"
-            "{{ (' tag ' + ipv6.tag|string) if ipv6.tag is defined else '' }}"
-            "{{ (' name ' + ipv6.name) if ipv6.name is defined else '' }}"
-            "{{ (' dhcp' ) if ipv6.dhcp|d(False) else '' }}",
+            "setval": _tmplt_route,
+            "remval": _tmplt_route_remove,
             "result": {
-                "{{ dest }}_{{ vrf|d() }}_ipv6": [
+                "{{ dest }}__ipv6": [
                     {
-                        "_vrf": "{{ vrf }}",
+                        "_vrf": None,
                         "_afi": "ipv6",
                         "_dest": "{{ dest }}",
-                        "interface": "{{ interface }}",
                         "forward_router_address": "{{ forward_router_address }}",
-                        "distance_metric": "{{ distance_metric }}",
+                        "interface": "{{ interface }}",
+                        "dhcp": "{{ True if dhcp is defined }}",
+                        "ra": "{{ True if ra is defined }}",
+                        "distance": "{{ distance }}",
+                        "metric": "{{ metric }}",
                         "tag": "{{ tag }}",
-                        "dhcp": "{{ not not dhcp }}",
                     },
                 ],
             },

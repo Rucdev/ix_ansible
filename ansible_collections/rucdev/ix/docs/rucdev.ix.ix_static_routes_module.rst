@@ -5,10 +5,10 @@
 rucdev.ix.ix_static_routes
 **************************
 
-**Configure static routes on NEC IX switches.**
+**Resource module to configure static routes.**
 
 
-Version added: 1.1.0
+Version added: 0.2.0
 
 .. contents::
    :local:
@@ -17,7 +17,7 @@ Version added: 1.1.0
 
 Synopsis
 --------
-- This module configures static routes on NEC IX switches.
+- This module provides declarative management of static routes (``ip route`` / ``ipv6 route``) on NEC IX devices.
 
 
 
@@ -46,7 +46,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A dictionary of interface options.</div>
+                        <div>A list of static route configurations, one per VRF (or global).</div>
                 </td>
             </tr>
                                 <tr>
@@ -63,7 +63,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The destination IP address of the static route.</div>
+                        <div>Static routes per address family.</div>
                 </td>
             </tr>
                                 <tr>
@@ -85,7 +85,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>The address family of the static route.</div>
+                        <div>Address family.</div>
                 </td>
             </tr>
             <tr>
@@ -103,7 +103,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The destination IP address of the static route.</div>
+                        <div>Static routes.</div>
                 </td>
             </tr>
                                 <tr>
@@ -122,7 +122,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The destination IP address of the static route.</div>
+                        <div>Destination prefix, for example <code>192.0.2.0/24</code>, or <code>default</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -141,7 +141,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The next hop IP address of the static route.</div>
+                        <div>Next hops of the route. Each one is a separate route on the device.</div>
+                        <div>With <em>state=deleted</em>, omit this to delete every route to <em>dest</em>.</div>
                 </td>
             </tr>
                                 <tr>
@@ -164,7 +165,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>The connected of the static route.</div>
+                        <div>(IPv4 only) Inject the route only when the IPv4 subsystem is connected.</div>
                 </td>
             </tr>
             <tr>
@@ -187,7 +188,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>The DHCP of the static route.</div>
+                        <div>Use the gateway given by DHCP. Requires <em>interface</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -206,7 +207,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The distance of the static route.</div>
+                        <div>Administrative distance (0-255).</div>
+                        <div>The default (1) is treated as not specified.</div>
                 </td>
             </tr>
             <tr>
@@ -225,7 +227,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The forward router IP address of the static route.</div>
+                        <div>Gateway address.</div>
+                        <div>For IPv6, <code>&lt;address&gt;%&lt;interface&gt;</code> (for example <code>fe80::1%GigaEthernet0.0</code>) is also accepted.</div>
                 </td>
             </tr>
             <tr>
@@ -244,7 +247,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The interface of the static route.</div>
+                        <div>Outgoing interface, for example <code>GigaEthernet0.0</code> or <code>Null0.0</code>.</div>
                 </td>
             </tr>
             <tr>
@@ -263,7 +266,8 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The metric of the static route.</div>
+                        <div>Metric (1-255).</div>
+                        <div>The default (1) is treated as not specified.</div>
                 </td>
             </tr>
             <tr>
@@ -286,7 +290,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>(IPv6 only)The Router Advertisement of the static route.</div>
+                        <div>(IPv6 only) Use the address from Router Advertisement as the next hop. Requires <em>interface</em>.</div>
                 </td>
             </tr>
             <tr>
@@ -305,7 +309,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Use RA address as next-hop address.</div>
+                        <div>Tag for this route.</div>
                 </td>
             </tr>
 
@@ -324,10 +328,51 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The VRF name of the static route.</div>
+                        <div>VRF name. Omit for the global routing table.</div>
+                        <div>IPv4 only. IX has no VRF form of <code>ipv6 route</code>.</div>
                 </td>
             </tr>
 
+            <tr>
+                <td colspan="5">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>running_config</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>This option is used only with state <em>parsed</em>.</div>
+                        <div>The value of this option should be the output received from the IX device by executing the command <b>show running-config</b>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="5">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>state</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li><div style="color: blue"><b>merged</b>&nbsp;&larr;</div></li>
+                                    <li>replaced</li>
+                                    <li>overridden</li>
+                                    <li>deleted</li>
+                                    <li>rendered</li>
+                                    <li>gathered</li>
+                                    <li>parsed</li>
+                        </ul>
+                </td>
+                <td>
+                        <div>The state the configuration should be left in.</div>
+                </td>
+            </tr>
     </table>
     <br/>
 
@@ -336,8 +381,12 @@ Notes
 -----
 
 .. note::
-   - Tested against NEC IX2215 Version 10.8.21.
-   - This module works with connection network_cli.
+   - Tested against NEC IX2215 Version 10.10.29.
+   - This module works with connection ``network_cli``.
+   - A route is identified by *vrf*, *afi*, *dest*, *forward_router_address*, *interface* and the *connected* / *dhcp* / *ra* flags. *distance*, *metric* and *tag* are options of that route.
+   - **Default values are treated as not specified.** IX does not show ``distance 1`` or ``metric 1`` in the running-config, so *distance=1* and *metric=1* are ignored, the same as leaving them out.
+   - With *state=merged*, options that are not specified keep the value currently on the device. To set an option back to its default, use *state=replaced* or *state=overridden* and leave the option out.
+   - *state=overridden* removes every static route that is not listed, including the default route. List the default route if you need to keep it.
 
 
 
@@ -348,19 +397,99 @@ Examples
 
     # Using merged
 
+    # Before state:
+    # -------------
+    # ip route default 192.0.2.254
+
     - name: Merge provided configuration with device configuration
       rucdev.ix.ix_static_routes:
         config:
           - address_families:
               - afi: ipv4
-                rotues:
-                  - dest: 192.0.2.0/24
+                routes:
+                  - dest: 198.51.100.0/24
                     next_hops:
-                      - foward_router_address: 192.0.2.1
-                        interface: GigaEthernet0.0
+                      - forward_router_address: 192.0.2.1
+                        distance: 10
                         tag: 50
-                        metric: 100
+                      - interface: Null0.0
+                        distance: 250
         state: merged
+
+    # Commands sent:
+    # - ip route 198.51.100.0/24 192.0.2.1 distance 10 tag 50
+    # - ip route 198.51.100.0/24 Null0.0 distance 250
+
+    # Using merged to change one option
+
+    # Before state:
+    # -------------
+    # ip route 198.51.100.0/24 192.0.2.1 distance 10 tag 50
+
+    - name: Change only the metric; distance and tag are kept
+      rucdev.ix.ix_static_routes:
+        config:
+          - address_families:
+              - afi: ipv4
+                routes:
+                  - dest: 198.51.100.0/24
+                    next_hops:
+                      - forward_router_address: 192.0.2.1
+                        metric: 5
+        state: merged
+
+    # Commands sent:
+    # - ip route 198.51.100.0/24 192.0.2.1 distance 10 metric 5 tag 50
+
+    # Using replaced
+
+    # Before state:
+    # -------------
+    # ip route 198.51.100.0/24 192.0.2.1 distance 10 tag 50
+    # ip route 198.51.100.0/24 Null0.0 distance 250
+
+    - name: Replace the routes to 198.51.100.0/24
+      rucdev.ix.ix_static_routes:
+        config:
+          - address_families:
+              - afi: ipv4
+                routes:
+                  - dest: 198.51.100.0/24
+                    next_hops:
+                      - forward_router_address: 192.0.2.2
+        state: replaced
+
+    # Commands sent:
+    # - ip route 198.51.100.0/24 192.0.2.2
+    # - no ip route 198.51.100.0/24 192.0.2.1
+    # - no ip route 198.51.100.0/24 Null0.0
+
+    # Using deleted
+
+    - name: Delete every route to 198.51.100.0/24
+      rucdev.ix.ix_static_routes:
+        config:
+          - address_families:
+              - afi: ipv4
+                routes:
+                  - dest: 198.51.100.0/24
+        state: deleted
+
+    # Using gathered
+
+    - name: Gather static routes
+      rucdev.ix.ix_static_routes:
+        state: gathered
+
+    # Using parsed
+
+    - name: Parse the provided configuration
+      rucdev.ix.ix_static_routes:
+        running_config: |
+          ip route default 192.0.2.254
+          ip route vrf blue 198.51.100.0/24 Null0.0 distance 250
+          ipv6 route 2001:db8::/32 GigaEthernet0.0 ra
+        state: parsed
 
 
 
@@ -382,7 +511,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <b>after</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
+                      <span style="color: purple">list</span>
                     </div>
                 </td>
                 <td>when changed</td>
@@ -399,10 +528,10 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <b>before</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">dictionary</span>
+                      <span style="color: purple">list</span>
                     </div>
                 </td>
-                <td>when <em>state</em> is <code>merged</code>, <code>replaced</code>, <code>overridden</code>, <code>deleted</code> or <code>purged</code></td>
+                <td>when <em>state</em> is <code>merged</code>, <code>replaced</code>, <code>overridden</code> or <code>deleted</code></td>
                 <td>
                             <div>The configuration prior to the module execution.</div>
                     <br/>
@@ -419,7 +548,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                       <span style="color: purple">list</span>
                     </div>
                 </td>
-                <td>when <em>state</em> is <code>merged</code>, <code>replaced</code>, <code>overridden</code>, <code>deleted</code> or <code>purged</code></td>
+                <td>when <em>state</em> is <code>merged</code>, <code>replaced</code>, <code>overridden</code> or <code>deleted</code></td>
                 <td>
                             <div>The set of commands pushed to the remote device.</div>
                     <br/>

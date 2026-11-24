@@ -3,24 +3,31 @@
 # Copyright 2024 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+#
+
+from __future__ import absolute_import, division, print_function
+
+__metaclass__ = type
+
 """
-The ix device_interfaces fact class
-It is in this file the configuration is collected from the device
-for a given resource, parsed, and the facts tree is populated
-based on the configuration.
+The ix_static_routes config file.
+It is in this file where the current configuration (as dict)
+is compared to the provided configuration (as dict) and the command set
+necessary to bring the current configuration to its desired end-state is
+created.
+
+Device behaviour this relies on (verified on IX2215 10.10.29):
+- A route is identified by vrf + afi + dest + gateway + interface
+  (+ connected / dhcp / ra). See ROUTE_IDENTITY.
+- Re-entering an existing route REPLACES its options (distance/metric/tag),
+  so changing options needs no "no" command first.
+- "no ip route <identity>" removes the route regardless of its options.
+- running-config never shows default values (distance 1, metric 1), so they
+  are treated as "not specified" here (see DEFAULT_OPTIONS).
 """
 
-import re
-from copy import deepcopy
-from ansible.module_utils.six import iteritems
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module import (
     ResourceModule,
-)
-from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
-    dict_merge,
-)
-from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
-    to_list,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.facts import (
     Facts,
@@ -28,9 +35,24 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.facts i
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.static_routes import (
     Static_routesTemplate,
 )
-from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.utils.utils import (
-    validate_n_expand_ipv4,
+
+ROUTE_IDENTITY = (
+    "vrf",
+    "afi",
+    "dest",
+    "forward_router_address",
+    "interface",
+    "connected",
+    "dhcp",
+    "ra",
 )
+ROUTE_OPTIONS = ("distance", "metric", "tag")
+
+# IX omits these from running-config, so a value equal to the default is the
+# same as not specifying it. Without this, "distance: 1" would never be
+# idempotent. To go back to the default, use replaced/overridden (merged keeps
+# the device's current value for options that are not specified).
+DEFAULT_OPTIONS = {"distance": 1, "metric": 1}
 
 
 class Static_routes(ResourceModule):
@@ -40,13 +62,12 @@ class Static_routes(ResourceModule):
 
     def __init__(self, module):
         super(Static_routes, self).__init__(
-            empty_fact_val={},
+            empty_fact_val=[],
             facts_module=Facts(module),
             module=module,
             resource="static_routes",
             tmplt=Static_routesTemplate(),
         )
-        self.parsers = ["ipv4", "ipv6"]
 
     def execute_module(self):
         """Execute the module
@@ -63,125 +84,152 @@ class Static_routes(ResourceModule):
         """Generate configuration commands to send based on
         want, have and desired state.
         """
-        wantd, delete_spcl = self.list_to_dict(self.want, "want")
-        haved, n_req = self.list_to_dict(self.have, "have")
+        wantd = self._flatten(self.want, validate=True)
+        haved = self._flatten(self.have)
 
-        if delete_spcl and haved and self.state == "deleted":
-            for pk, to_rem in delete_spcl.items():
-                if pk in ["ipv4", "ipv6"]:
-                    _afis = haved.get("(_afis_)")
-                    for k, v in _afis.get(pk, {}).items():
-                        for each_dest in to_rem:
-                            if k.split("_")[0] == each_dest:
-                                self.addcmd({pk: v}, pk, True)
-                else:
-                    _vrfs = haved.get(pk)
-                    for ak, v in _vrfs.items():
-                        for k, srts in v.items():
-                            for each_dest in to_rem.get(ak):
-                                if k.split("_")[0] == each_dest:
-                                    self.addcmd({ak: srts}, ak, True)
+        if self.state == "deleted":
+            self._delete(haved)
+            return
 
+        if self.state == "merged":
+            for key, want in wantd.items():
+                have = haved.get(key, {})
+                # options not given keep the device value (IX would otherwise
+                # reset them, because re-entering a route replaces its options)
+                merged = dict(have, **want)
+                if self._same(merged, have) is False:
+                    self.addcmd(merged, merged["afi"])
+            return
+
+        # replaced: only destinations present in want are managed
+        # overridden: every route on the device is managed
+        if self.state == "replaced":
+            scope = set(self._dest_of(k) for k in wantd)
+            in_scope = dict(
+                (k, v) for k, v in haved.items() if self._dest_of(k) in scope
+            )
         else:
-            # if state is merged, merge want onto have and then compare
-            if self.state == "merged":
-                wantd = dict_merge(haved, wantd)
+            in_scope = haved
 
-            for k, want in iteritems(wantd):
-                self._compare_top_level_keys(want=want, have=haved.pop(k, {}))
+        # add/update first, then remove, so a destination is not left
+        # without any route while the change is applied
+        for key, want in wantd.items():
+            if self._same(want, in_scope.get(key)) is False:
+                self.addcmd(want, want["afi"])
+        for key, have in in_scope.items():
+            if key not in wantd:
+                self.addcmd(have, have["afi"], negate=True)
 
-            # if self.state in ["overridden", "deleted"]:
-            if (self.state == "deleted" and not wantd) or self.state == "overridden":
-                for k, have in iteritems(haved):
-                    self._compare_top_level_keys(want={}, have=have)
+    def _delete(self, haved):
+        if not self.want:
+            targets = haved.values()
+        else:
+            targets = [
+                have for key, have in haved.items() if self._matches_delete_filter(have)
+            ]
+        for have in targets:
+            self.addcmd(have, have["afi"], negate=True)
 
-    def _compare_top_level_keys(self, want, have):
-        # if state is deleted, empty out wantd and set haved to wantd
-        if self.state == "deleted" and have:
-            _have = {}
-            for addf in ["ipv4", "ipv6"]:
-                _temp_sr = {}
-                for k, ha in iteritems(have.get(addf, {})):
-                    if k in want.get(addf, {}):  # or not want.get(addf)
-                        _temp_sr[k] = ha
-                    if _temp_sr:
-                        _have[addf] = _temp_sr
-            if _have:
-                have = _have
-                want = {}
+    def _matches_delete_filter(self, have):
+        """deleted with config: a vrf / afi / dest without next_hops selects
+        every route below it; a next_hop selects that route only."""
+        for entry in self.want:
+            if (entry.get("vrf") or None) != have.get("vrf"):
+                continue
+            afs = entry.get("address_families")
+            if not afs:
+                return True
+            for af in afs:
+                if af["afi"] != have["afi"]:
+                    continue
+                routes = af.get("routes")
+                if not routes:
+                    return True
+                for route in routes:
+                    if route["dest"] != have["dest"]:
+                        continue
+                    if not route.get("next_hops"):
+                        return True
+                    for nh in route["next_hops"]:
+                        wanted = self._route(
+                            entry.get("vrf"), af["afi"], route["dest"], nh
+                        )
+                        if self._key(wanted) == self._key(have):
+                            return True
+        return False
 
-        if self.state != "deleted":
-            for _afi, routes in want.items():
-                self._compare(s_want=routes, s_have=have.pop(_afi, {}), afi=_afi)
+    @staticmethod
+    def _same(want, have):
+        """Compare two routes; gateway addresses are case-insensitive (IPv6)."""
+        if not have:
+            return False
 
-        if self.state in ["overridden", "deleted"]:
-            for _afi, routes in have.items():
-                self._compare(s_want={}, s_have=routes, afi=_afi)
+        def norm(route):
+            route = dict(route)
+            if route.get("forward_router_address"):
+                route["forward_router_address"] = route[
+                    "forward_router_address"
+                ].lower()
+            return route
 
-    def _compare(self, s_want, s_have, afi):
-        for name, w_srs in s_want.items():
-            have_srs = s_have.pop(name, {})
-            # raise Exception(self.addcmd({afi: w_srs}, afi, False))
-            # raise Exception(self._tmplt.render({afi: w_srs}, afi, False))
-            self.compare(parsers=afi, want={afi: w_srs}, have={afi: have_srs})
+        return norm(want) == norm(have)
 
-        # remove remaining items in have for replaced state
-        for name, h_srs in s_have.items():
-            self.compare(parsers=afi, want={}, have={afi: h_srs})
+    @staticmethod
+    def _dest_of(key):
+        return key[:3]  # vrf, afi, dest
 
-    def list_to_dict(self, param, operation):
-        _static_rts = {}
-        _delete_spc = {}
-        if param:
-            for srs in param:
-                _vrf = srs.get("vrf")
-                _srts = {}
-                for adfs in srs.get("address_families", []):
-                    _afi = adfs.get("afi")
-                    _routes = {}
-                    for rts in adfs.get("routes", []):
-                        _dest = rts.get("dest", "")
-                        _sdest = rts.get("dest", "")
-                        #  below if specific to special deletes
-                        if (
-                            self.state == "deleted"
-                            and operation == "want"
-                            and not rts.get("next_hops")
-                        ):
-                            if _vrf:
-                                if not _delete_spc.get(_vrf):
-                                    _delete_spc[_vrf] = {}
-                                if not _delete_spc[_vrf].get(_afi):
-                                    _delete_spc[_vrf][_afi] = []
-                                _delete_spc[_vrf][_afi].append(_dest)
-                            else:
-                                if not _delete_spc.get(_afi):
-                                    _delete_spc[_afi] = []
-                                _delete_spc[_afi].append(_dest)
+    @staticmethod
+    def _key(route):
+        key = []
+        for field in ROUTE_IDENTITY:
+            value = route.get(field)
+            if field == "forward_router_address" and value:
+                value = value.lower()
+            key.append(value or None)
+        return tuple(key)
 
-                        for nxh in rts.get("next_hops", []):
-                            _forw_rtr_add = nxh.get(
-                                "forward_router_address", ""
-                            ).upper()
-                            _intf = nxh.get("interface", "")
-                            _key = _sdest + "_" + _forw_rtr_add + _intf
+    def _route(self, vrf, afi, dest, next_hop):
+        route = {"afi": afi, "dest": dest}
+        if vrf:
+            route["vrf"] = vrf
+        for field, value in next_hop.items():
+            if value is None or value is False:
+                continue
+            if DEFAULT_OPTIONS.get(field) == value:
+                continue
+            route[field] = value
+        return route
 
-                            # if _afi == "ipv4":
-                            #     _dest = validate_n_expand_ipv4(self._module, {"address": _dest})
-                            dummy_sr = {
-                                "afi": _afi,
-                                "dest": _dest,
-                            }
+    def _flatten(self, config, validate=False):
+        """[{vrf, address_families: [{afi, routes: [{dest, next_hops}]}]}]
+        -> {identity key: flat route dict}"""
+        routes = {}
+        for entry in config or []:
+            vrf = entry.get("vrf")
+            for af in entry.get("address_families") or []:
+                afi = af["afi"]
+                for rt in af.get("routes") or []:
+                    for nh in rt.get("next_hops") or []:
+                        route = self._route(vrf, afi, rt["dest"], nh)
+                        if validate:
+                            self._validate(route)
+                        routes[self._key(route)] = route
+        return routes
 
-                            if _vrf:
-                                dummy_sr["vrf"] = _vrf
-                            if _intf:
-                                dummy_sr["interface"] = _intf
-                            if _forw_rtr_add:
-                                dummy_sr["forward_router_address"] = _forw_rtr_add
-                            dummy_sr.update(nxh)
-
-                            _routes[_key] = dummy_sr
-                    _srts[_afi] = _routes
-                _static_rts[_vrf if _vrf else "(_afis_)"] = _srts
-        return _static_rts, _delete_spc
+    def _validate(self, route):
+        afi = route["afi"]
+        where = "%s route %s" % (afi, route["dest"])
+        if not route.get("forward_router_address") and not route.get("interface"):
+            self._module.fail_json(
+                msg="%s: next_hops needs forward_router_address and/or interface"
+                % where
+            )
+        if afi == "ipv4" and route.get("ra"):
+            self._module.fail_json(msg="%s: ra is only valid for ipv6" % where)
+        if afi == "ipv6" and route.get("connected"):
+            self._module.fail_json(msg="%s: connected is only valid for ipv4" % where)
+        if afi == "ipv6" and route.get("vrf"):
+            self._module.fail_json(msg="%s: IX has no vrf for ipv6 route" % where)
+        for flag in ("dhcp", "ra"):
+            if route.get(flag) and not route.get("interface"):
+                self._module.fail_json(msg="%s: %s requires interface" % (where, flag))
