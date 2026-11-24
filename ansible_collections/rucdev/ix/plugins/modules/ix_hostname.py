@@ -21,16 +21,19 @@ version_added: 0.3.0
 author:
   - Yushi Takeda(@Rucdev)
 notes:
+  - Tested against NEC IX version 10.10.29 on IX 2215.
   - This module works with connection C(network_cli).
+  - The hostname must not contain whitespace. IX accepts C(hostname a b) without
+    error but stores only C(a), so the module rejects such values.
   - Since hostname is a single value, C(merged), C(replaced) and C(overridden) behave the same.
-  - C(deleted) sends C(no hostname) and the device falls back to its default hostname.
+  - C(deleted) sends C(no hostname), which removes the C(hostname) line from the running-config.
 options:
   config:
     description: A dictionary of hostname options.
     type: dict
     suboptions:
       hostname:
-        description: Hostname of the device.
+        description: Hostname of the device. Must not contain whitespace.
         type: str
   running_config:
     description:

@@ -61,7 +61,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Hostname of the device.</div>
+                        <div>Hostname of the device. Must not contain whitespace.</div>
                 </td>
             </tr>
 
@@ -114,9 +114,11 @@ Notes
 -----
 
 .. note::
+   - Tested against NEC IX version 10.10.29 on IX 2215.
    - This module works with connection ``network_cli``.
+   - The hostname must not contain whitespace. IX accepts ``hostname a b`` without error but stores only ``a``, so the module rejects such values.
    - Since hostname is a single value, ``merged``, ``replaced`` and ``overridden`` behave the same.
-   - ``deleted`` sends ``no hostname`` and the device falls back to its default hostname.
+   - ``deleted`` sends ``no hostname``, which removes the ``hostname`` line from the running-config.
 
 
 
@@ -193,7 +195,7 @@ Examples
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/projects/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
+Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

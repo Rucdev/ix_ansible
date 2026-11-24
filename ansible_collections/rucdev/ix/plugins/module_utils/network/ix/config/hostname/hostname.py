@@ -50,9 +50,24 @@ class Hostname(ResourceModule):
         :returns: The result from module execution
         """
         if self.state not in ["parsed", "gathered"]:
+            self._validate_want()
             self.generate_commands()
             self.run_commands()
         return self.result
+
+    def _validate_want(self):
+        """IX accepts ``hostname a b`` without error but stores only ``a``,
+        which would make the module report success and never converge.
+        Reject whitespace up front instead.
+        """
+        hostname = (self.want or {}).get("hostname")
+        if hostname is not None and (
+            not hostname or any(c.isspace() for c in hostname)
+        ):
+            self._module.fail_json(
+                msg="hostname must be a non-empty string without whitespace: %r"
+                % hostname
+            )
 
     def generate_commands(self):
         """Generate configuration commands to send based on

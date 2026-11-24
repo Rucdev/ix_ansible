@@ -119,3 +119,14 @@ class TestIxHostnameModule(TestIxModule):
         set_module_args(dict(state="gathered"))
         result = self.execute_module(changed=False)
         self.assertEqual(result["gathered"], {"hostname": "Router1"})
+
+    def test_ix_hostname_rejects_whitespace(self):
+        # IX silently truncates "hostname lab ix" to "lab" (verified on IX2215)
+        self.execute_show_command.return_value = RUNNING_CONFIG
+        set_module_args(dict(config=dict(hostname="lab ix"), state="merged"))
+        result = self.execute_module(failed=True)
+        self.assertIn("without whitespace", result["msg"])
+
+    def test_ix_hostname_rendered_rejects_whitespace(self):
+        set_module_args(dict(config=dict(hostname="lab ix"), state="rendered"))
+        self.execute_module(failed=True)
