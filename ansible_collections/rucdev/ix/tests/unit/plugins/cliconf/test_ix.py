@@ -117,3 +117,88 @@ class TestPluginCLIConfIOS(TestCase):
             ],
         }
         self.assertEqual(sorted(mock_capabilities), sorted(capabilities))
+
+
+class TestCliconfModeHandling(TestCase):
+    """Session mode handling (#24): every task starts in exec mode, and the
+    config-only show commands enter config mode on their own."""
+
+    def setUp(self):
+        self._conn = MagicMock()
+        self._conn.connected = True
+        self._prompt = b"ix2215# "
+        self._conn.get_prompt.side_effect = lambda: self._prompt
+        self._sent = []
+
+        def send(command, *args, **kwargs):
+            cmd = command.decode() if isinstance(command, bytes) else command
+            self._sent.append(cmd)
+            # emulate IX prompt transitions
+            if cmd == "configure":
+                self._prompt = b"ix2215(config)# "
+            elif cmd == "exit":
+                if b"(config-" in self._prompt:
+                    self._prompt = b"ix2215(config)# "
+                else:
+                    self._prompt = b"ix2215# "
+            elif cmd.startswith("ip router ospf"):
+                self._prompt = b"ix2215(config-ospfv2-1)# "
+            return b""
+
+        self._conn.send.side_effect = send
+        self._cliconf = ix.Cliconf(self._conn)
+
+    def test_set_cli_prompt_context_from_config(self):
+        self._prompt = b"ix2215(config)# "
+        self._cliconf.set_cli_prompt_context()
+        self.assertEqual(self._sent, ["configure", "exit"])
+        self.assertEqual(self._prompt, b"ix2215# ")
+
+    def test_set_cli_prompt_context_from_sub_mode(self):
+        self._prompt = b"ix2215(config-ospfv2-1)# "
+        self._cliconf.set_cli_prompt_context()
+        self.assertEqual(self._sent, ["configure", "exit"])
+        self.assertEqual(self._prompt, b"ix2215# ")
+
+    def test_set_cli_prompt_context_already_exec(self):
+        self._cliconf.set_cli_prompt_context()
+        self.assertEqual(self._sent, [])
+
+    def test_set_cli_prompt_context_not_connected(self):
+        self._conn.connected = False
+        self._prompt = b"ix2215(config)# "
+        self._cliconf.set_cli_prompt_context()
+        self.assertEqual(self._sent, [])
+
+    def test_run_commands_show_running_config_from_exec(self):
+        self._cliconf.run_commands(["show running-config"])
+        self.assertEqual(self._sent, ["configure", "show running-config"])
+
+    def test_run_commands_show_startup_config_from_exec(self):
+        self._cliconf.run_commands(["show startup-config"])
+        self.assertEqual(self._sent, ["configure", "show startup-config"])
+
+    def test_run_commands_show_running_config_in_config(self):
+        self._prompt = b"ix2215(config)# "
+        self._cliconf.run_commands(["show running-config"])
+        self.assertEqual(self._sent, ["show running-config"])
+
+    def test_run_commands_other_commands_stay_in_exec(self):
+        self._cliconf.run_commands(["show version", "show ip route"])
+        self.assertEqual(self._sent, ["show version", "show ip route"])
+        self.assertEqual(self._prompt, b"ix2215# ")
+
+    def test_edit_config_then_task_start_is_exec(self):
+        """edit_config leaves exec mode (like cisco.ios 'end'); the next
+        task's show running-config still works."""
+        self._cliconf.edit_config(candidate=["hostname lab"])
+        self.assertEqual(self._prompt, b"ix2215# ")
+        self._sent.clear()
+        self._cliconf.set_cli_prompt_context()
+        self._cliconf.run_commands(["show running-config"])
+        self.assertEqual(self._sent, ["configure", "show running-config"])
+
+    def test_get_device_info_leaves_exec_mode(self):
+        self._cliconf.get_device_info()
+        self.assertEqual(self._sent[-2:], ["configure", "exit"])
+        self.assertEqual(self._prompt, b"ix2215# ")
