@@ -49,18 +49,18 @@ display = Display()
 
 SVINTR_CONFIG = "svintr-config"
 
+# Global config mode "(config)#" and sub-modes such as "(config-ospfv2-1)#".
+CONFIG_PROMPT_RE = re.compile(r"\(config[^)]*\)#$")
+
+# On IX these commands exist only in config mode (verified on IX2215 10.10.29);
+# in exec mode they fail with "% running-config  -- Invalid command."
+CONFIG_ONLY_COMMANDS_RE = re.compile(r"^\s*show\s+(running-config|startup-config)\b")
+
 
 def configure_mode(func):
     @wraps(func)
     def wrapped(self, *args, **kwargs):
-        prompt = self._connection.get_prompt()
-        if (
-            not to_text(prompt, errors="surrogate_or_strict")
-            .strip()
-            .endswith("(config)#")
-        ):
-            # self.send_command(SVINTR_CONFIG)
-            self.send_command("configure")
+        self._enter_config_mode()
         return func(self, *args, **kwargs)
 
     return wrapped
@@ -71,6 +71,36 @@ class Cliconf(CliconfBase):
         self._device_info = {}
         display.vvvvv("cliconf init")
         super(Cliconf, self).__init__(*args, **kwargs)
+
+    def _current_prompt(self):
+        prompt = self._connection.get_prompt()
+        return to_text(prompt, errors="surrogate_or_strict").strip() if prompt else ""
+
+    def _enter_config_mode(self):
+        """Enter global config mode unless already there.
+
+        From a sub-mode (e.g. "(config-ospfv2-1)#") "configure" also returns
+        to the global "(config)#" prompt.
+        """
+        if not self._current_prompt().endswith("(config)#"):
+            self.send_command("configure")
+
+    def set_cli_prompt_context(self):
+        """Make sure every task starts in exec mode, like cisco.ios.
+
+        Called by network_cli at the start of each task. IX has no "end"
+        command, so return with "configure" (to global config, also from a
+        sub-mode) followed by "exit" (to exec) -- the same sequence
+        edit_config uses.
+        """
+        if not self._connection.connected:
+            return
+        if CONFIG_PROMPT_RE.search(self._current_prompt()):
+            self._connection.queue_message(
+                "vvvv", "config mode at task start, returning to exec mode"
+            )
+            self.send_command("configure")
+            self.send_command("exit")
 
     @configure_mode
     def get_config(self, source="running", flags=None, format=None):
@@ -170,6 +200,12 @@ class Cliconf(CliconfBase):
             if match:
                 device_info["network_os_hostname"] = match.group(1)
 
+            # Leave the session in exec mode like every other task boundary
+            # (see set_cli_prompt_context); this runs inside the first task,
+            # after its prompt-context check.
+            self.send_command("configure")
+            self.send_command("exit")
+
             self._device_info = device_info
         return self._device_info
 
@@ -260,6 +296,9 @@ class Cliconf(CliconfBase):
                 raise ValueError(
                     f"'output' value {output} is not supported for run_commands"
                 )
+
+            if CONFIG_ONLY_COMMANDS_RE.match(to_text(cmd["command"])):
+                self._enter_config_mode()
 
             try:
                 out = self.send_command(**cmd)
