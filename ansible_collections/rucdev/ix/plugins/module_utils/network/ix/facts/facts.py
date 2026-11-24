@@ -5,6 +5,9 @@ __metaclass__ = type
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.facts.facts import (
     FactsBase,
 )
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.hostname.hostname import (
+    HostnameFacts,
+)
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.interfaces.interfaces import (
     InterfacesFacts,
 )
@@ -30,6 +33,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.static_
 )
 
 FACT_RESOURCE_SUBSETS = dict(
+    hostname=HostnameFacts,
     interfaces=InterfacesFacts,
     l3_interfaces=L3_interfacesFacts,
     ospf_interfaces=Ospf_interfacesFacts,
