@@ -190,7 +190,7 @@ class Ospfv2(ResourceModule):
             if proc.get("nssa_ranges"):
                 proc["nssa_ranges"] = {
                     f"{entry['range']}_"
-                    f"{entry['tag']}"
+                    f"{entry.get('tag') or ''}"
                     f"{'_ad' if entry.get('not_advertise', False) else ''}": entry
                     for entry in proc["nssa_ranges"]
                 }

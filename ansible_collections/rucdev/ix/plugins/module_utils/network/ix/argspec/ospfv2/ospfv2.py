@@ -159,7 +159,7 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                                 "area": {"type": "str"},
                             },
                         },
-                        "nssa_range": {
+                        "nssa_ranges": {
                             "type": "list",
                             "elements": "dict",
                             "options": {

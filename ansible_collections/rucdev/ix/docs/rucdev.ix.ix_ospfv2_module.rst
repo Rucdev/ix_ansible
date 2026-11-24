@@ -8,7 +8,7 @@ rucdev.ix.ix_ospfv2
 **Resource module to configure OSPF.**
 
 
-Version added: 1.1.0
+Version added: 0.2.0
 
 .. contents::
    :local:
@@ -870,7 +870,7 @@ Parameters
                     <td class="elbow-placeholder"></td>
                 <td colspan="4">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>nssa_range</b>
+                    <b>nssa_ranges</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">list</span>

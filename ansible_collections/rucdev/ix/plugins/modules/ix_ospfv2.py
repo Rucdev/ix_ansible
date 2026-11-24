@@ -203,7 +203,7 @@ options:
               area:
                 description: Set the OSPF area ID
                 type: str
-          nssa_range:
+          nssa_ranges:
             description: Setting configuration of address range for nssa
             type: list
             elements: dict

@@ -385,7 +385,7 @@ class Ospfv2Template(NetworkTemplate):
                 $""",
                 re.VERBOSE
             ),
-            "setval": "nssa-range {{ range }}{{ ' not-advertise' if not_advertise }}{{ ' tag ' + tag if tag is defined }}",
+            "setval": "nssa-range {{ range }}{{ ' not-advertise' if not_advertise|d(False) }}{{ ' tag ' + tag if tag is defined }}",
             "result": {
                 "processes": {
                     "{{ pid }}": {
