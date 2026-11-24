@@ -25,6 +25,7 @@ Name | Description
 [rucdev.ix.ix_config](https://github.com/Rucdev/ix_ansible/blob/main/docs/rucdev.ix.ix_config_module.rst)|Manage configuration on device of NEC IX
 [rucdev.ix.ix_device_interfaces](https://github.com/Rucdev/ix_ansible/blob/main/docs/rucdev.ix.ix_device_interfaces_module.rst)|Configures interfaces on NEC IX switches.
 [rucdev.ix.ix_facts](https://github.com/Rucdev/ix_ansible/blob/main/docs/rucdev.ix.ix_facts_module.rst)|Get facts about ix devices.
+[rucdev.ix.ix_hostname](https://github.com/Rucdev/ix_ansible/blob/main/docs/rucdev.ix.ix_hostname_module.rst)|Resource module to configure hostname.
 [rucdev.ix.ix_interfaces](https://github.com/Rucdev/ix_ansible/blob/main/docs/rucdev.ix.ix_interfaces_module.rst)|Resource module to configure interface.
 [rucdev.ix.ix_l3_interfaces](https://github.com/Rucdev/ix_ansible/blob/main/docs/rucdev.ix.ix_l3_interfaces_module.rst)|Resource module to configure L3 interfaces.
 [rucdev.ix.ix_ospf_interfaces](https://github.com/Rucdev/ix_ansible/blob/main/docs/rucdev.ix.ix_ospf_interfaces_module.rst)|Resource module to configure OSPF interfaces.
