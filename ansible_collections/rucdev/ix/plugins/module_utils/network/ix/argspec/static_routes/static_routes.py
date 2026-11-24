@@ -70,6 +70,7 @@ class Static_routesArgs(object):  # pylint: disable=R0903
                 "vrf": {"type": "str"},
             },
         },
+        "running_config": {"type": "str"},
         "state": {
             "choices": [
                 "merged",
@@ -78,7 +79,6 @@ class Static_routesArgs(object):  # pylint: disable=R0903
                 "deleted",
                 "rendered",
                 "gathered",
-                "purged",
                 "parsed",
             ],
             "default": "merged",
