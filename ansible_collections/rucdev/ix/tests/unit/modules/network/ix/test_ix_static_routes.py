@@ -11,7 +11,7 @@ __metaclass__ = type
 from textwrap import dedent
 from unittest.mock import patch
 
-from ansible_collections.rucdev.ix.plugins.modules import ix_static_routes
+from ansible_collections.rucdev.ix.plugins.modules import ix_facts, ix_static_routes
 from ansible_collections.rucdev.ix.tests.unit.modules.utils import set_module_args
 
 from .ix_module import TestIxModule
@@ -33,6 +33,18 @@ RUNNING_CONFIG = dedent("""\
     !
     interface GigaEthernet0.0
       ip address 192.168.37.127/24
+    !
+    """)
+
+# A device without any ip/ipv6 route line.
+NO_ROUTES_CONFIG = dedent("""\
+    hostname ix2215
+    !
+    interface GigaEthernet0.0
+      ip address 192.168.37.127/24
+    !
+    interface Null0.0
+      no ip address
     !
     """)
 
@@ -178,6 +190,17 @@ class TestIxStaticRoutesModule(TestIxModule):
         result = self.execute_module(changed=False)
         self.assertEqual(result["gathered"], PARSED)
 
+    def test_parsed_no_routes(self):
+        set_module_args(dict(running_config=NO_ROUTES_CONFIG, state="parsed"))
+        result = self.execute_module(changed=False)
+        self.assertEqual(result["parsed"], [])
+
+    def test_gathered_no_routes(self):
+        self.get_data.return_value = NO_ROUTES_CONFIG
+        set_module_args(dict(state="gathered"))
+        result = self.execute_module(changed=False)
+        self.assertEqual(result["gathered"], [])
+
     def test_rendered(self):
         set_module_args(
             dict(
@@ -251,6 +274,18 @@ class TestIxStaticRoutesModule(TestIxModule):
         self.execute_module(
             changed=True, commands=["ip route 192.0.2.128/25 192.168.37.26 distance 20"]
         )
+
+    def test_merged_first_route(self):
+        self.get_data.return_value = NO_ROUTES_CONFIG
+        set_module_args(
+            dict(
+                config=[
+                    v4(("default", [dict(forward_router_address="192.168.37.26")]))
+                ],
+                state="merged",
+            )
+        )
+        self.execute_module(changed=True, commands=["ip route default 192.168.37.26"])
 
     def test_merged_idempotent(self):
         set_module_args(
@@ -415,6 +450,16 @@ class TestIxStaticRoutesModule(TestIxModule):
         )
         self.execute_module(changed=False, commands=[])
 
+    def test_replaced_no_routes(self):
+        self.get_data.return_value = NO_ROUTES_CONFIG
+        set_module_args(
+            dict(
+                config=[v4(("192.0.2.0/24", [dict(interface="Null0.0")]))],
+                state="replaced",
+            )
+        )
+        self.execute_module(changed=True, commands=["ip route 192.0.2.0/24 Null0.0"])
+
     # ---- overridden ----
     def test_overridden(self):
         set_module_args(
@@ -449,6 +494,16 @@ class TestIxStaticRoutesModule(TestIxModule):
         set_module_args(dict(config=PARSED, state="overridden"))
         self.execute_module(changed=False, commands=[])
 
+    def test_overridden_no_routes(self):
+        self.get_data.return_value = NO_ROUTES_CONFIG
+        set_module_args(
+            dict(
+                config=[v4(("192.0.2.0/24", [dict(interface="Null0.0")]))],
+                state="overridden",
+            )
+        )
+        self.execute_module(changed=True, commands=["ip route 192.0.2.0/24 Null0.0"])
+
     # ---- deleted ----
     def test_deleted_all(self):
         self.get_data.return_value = "ip route default 192.168.37.26\nip route vrf blue 198.51.100.0/24 Null0.0\n"
@@ -460,6 +515,23 @@ class TestIxStaticRoutesModule(TestIxModule):
                 "no ip route vrf blue 198.51.100.0/24 Null0.0",
             ],
         )
+
+    def test_deleted_all_no_routes(self):
+        self.get_data.return_value = NO_ROUTES_CONFIG
+        set_module_args(dict(state="deleted"))
+        self.execute_module(changed=False, commands=[])
+
+    def test_deleted_last_route(self):
+        # facts are read again for "after"; by then the device has no routes
+        self.get_data.side_effect = [
+            "ip route default 192.168.37.26\n",
+            NO_ROUTES_CONFIG,
+        ]
+        set_module_args(dict(state="deleted"))
+        result = self.execute_module(
+            changed=True, commands=["no ip route default 192.168.37.26"]
+        )
+        self.assertEqual(result["after"], [])
 
     def test_deleted_by_dest(self):
         set_module_args(
@@ -537,4 +609,34 @@ class TestIxStaticRoutesModule(TestIxModule):
                 )
             ],
             "dhcp requires interface",
+        )
+
+
+class TestIxFactsStaticRoutes(TestIxModule):
+    module = ix_facts
+
+    def setUp(self):
+        super(TestIxFactsStaticRoutes, self).setUp()
+        self.mock_get_resource_connection = patch(
+            "ansible_collections.ansible.netcommon.plugins.module_utils.network.common.facts.facts."
+            "get_resource_connection"
+        )
+        self.mock_get_resource_connection.start()
+        self.mock_get_data = patch(
+            "ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.static_routes.static_routes."
+            "Static_routesFacts.get_static_route_data"
+        )
+        self.get_data = self.mock_get_data.start()
+        self.get_data.return_value = NO_ROUTES_CONFIG
+
+    def tearDown(self):
+        super(TestIxFactsStaticRoutes, self).tearDown()
+        self.mock_get_resource_connection.stop()
+        self.mock_get_data.stop()
+
+    def test_ix_facts_static_routes_no_routes(self):
+        set_module_args(dict(gather_network_resources=["static_routes"]))
+        result = self.execute_module(changed=False)
+        self.assertEqual(
+            result["ansible_facts"]["ansible_network_resources"]["static_routes"], []
         )
