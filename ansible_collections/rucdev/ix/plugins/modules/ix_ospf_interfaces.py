@@ -44,13 +44,17 @@ options:
               - ipv4
               - ipv6
           authentication_type:
-            description: Enable authentication
+            description:
+              - Enable authentication
+              - Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6 or without afi.
             type: str
             choices:
               - message-digest
               - text
           authentication_key:
-            description: Sets the password if encryption is not used.
+            description:
+              - Sets the password if encryption is not used.
+              - Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6 or without afi.
             type: str
             no_log: true
           cost:
@@ -63,7 +67,9 @@ options:
             description: Configure the value of dead-interval on the interface.
             type: int
           message_digest_key:
-            description: Configure of md5 password.(when you use this, the authentication must be message-digest.)
+            description:
+              - Configure of md5 password.(when you use this, the authentication must be message-digest.)
+              - Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6 or without afi.
             type: dict
             suboptions:
               key_id:
@@ -74,7 +80,9 @@ options:
                 type: str
                 no_log: true
           mtu_ignore:
-            description: Ignore MTU mismatch
+            description:
+              - Ignore MTU mismatch
+              - Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6 or without afi.
             type: bool
           neighbor_v2:
             description:
@@ -121,7 +129,9 @@ options:
                 description: Neighbor router ID
                 type: str
           interface_type:
-            description: Configure type of the interface
+            description:
+              - Configure type of the interface
+              - Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6 or without afi.
             type: str
             choices:
               - broadcast
