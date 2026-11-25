@@ -69,7 +69,7 @@ def configure_mode(func):
 
 
 class Cliconf(CliconfBase):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         self._device_info = {}
         display.vvvvv("cliconf init")
         super().__init__(*args, **kwargs)
@@ -78,7 +78,7 @@ class Cliconf(CliconfBase):
         prompt = self._connection.get_prompt()
         return to_text(prompt, errors="surrogate_or_strict").strip() if prompt else ""
 
-    def _enter_config_mode(self):
+    def _enter_config_mode(self) -> None:
         """Enter global config mode unless already there.
 
         From a sub-mode (e.g. "(config-ospfv2-1)#") "configure" also returns
@@ -87,7 +87,7 @@ class Cliconf(CliconfBase):
         if not self._current_prompt().endswith("(config)#"):
             self.send_command("configure")
 
-    def set_cli_prompt_context(self):
+    def set_cli_prompt_context(self) -> None:
         """Make sure every task starts in exec mode, like cisco.ios.
 
         Called by network_cli at the start of each task. IX has no "end"
@@ -108,13 +108,15 @@ class Cliconf(CliconfBase):
     @configure_mode
     def get_config(self, source="running", flags=None, format=None):
         if source not in ("running", "startup"):
+            msg = f"fetching configuration for {source} is not supported"
             raise ValueError(
                 # running, startup以外はエラーとする
-                f"fetching configuration for {source} is not supported",
+                msg,
             )
 
         if format:
-            raise ValueError(f"'format' value {format} is not supported for get_config")
+            msg = f"'format' value {format} is not supported for get_config"
+            raise ValueError(msg)
 
         if not flags:
             flags = []
@@ -139,16 +141,19 @@ class Cliconf(CliconfBase):
         device_operations = self.get_device_operations()
         option_values = self.get_option_values()
         if candidate is None and device_operations["supports_generate_diff"]:
-            raise ValueError("candidate configuration is required to generate diff")
+            msg = "candidate configuration is required to generate diff"
+            raise ValueError(msg)
 
         if diff_match not in option_values["diff_match"]:
+            msg = f"'match' value {diff_match} in invalid, valid values are {', '.join(option_values['diff_match'])}"
             raise ValueError(
-                f"'match' value {diff_match} in invalid, valid values are {', '.join(option_values['diff_match'])}",
+                msg,
             )
 
         if diff_replace not in option_values["diff_replace"]:
+            msg = f"'replace' value {diff_replace} in invalid, valid values are {', '.join(option_values['diff_replace'])}"
             raise ValueError(
-                f"'replace' value {diff_replace} in invalid, valid values are {', '.join(option_values['diff_replace'])}",
+                msg,
             )
 
         candidate_obj = NetworkConfig(indent=1)
@@ -171,7 +176,6 @@ class Cliconf(CliconfBase):
             )
         else:
             configdiffobjs = candidate_obj.items
-            have_banners = {}
 
         diff["config_diff"] = (
             dumps(configdiffobjs, "commands") if configdiffobjs else ""
@@ -228,9 +232,11 @@ class Cliconf(CliconfBase):
         check_all=False,
     ):
         if not command:
-            raise ValueError("must provide value of command to execute")
+            msg = "must provide value of command to execute"
+            raise ValueError(msg)
         if output:
-            raise ValueError(f"'output' value {output} is not supported for get")
+            msg = f"'output' value {output} is not supported for get"
+            raise ValueError(msg)
 
         return self.send_command(
             command=command,
@@ -293,16 +299,18 @@ class Cliconf(CliconfBase):
 
     def run_commands(self, commands=None, check_rc=True) -> list:
         if commands is None:
-            raise ValueError("'commands' value is required")
+            msg = "'commands' value is required"
+            raise ValueError(msg)
 
-        responses = list()
+        responses = []
         for cmd in to_list(commands):
             if not isinstance(cmd, Mapping):
                 cmd = {"command": cmd}
             output = cmd.pop("output", None)
             if output:
+                msg = f"'output' value {output} is not supported for run_commands"
                 raise ValueError(
-                    f"'output' value {output} is not supported for run_commands",
+                    msg,
                 )
 
             if CONFIG_ONLY_COMMANDS_RE.match(to_text(cmd["command"])):
@@ -359,13 +367,14 @@ class Cliconf(CliconfBase):
             self.send_command("exit")
 
         else:
-            raise ValueError("check mode is not supported")
+            msg = "check mode is not supported"
+            raise ValueError(msg)
 
         resp["request"] = requests
         resp["response"] = results
         return resp
 
-    def get_default_flag(self):
+    def get_default_flag(self) -> str:
         self.send_command(SVINTR_CONFIG)
         out = self.get("show running-config ?")
         out = to_text(out, errors="surrogate_then_replace")

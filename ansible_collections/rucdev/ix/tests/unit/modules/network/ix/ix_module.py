@@ -16,8 +16,11 @@
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import contextlib
 import json
 import os
+
+import pytest
 
 from ansible_collections.rucdev.ix.tests.unit.modules.utils import (
     AnsibleExitJson,
@@ -38,10 +41,8 @@ def load_fixture(name):
     with open(path) as f:
         data = f.read()
 
-    try:
+    with contextlib.suppress(Exception):
         data = json.loads(data)
-    except Exception:
-        pass
 
     fixture_data[path] = data
     return data
@@ -60,38 +61,36 @@ class TestIxModule(ModuleTestCase):
 
         if failed:
             result = self.failed()
-            self.assertTrue(result["failed"], result)
+            assert result["failed"], result
         else:
             result = self.changed(changed)
-            self.assertEqual(result["changed"], changed, result)
+            assert result["changed"] == changed, result
 
         if commands is not None:
             if sort:
-                self.assertEqual(
-                    sorted(commands),
-                    sorted(result["commands"]),
-                    result["commands"],
-                )
+                assert sorted(commands) == sorted(result["commands"]), result[
+                    "commands"
+                ]
             else:
-                self.assertEqual(commands, result["commands"], result["commands"])
+                assert commands == result["commands"], result["commands"]
 
         return result
 
     def failed(self):
-        with self.assertRaises(AnsibleFailJson) as exc:
+        with pytest.raises(AnsibleFailJson) as exc:
             self.module.main()
 
-        result = exc.exception.args[0]
-        self.assertTrue(result["failed"], result)
+        result = exc.value.args[0]
+        assert result["failed"], result
         return result
 
     def changed(self, changed=False):
-        with self.assertRaises(AnsibleExitJson) as exc:
+        with pytest.raises(AnsibleExitJson) as exc:
             self.module.main()
 
-        result = exc.exception.args[0]
-        self.assertEqual(result["changed"], changed, result)
+        result = exc.value.args[0]
+        assert result["changed"] == changed, result
         return result
 
-    def load_fixtures(self, commands=None):
+    def load_fixtures(self, commands=None) -> None:
         pass

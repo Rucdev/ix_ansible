@@ -141,7 +141,7 @@ PARSED = [
 
 
 def v4(*routes, **kw):
-    """Config helper: v4(("dest", [next_hops...]), ..., vrf=None)"""
+    """Config helper: v4(("dest", [next_hops...]), ..., vrf=None)."""
     entry = {
         "address_families": [
             {
@@ -158,7 +158,7 @@ def v4(*routes, **kw):
 class TestIxStaticRoutesModule(TestIxModule):
     module = ix_static_routes
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         self.mock_get_resource_connection = patch(
             "ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module_base."
@@ -173,51 +173,51 @@ class TestIxStaticRoutesModule(TestIxModule):
         self.get_data.return_value = RUNNING_CONFIG
         self.maxDiff = None
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         super().tearDown()
         self.mock_get_resource_connection.stop()
         self.mock_get_data.stop()
 
     # ---- read ----
-    def test_parsed(self):
-        set_module_args(dict(running_config=RUNNING_CONFIG, state="parsed"))
+    def test_parsed(self) -> None:
+        set_module_args({"running_config": RUNNING_CONFIG, "state": "parsed"})
         result = self.execute_module(changed=False)
-        self.assertEqual(result["parsed"], PARSED)
+        assert result["parsed"] == PARSED
 
-    def test_gathered(self):
-        set_module_args(dict(state="gathered"))
+    def test_gathered(self) -> None:
+        set_module_args({"state": "gathered"})
         result = self.execute_module(changed=False)
-        self.assertEqual(result["gathered"], PARSED)
+        assert result["gathered"] == PARSED
 
-    def test_parsed_no_routes(self):
-        set_module_args(dict(running_config=NO_ROUTES_CONFIG, state="parsed"))
+    def test_parsed_no_routes(self) -> None:
+        set_module_args({"running_config": NO_ROUTES_CONFIG, "state": "parsed"})
         result = self.execute_module(changed=False)
-        self.assertEqual(result["parsed"], [])
+        assert result["parsed"] == []
 
-    def test_gathered_no_routes(self):
+    def test_gathered_no_routes(self) -> None:
         self.get_data.return_value = NO_ROUTES_CONFIG
-        set_module_args(dict(state="gathered"))
+        set_module_args({"state": "gathered"})
         result = self.execute_module(changed=False)
-        self.assertEqual(result["gathered"], [])
+        assert result["gathered"] == []
 
-    def test_rendered(self):
+    def test_rendered(self) -> None:
         set_module_args(
-            dict(
-                config=[
+            {
+                "config": [
                     v4(
                         (
                             "192.0.2.0/24",
                             [
-                                dict(
-                                    forward_router_address="192.0.2.1",
-                                    interface="GigaEthernet0.0",
-                                    connected=True,
-                                    distance=10,
-                                    metric=5,
-                                    tag=7,
-                                ),
+                                {
+                                    "forward_router_address": "192.0.2.1",
+                                    "interface": "GigaEthernet0.0",
+                                    "connected": True,
+                                    "distance": 10,
+                                    "metric": 5,
+                                    "tag": 7,
+                                },
                                 # defaults are treated as not specified
-                                dict(interface="Null0.0", distance=1, metric=1),
+                                {"interface": "Null0.0", "distance": 1, "metric": 1},
                             ],
                         ),
                         vrf="blue",
@@ -230,11 +230,11 @@ class TestIxStaticRoutesModule(TestIxModule):
                                     {
                                         "dest": "2001:db8::/32",
                                         "next_hops": [
-                                            dict(
-                                                interface="GigaEthernet0.0",
-                                                ra=True,
-                                                tag=3,
-                                            ),
+                                            {
+                                                "interface": "GigaEthernet0.0",
+                                                "ra": True,
+                                                "tag": 3,
+                                            },
                                         ],
                                     },
                                 ],
@@ -242,112 +242,114 @@ class TestIxStaticRoutesModule(TestIxModule):
                         ],
                     },
                 ],
-                state="rendered",
-            ),
+                "state": "rendered",
+            },
         )
         result = self.execute_module(changed=False)
-        self.assertEqual(
-            result["rendered"],
-            [
-                "ip route vrf blue 192.0.2.0/24 192.0.2.1 GigaEthernet0.0 connected distance 10 metric 5 tag 7",
-                "ip route vrf blue 192.0.2.0/24 Null0.0",
-                "ipv6 route 2001:db8::/32 GigaEthernet0.0 ra tag 3",
-            ],
-        )
+        assert result["rendered"] == [
+            "ip route vrf blue 192.0.2.0/24 192.0.2.1 GigaEthernet0.0 connected distance 10 metric 5 tag 7",
+            "ip route vrf blue 192.0.2.0/24 Null0.0",
+            "ipv6 route 2001:db8::/32 GigaEthernet0.0 ra tag 3",
+        ]
 
     # ---- merged ----
-    def test_merged_new_route(self):
+    def test_merged_new_route(self) -> None:
         set_module_args(
-            dict(
-                config=[
+            {
+                "config": [
                     v4(
                         (
                             "192.0.2.128/25",
-                            [dict(forward_router_address="192.168.37.26", distance=20)],
+                            [
+                                {
+                                    "forward_router_address": "192.168.37.26",
+                                    "distance": 20,
+                                },
+                            ],
                         ),
                     ),
                 ],
-                state="merged",
-            ),
+                "state": "merged",
+            },
         )
         self.execute_module(
             changed=True,
             commands=["ip route 192.0.2.128/25 192.168.37.26 distance 20"],
         )
 
-    def test_merged_first_route(self):
+    def test_merged_first_route(self) -> None:
         self.get_data.return_value = NO_ROUTES_CONFIG
         set_module_args(
-            dict(
-                config=[
-                    v4(("default", [dict(forward_router_address="192.168.37.26")])),
+            {
+                "config": [
+                    v4(("default", [{"forward_router_address": "192.168.37.26"}])),
                 ],
-                state="merged",
-            ),
+                "state": "merged",
+            },
         )
         self.execute_module(changed=True, commands=["ip route default 192.168.37.26"])
 
-    def test_merged_idempotent(self):
+    def test_merged_idempotent(self) -> None:
         set_module_args(
-            dict(
-                config=[
+            {
+                "config": [
                     v4(
-                        ("default", [dict(forward_router_address="192.168.37.26")]),
+                        ("default", [{"forward_router_address": "192.168.37.26"}]),
                         (
                             "198.51.100.0/24",
                             [
-                                dict(
-                                    forward_router_address="192.168.37.26",
-                                    distance=10,
-                                    tag=7,
-                                ),
+                                {
+                                    "forward_router_address": "192.168.37.26",
+                                    "distance": 10,
+                                    "tag": 7,
+                                },
                             ],
                         ),
                     ),
                 ],
-                state="merged",
-            ),
+                "state": "merged",
+            },
         )
         self.execute_module(changed=False, commands=[])
 
-    def test_merged_default_values_idempotent(self):
+    def test_merged_default_values_idempotent(self) -> None:
         # distance 1 / metric 1 never appear in running-config
         set_module_args(
-            dict(
-                config=[
+            {
+                "config": [
                     v4(
                         (
                             "default",
                             [
-                                dict(
-                                    forward_router_address="192.168.37.26",
-                                    distance=1,
-                                    metric=1,
-                                ),
+                                {
+                                    "forward_router_address": "192.168.37.26",
+                                    "distance": 1,
+                                    "metric": 1,
+                                },
                             ],
                         ),
                     ),
                 ],
-                state="merged",
-            ),
+                "state": "merged",
+            },
         )
         self.execute_module(changed=False, commands=[])
 
-    def test_merged_change_one_option_keeps_others(self):
+    def test_merged_change_one_option_keeps_others(self) -> None:
         # IX replaces all options when a route is re-entered, so the command
         # must carry the existing distance and tag
         set_module_args(
-            dict(
-                config=[
+            {
+                "config": [
                     v4(
                         (
                             "198.51.100.0/24",
-                            [dict(forward_router_address="192.168.37.26", metric=5)],
+                            [{"forward_router_address": "192.168.37.26", "metric": 5}],
                         ),
                     ),
                 ],
-                state="merged",
-            ),
+                "state": "merged",
+            },
         )
         self.execute_module(
             changed=True,
@@ -356,26 +358,26 @@ class TestIxStaticRoutesModule(TestIxModule):
             ],
         )
 
-    def test_merged_omitted_option_keeps_device_value(self):
+    def test_merged_omitted_option_keeps_device_value(self) -> None:
         set_module_args(
-            dict(
-                config=[
+            {
+                "config": [
                     v4(
                         (
                             "198.51.100.0/24",
-                            [dict(forward_router_address="192.168.37.26")],
+                            [{"forward_router_address": "192.168.37.26"}],
                         ),
                     ),
                 ],
-                state="merged",
-            ),
+                "state": "merged",
+            },
         )
         self.execute_module(changed=False, commands=[])
 
-    def test_merged_gateway_case_insensitive(self):
+    def test_merged_gateway_case_insensitive(self) -> None:
         set_module_args(
-            dict(
-                config=[
+            {
+                "config": [
                     {
                         "address_families": [
                             {
@@ -384,10 +386,10 @@ class TestIxStaticRoutesModule(TestIxModule):
                                     {
                                         "dest": "2001:db8:2::/48",
                                         "next_hops": [
-                                            dict(
-                                                forward_router_address="FE80::1%GigaEthernet0.0",
-                                                metric=2,
-                                            ),
+                                            {
+                                                "forward_router_address": "FE80::1%GigaEthernet0.0",
+                                                "metric": 2,
+                                            },
                                         ],
                                     },
                                 ],
@@ -395,25 +397,25 @@ class TestIxStaticRoutesModule(TestIxModule):
                         ],
                     },
                 ],
-                state="merged",
-            ),
+                "state": "merged",
+            },
         )
         self.execute_module(changed=False, commands=[])
 
     # ---- replaced ----
-    def test_replaced(self):
+    def test_replaced(self) -> None:
         set_module_args(
-            dict(
-                config=[
+            {
+                "config": [
                     v4(
                         (
                             "198.51.100.0/24",
-                            [dict(forward_router_address="192.168.37.26", metric=5)],
+                            [{"forward_router_address": "192.168.37.26", "metric": 5}],
                         ),
                     ),
                 ],
-                state="replaced",
-            ),
+                "state": "replaced",
+            },
         )
         # option set is replaced as a whole (distance/tag reset to default),
         # the Null0.0 route to the same dest is removed (identity only),
@@ -427,51 +429,51 @@ class TestIxStaticRoutesModule(TestIxModule):
             ],
         )
 
-    def test_replaced_idempotent(self):
+    def test_replaced_idempotent(self) -> None:
         set_module_args(
-            dict(
-                config=[
+            {
+                "config": [
                     v4(
                         (
                             "198.51.100.0/24",
                             [
-                                dict(
-                                    forward_router_address="192.168.37.26",
-                                    distance=10,
-                                    tag=7,
-                                ),
-                                dict(interface="Null0.0", distance=250),
+                                {
+                                    "forward_router_address": "192.168.37.26",
+                                    "distance": 10,
+                                    "tag": 7,
+                                },
+                                {"interface": "Null0.0", "distance": 250},
                             ],
                         ),
                     ),
                 ],
-                state="replaced",
-            ),
+                "state": "replaced",
+            },
         )
         self.execute_module(changed=False, commands=[])
 
-    def test_replaced_no_routes(self):
+    def test_replaced_no_routes(self) -> None:
         self.get_data.return_value = NO_ROUTES_CONFIG
         set_module_args(
-            dict(
-                config=[v4(("192.0.2.0/24", [dict(interface="Null0.0")]))],
-                state="replaced",
-            ),
+            {
+                "config": [v4(("192.0.2.0/24", [{"interface": "Null0.0"}]))],
+                "state": "replaced",
+            },
         )
         self.execute_module(changed=True, commands=["ip route 192.0.2.0/24 Null0.0"])
 
     # ---- overridden ----
-    def test_overridden(self):
+    def test_overridden(self) -> None:
         set_module_args(
-            dict(
-                config=[
+            {
+                "config": [
                     v4(
-                        ("default", [dict(forward_router_address="192.168.37.26")]),
-                        ("192.0.2.0/24", [dict(interface="Null0.0")]),
+                        ("default", [{"forward_router_address": "192.168.37.26"}]),
+                        ("192.0.2.0/24", [{"interface": "Null0.0"}]),
                     ),
                 ],
-                state="overridden",
-            ),
+                "state": "overridden",
+            },
         )
         self.execute_module(
             changed=True,
@@ -490,24 +492,24 @@ class TestIxStaticRoutesModule(TestIxModule):
             ],
         )
 
-    def test_overridden_idempotent(self):
-        set_module_args(dict(config=PARSED, state="overridden"))
+    def test_overridden_idempotent(self) -> None:
+        set_module_args({"config": PARSED, "state": "overridden"})
         self.execute_module(changed=False, commands=[])
 
-    def test_overridden_no_routes(self):
+    def test_overridden_no_routes(self) -> None:
         self.get_data.return_value = NO_ROUTES_CONFIG
         set_module_args(
-            dict(
-                config=[v4(("192.0.2.0/24", [dict(interface="Null0.0")]))],
-                state="overridden",
-            ),
+            {
+                "config": [v4(("192.0.2.0/24", [{"interface": "Null0.0"}]))],
+                "state": "overridden",
+            },
         )
         self.execute_module(changed=True, commands=["ip route 192.0.2.0/24 Null0.0"])
 
     # ---- deleted ----
-    def test_deleted_all(self):
+    def test_deleted_all(self) -> None:
         self.get_data.return_value = "ip route default 192.168.37.26\nip route vrf blue 198.51.100.0/24 Null0.0\n"
-        set_module_args(dict(state="deleted"))
+        set_module_args({"state": "deleted"})
         self.execute_module(
             changed=True,
             commands=[
@@ -516,36 +518,36 @@ class TestIxStaticRoutesModule(TestIxModule):
             ],
         )
 
-    def test_deleted_all_no_routes(self):
+    def test_deleted_all_no_routes(self) -> None:
         self.get_data.return_value = NO_ROUTES_CONFIG
-        set_module_args(dict(state="deleted"))
+        set_module_args({"state": "deleted"})
         self.execute_module(changed=False, commands=[])
 
-    def test_deleted_last_route(self):
+    def test_deleted_last_route(self) -> None:
         # facts are read again for "after"; by then the device has no routes
         self.get_data.side_effect = [
             "ip route default 192.168.37.26\n",
             NO_ROUTES_CONFIG,
         ]
-        set_module_args(dict(state="deleted"))
+        set_module_args({"state": "deleted"})
         result = self.execute_module(
             changed=True,
             commands=["no ip route default 192.168.37.26"],
         )
-        self.assertEqual(result["after"], [])
+        assert result["after"] == []
 
-    def test_deleted_by_dest(self):
+    def test_deleted_by_dest(self) -> None:
         set_module_args(
-            dict(
-                config=[
+            {
+                "config": [
                     {
                         "address_families": [
                             {"afi": "ipv4", "routes": [{"dest": "198.51.100.0/24"}]},
                         ],
                     },
                 ],
-                state="deleted",
-            ),
+                "state": "deleted",
+            },
         )
         self.execute_module(
             changed=True,
@@ -555,59 +557,59 @@ class TestIxStaticRoutesModule(TestIxModule):
             ],
         )
 
-    def test_deleted_by_next_hop_ignores_options(self):
+    def test_deleted_by_next_hop_ignores_options(self) -> None:
         set_module_args(
-            dict(
-                config=[v4(("198.51.100.0/24", [dict(interface="Null0.0")]))],
-                state="deleted",
-            ),
+            {
+                "config": [v4(("198.51.100.0/24", [{"interface": "Null0.0"}]))],
+                "state": "deleted",
+            },
         )
         self.execute_module(
             changed=True,
             commands=["no ip route 198.51.100.0/24 Null0.0"],
         )
 
-    def test_deleted_by_vrf(self):
-        set_module_args(dict(config=[{"vrf": "blue"}], state="deleted"))
+    def test_deleted_by_vrf(self) -> None:
+        set_module_args({"config": [{"vrf": "blue"}], "state": "deleted"})
         self.execute_module(
             changed=True,
             commands=["no ip route vrf blue 198.51.100.0/24 Null0.0"],
         )
 
-    def test_deleted_idempotent(self):
+    def test_deleted_idempotent(self) -> None:
         set_module_args(
-            dict(
-                config=[v4(("192.0.2.128/25", [dict(interface="Null0.0")]))],
-                state="deleted",
-            ),
+            {
+                "config": [v4(("192.0.2.128/25", [{"interface": "Null0.0"}]))],
+                "state": "deleted",
+            },
         )
         self.execute_module(changed=False, commands=[])
 
     # ---- validation ----
-    def _fails(self, config, msg):
-        set_module_args(dict(config=config, state="merged"))
+    def _fails(self, config, msg) -> None:
+        set_module_args({"config": config, "state": "merged"})
         result = self.execute_module(failed=True)
-        self.assertIn(msg, result["msg"])
+        assert msg in result["msg"]
 
-    def test_fail_no_next_hop_target(self):
+    def test_fail_no_next_hop_target(self) -> None:
         self._fails(
-            [v4(("192.0.2.0/24", [dict(distance=5)]))],
+            [v4(("192.0.2.0/24", [{"distance": 5}]))],
             "forward_router_address and/or interface",
         )
 
-    def test_fail_ra_on_ipv4(self):
+    def test_fail_ra_on_ipv4(self) -> None:
         self._fails(
-            [v4(("192.0.2.0/24", [dict(interface="GigaEthernet0.0", ra=True)]))],
+            [v4(("192.0.2.0/24", [{"interface": "GigaEthernet0.0", "ra": True}]))],
             "ra is only valid for ipv6",
         )
 
-    def test_fail_dhcp_without_interface(self):
+    def test_fail_dhcp_without_interface(self) -> None:
         self._fails(
             [
                 v4(
                     (
                         "192.0.2.0/24",
-                        [dict(forward_router_address="192.0.2.1", dhcp=True)],
+                        [{"forward_router_address": "192.0.2.1", "dhcp": True}],
                     ),
                 ),
             ],
@@ -618,7 +620,7 @@ class TestIxStaticRoutesModule(TestIxModule):
 class TestIxFactsStaticRoutes(TestIxModule):
     module = ix_facts
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
         self.mock_get_resource_connection = patch(
             "ansible_collections.ansible.netcommon.plugins.module_utils.network.common.facts.facts."
@@ -632,15 +634,14 @@ class TestIxFactsStaticRoutes(TestIxModule):
         self.get_data = self.mock_get_data.start()
         self.get_data.return_value = NO_ROUTES_CONFIG
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         super().tearDown()
         self.mock_get_resource_connection.stop()
         self.mock_get_data.stop()
 
-    def test_ix_facts_static_routes_no_routes(self):
-        set_module_args(dict(gather_network_resources=["static_routes"]))
+    def test_ix_facts_static_routes_no_routes(self) -> None:
+        set_module_args({"gather_network_resources": ["static_routes"]})
         result = self.execute_module(changed=False)
-        self.assertEqual(
-            result["ansible_facts"]["ansible_network_resources"]["static_routes"],
-            [],
+        assert (
+            result["ansible_facts"]["ansible_network_resources"]["static_routes"] == []
         )

@@ -25,9 +25,9 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 
 
 class Hostname(ResourceModule):
-    """The ix_hostname config class"""
+    """The ix_hostname config class."""
 
-    def __init__(self, module):
+    def __init__(self, module) -> None:
         super().__init__(
             empty_fact_val={},
             facts_module=Facts(module),
@@ -38,7 +38,7 @@ class Hostname(ResourceModule):
         self.parsers = ["hostname"]
 
     def execute_module(self):
-        """Execute the module
+        """Execute the module.
 
         :rtype: A dictionary
         :returns: The result from module execution
@@ -49,7 +49,7 @@ class Hostname(ResourceModule):
             self.run_commands()
         return self.result
 
-    def _validate_want(self):
+    def _validate_want(self) -> None:
         """IX accepts ``hostname a b`` without error but stores only ``a``,
         which would make the module report success and never converge.
         Reject whitespace up front instead.
@@ -59,11 +59,10 @@ class Hostname(ResourceModule):
             not hostname or any(c.isspace() for c in hostname)
         ):
             self._module.fail_json(
-                msg="hostname must be a non-empty string without whitespace: %r"
-                % hostname,
+                msg=f"hostname must be a non-empty string without whitespace: {hostname!r}",
             )
 
-    def generate_commands(self):
+    def generate_commands(self) -> None:
         """Generate configuration commands to send based on
         want, have and desired state.
 

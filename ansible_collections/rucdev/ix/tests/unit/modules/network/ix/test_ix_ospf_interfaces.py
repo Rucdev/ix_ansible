@@ -5,6 +5,7 @@
 
 
 from textwrap import dedent
+from typing import NoReturn
 from unittest.mock import patch
 
 from ansible.module_utils.basic import AnsibleModule
@@ -19,7 +20,7 @@ from ansible_collections.rucdev.ix.tests.unit.modules.utils import (
 from .ix_module import TestIxModule
 
 
-def exit_json_no_log(module, **kwargs):
+def exit_json_no_log(module, **kwargs) -> NoReturn:
     # Hide the no_log values like the real AnsibleModule.exit_json does.
     kwargs.setdefault("changed", False)
     raise AnsibleExitJson(remove_values(kwargs, module.no_log_values))
@@ -28,7 +29,7 @@ def exit_json_no_log(module, **kwargs):
 class TestIxOspfInterfacesModule(TestIxModule):
     module = ix_ospf_interfaces
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
 
         self.mock_get_resource_connection_facts = patch(
@@ -46,12 +47,12 @@ class TestIxOspfInterfacesModule(TestIxModule):
         self.execute_show_command = self.mock_execute_show_command.start()
         self.maxDiff = None
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         super().tearDown()
         self.mock_get_resource_connection_facts.stop()
         self.mock_execute_show_command.stop()
 
-    def test_ix_ospf_interfaces_merged(self):
+    def test_ix_ospf_interfaces_merged(self) -> None:
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
@@ -61,30 +62,30 @@ class TestIxOspfInterfacesModule(TestIxModule):
              ipv6 ospf priority 60
             """)
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet0.0",
-                        address_family=[
-                            dict(
-                                afi="ipv4",
-                                mtu_ignore=True,
-                                priority=40,
-                            ),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet0.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv4",
+                                "mtu_ignore": True,
+                                "priority": 40,
+                            },
                         ],
-                    ),
-                    dict(
-                        name="GigaEthernet1.0",
-                        address_family=[
-                            dict(
-                                afi="ipv6",
-                                priority=80,
-                            ),
+                    },
+                    {
+                        "name": "GigaEthernet1.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv6",
+                                "priority": 80,
+                            },
                         ],
-                    ),
+                    },
                 ],
-                state="merged",
-            ),
+                "state": "merged",
+            },
         )
         commands = [
             "interface GigaEthernet0.0",
@@ -94,9 +95,9 @@ class TestIxOspfInterfacesModule(TestIxModule):
             "ipv6 ospf priority 80",
         ]
         result = self.execute_module(changed=True)
-        self.assertEqual(sorted(result["commands"]), sorted(commands))
+        assert sorted(result["commands"]) == sorted(commands)
 
-    def test_ix_ospf_interfaces_merged_idempotent(self):
+    def test_ix_ospf_interfaces_merged_idempotent(self) -> None:
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
@@ -105,34 +106,34 @@ class TestIxOspfInterfacesModule(TestIxModule):
              ipv6 ospf priority 60
             """)
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet0.0",
-                        address_family=[
-                            dict(
-                                afi="ipv4",
-                                priority=20,
-                                mtu_ignore=True,
-                            ),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet0.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv4",
+                                "priority": 20,
+                                "mtu_ignore": True,
+                            },
                         ],
-                    ),
-                    dict(
-                        name="GigaEthernet1.0",
-                        address_family=[
-                            dict(
-                                afi="ipv6",
-                                priority=60,
-                            ),
+                    },
+                    {
+                        "name": "GigaEthernet1.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv6",
+                                "priority": 60,
+                            },
                         ],
-                    ),
+                    },
                 ],
-                state="merged",
-            ),
+                "state": "merged",
+            },
         )
         self.execute_module(changed=False, commands=[])
 
-    def test_ix_ospf_interfaces_replaced(self):
+    def test_ix_ospf_interfaces_replaced(self) -> None:
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
@@ -142,21 +143,21 @@ class TestIxOspfInterfacesModule(TestIxModule):
              ipv6 ospf priority 60
             """)
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet0.0",
-                        address_family=[
-                            dict(
-                                afi="ipv4",
-                                priority=30,
-                                cost=200,
-                            ),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet0.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv4",
+                                "priority": 30,
+                                "cost": 200,
+                            },
                         ],
-                    ),
+                    },
                 ],
-                state="replaced",
-            ),
+                "state": "replaced",
+            },
         )
         commands = [
             "interface GigaEthernet0.0",
@@ -165,109 +166,111 @@ class TestIxOspfInterfacesModule(TestIxModule):
             "ip ospf cost 200",
         ]
         result = self.execute_module(changed=True)
-        self.assertEqual(sorted(result["commands"]), sorted(commands))
+        assert sorted(result["commands"]) == sorted(commands)
 
-    def test_ix_ospf_interfaces_ipv4_only_options_under_ipv6(self):
+    def test_ix_ospf_interfaces_ipv4_only_options_under_ipv6(self) -> None:
         # IX has no "ipv6 ospf" form of these; they used to render "ip ospf ..."
         for option, value in (
             ("authentication_type", "message-digest"),
             ("authentication_key", "secret01"),
-            ("message_digest_key", dict(key_id=1, password="secret01")),
+            ("message_digest_key", {"key_id": 1, "password": "secret01"}),
             ("mtu_ignore", True),
             ("mtu_ignore", False),
             ("interface_type", "point-to-point"),
         ):
             with self.subTest(option=option, value=value):
-                af = dict(afi="ipv6", cost=10)
+                af = {"afi": "ipv6", "cost": 10}
                 af[option] = value
                 set_module_args(
-                    dict(
-                        config=[dict(name="GigaEthernet1.0", address_family=[af])],
-                        state="rendered",
-                    ),
+                    {
+                        "config": [{"name": "GigaEthernet1.0", "address_family": [af]}],
+                        "state": "rendered",
+                    },
                 )
                 result = self.execute_module(failed=True)
-                self.assertIn(option, result["msg"])
-                self.assertIn("GigaEthernet1.0", result["msg"])
+                assert option in result["msg"]
+                assert "GigaEthernet1.0" in result["msg"]
 
-    def test_ix_ospf_interfaces_ipv4_only_options_without_afi(self):
+    def test_ix_ospf_interfaces_ipv4_only_options_without_afi(self) -> None:
         # without afi these used to be silently ignored
         for option, value in (
             ("authentication_type", "message-digest"),
             ("authentication_key", "secret01"),
-            ("message_digest_key", dict(key_id=1, password="secret01")),
+            ("message_digest_key", {"key_id": 1, "password": "secret01"}),
             ("mtu_ignore", True),
             ("interface_type", "point-to-point"),
         ):
             with self.subTest(option=option, value=value):
-                af = dict(cost=10)
+                af = {"cost": 10}
                 af[option] = value
                 set_module_args(
-                    dict(
-                        config=[dict(name="GigaEthernet1.0", address_family=[af])],
-                        state="rendered",
-                    ),
+                    {
+                        "config": [{"name": "GigaEthernet1.0", "address_family": [af]}],
+                        "state": "rendered",
+                    },
                 )
                 result = self.execute_module(failed=True)
-                self.assertIn(option, result["msg"])
-                self.assertIn("afi: not set", result["msg"])
+                assert option in result["msg"]
+                assert "afi: not set" in result["msg"]
 
-    def test_ix_ospf_interfaces_ipv4_only_options_under_ipv6_merged(self):
+    def test_ix_ospf_interfaces_ipv4_only_options_under_ipv6_merged(self) -> None:
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               ipv6 ospf cost 20
             !
             """)
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet1.0",
-                        address_family=[
-                            dict(
-                                afi="ipv6",
-                                mtu_ignore=True,
-                                interface_type="point-to-point",
-                                authentication_key="secret01",
-                            ),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet1.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv6",
+                                "mtu_ignore": True,
+                                "interface_type": "point-to-point",
+                                "authentication_key": "secret01",
+                            },
                         ],
-                    ),
+                    },
                 ],
-                state="merged",
-            ),
+                "state": "merged",
+            },
         )
         result = self.execute_module(failed=True)
-        self.assertIn("authentication_key, mtu_ignore, interface_type", result["msg"])
+        assert "authentication_key, mtu_ignore, interface_type" in result["msg"]
 
-    def test_ix_ospf_interfaces_ipv6_common_options(self):
+    def test_ix_ospf_interfaces_ipv6_common_options(self) -> None:
         # options with an "ipv6 ospf" form are still accepted under ipv6
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet1.0",
-                        address_family=[
-                            dict(afi="ipv6", cost=10, hello_interval=5, priority=0),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet1.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv6",
+                                "cost": 10,
+                                "hello_interval": 5,
+                                "priority": 0,
+                            },
                         ],
-                    ),
+                    },
                 ],
-                state="rendered",
-            ),
+                "state": "rendered",
+            },
         )
         result = self.execute_module(changed=False)
-        self.assertEqual(
-            sorted(result["rendered"]),
-            sorted(
-                [
-                    "interface GigaEthernet1.0",
-                    "ipv6 ospf cost 10",
-                    "ipv6 ospf hello-interval 5",
-                    "ipv6 ospf priority 0",
-                ],
-            ),
+        assert sorted(result["rendered"]) == sorted(
+            [
+                "interface GigaEthernet1.0",
+                "ipv6 ospf cost 10",
+                "ipv6 ospf hello-interval 5",
+                "ipv6 ospf priority 0",
+            ],
         )
 
-    def test_ix_ospf_interfaces_overridden(self):
+    def test_ix_ospf_interfaces_overridden(self) -> None:
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
@@ -277,21 +280,21 @@ class TestIxOspfInterfacesModule(TestIxModule):
              ipv6 ospf cost 150
             """)
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet0.0",
-                        address_family=[
-                            dict(
-                                afi="ipv4",
-                                priority=50,
-                                hello_interval=15,
-                            ),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet0.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv4",
+                                "priority": 50,
+                                "hello_interval": 15,
+                            },
                         ],
-                    ),
+                    },
                 ],
-                state="overridden",
-            ),
+                "state": "overridden",
+            },
         )
         commands = [
             "interface GigaEthernet0.0",
@@ -303,9 +306,9 @@ class TestIxOspfInterfacesModule(TestIxModule):
             "no ipv6 ospf cost 150",
         ]
         result = self.execute_module(changed=True)
-        self.assertEqual(sorted(result["commands"]), sorted(commands))
+        assert sorted(result["commands"]) == sorted(commands)
 
-    def test_ix_ospf_interfaces_deleted(self):
+    def test_ix_ospf_interfaces_deleted(self) -> None:
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
@@ -315,14 +318,14 @@ class TestIxOspfInterfacesModule(TestIxModule):
              ipv6 ospf priority 60
             """)
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet0.0",
-                    ),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet0.0",
+                    },
                 ],
-                state="deleted",
-            ),
+                "state": "deleted",
+            },
         )
         commands = [
             "interface GigaEthernet0.0",
@@ -332,17 +335,17 @@ class TestIxOspfInterfacesModule(TestIxModule):
         ]
         self.execute_module(changed=True, commands=commands)
 
-    def test_ix_ospf_interfaces_parsed(self):
+    def test_ix_ospf_interfaces_parsed(self) -> None:
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
              ip ospf network point-to-point
             """)
         set_module_args(
-            dict(
-                running_config="interface GigaEthernet1.0\n ip ospf priority 30\n ip ospf cost 200\n ipv6 ospf priority 40\n",
-                state="parsed",
-            ),
+            {
+                "running_config": "interface GigaEthernet1.0\n ip ospf priority 30\n ip ospf cost 200\n ipv6 ospf priority 40\n",
+                "state": "parsed",
+            },
         )
         result = self.execute_module(changed=False)
         parsed_list = [
@@ -361,43 +364,43 @@ class TestIxOspfInterfacesModule(TestIxModule):
                 ],
             },
         ]
-        self.assertEqual(parsed_list, result["parsed"])
+        assert parsed_list == result["parsed"]
 
-    def test_ix_ospf_interfaces_rendered(self):
+    def test_ix_ospf_interfaces_rendered(self) -> None:
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet0.0",
-                        address_family=[
-                            dict(
-                                afi="ipv4",
-                                priority=10,
-                                cost=100,
-                                hello_interval=15,
-                                dead_interval=60,
-                                mtu_ignore=True,
-                                interface_type="point-to-point",
-                                authentication_type="text",
-                                authentication_key="mypassword",
-                            ),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet0.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv4",
+                                "priority": 10,
+                                "cost": 100,
+                                "hello_interval": 15,
+                                "dead_interval": 60,
+                                "mtu_ignore": True,
+                                "interface_type": "point-to-point",
+                                "authentication_type": "text",
+                                "authentication_key": "mypassword",
+                            },
                         ],
-                    ),
-                    dict(
-                        name="GigaEthernet1.0",
-                        address_family=[
-                            dict(
-                                afi="ipv6",
-                                priority=20,
-                                cost=200,
-                                hello_interval=10,
-                                dead_interval=40,
-                            ),
+                    },
+                    {
+                        "name": "GigaEthernet1.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv6",
+                                "priority": 20,
+                                "cost": 200,
+                                "hello_interval": 10,
+                                "dead_interval": 40,
+                            },
                         ],
-                    ),
+                    },
                 ],
-                state="rendered",
-            ),
+                "state": "rendered",
+            },
         )
         commands = [
             "interface GigaEthernet0.0",
@@ -416,15 +419,15 @@ class TestIxOspfInterfacesModule(TestIxModule):
             "ipv6 ospf dead-interval 40",
         ]
         result = self.execute_module(changed=False)
-        self.assertEqual(sorted(result["rendered"]), sorted(commands))
+        assert sorted(result["rendered"]) == sorted(commands)
 
     # The running-config snippets below are as printed by an IX2215 (10.11.18).
     # IX stores the passwords in plain text, so they can be compared.
 
-    def test_ix_ospf_interfaces_parsed_authentication(self):
+    def test_ix_ospf_interfaces_parsed_authentication(self) -> None:
         set_module_args(
-            dict(
-                running_config=dedent("""\
+            {
+                "running_config": dedent("""\
                     interface GigaEthernet1.0
                       no ip address
                       ip ospf authentication message-digest
@@ -438,8 +441,8 @@ class TestIxOspfInterfacesModule(TestIxModule):
                       shutdown
                     !
                     """),
-                state="parsed",
-            ),
+                "state": "parsed",
+            },
         )
         result = self.execute_module(changed=False)
         parsed_list = [
@@ -467,9 +470,9 @@ class TestIxOspfInterfacesModule(TestIxModule):
                 ],
             },
         ]
-        self.assertEqual(parsed_list, result["parsed"])
+        assert parsed_list == result["parsed"]
 
-    def test_ix_ospf_interfaces_gathered_authentication(self):
+    def test_ix_ospf_interfaces_gathered_authentication(self) -> None:
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address
@@ -478,7 +481,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
               shutdown
             !
             """)
-        set_module_args(dict(state="gathered"))
+        set_module_args({"state": "gathered"})
         result = self.execute_module(changed=False)
         gathered = [
             {
@@ -495,28 +498,28 @@ class TestIxOspfInterfacesModule(TestIxModule):
                 ],
             },
         ]
-        self.assertEqual(gathered, result["gathered"])
+        assert gathered == result["gathered"]
 
-    def test_ix_ospf_interfaces_rendered_authentication(self):
+    def test_ix_ospf_interfaces_rendered_authentication(self) -> None:
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet1.0",
-                        address_family=[
-                            dict(
-                                afi="ipv4",
-                                authentication_type="message-digest",
-                                message_digest_key=dict(
-                                    key_id=1,
-                                    password="md5pw001",
-                                ),
-                            ),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet1.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv4",
+                                "authentication_type": "message-digest",
+                                "message_digest_key": {
+                                    "key_id": 1,
+                                    "password": "md5pw001",
+                                },
+                            },
                         ],
-                    ),
+                    },
                 ],
-                state="rendered",
-            ),
+                "state": "rendered",
+            },
         )
         commands = [
             "interface GigaEthernet1.0",
@@ -524,9 +527,9 @@ class TestIxOspfInterfacesModule(TestIxModule):
             "ip ospf message-digest-key 1 md5pw001",
         ]
         result = self.execute_module(changed=False)
-        self.assertEqual(sorted(result["rendered"]), sorted(commands))
+        assert sorted(result["rendered"]) == sorted(commands)
 
-    def test_ix_ospf_interfaces_merged_authentication(self):
+    def test_ix_ospf_interfaces_merged_authentication(self) -> None:
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address
@@ -534,24 +537,24 @@ class TestIxOspfInterfacesModule(TestIxModule):
             !
             """)
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet1.0",
-                        address_family=[
-                            dict(
-                                afi="ipv4",
-                                authentication_type="message-digest",
-                                message_digest_key=dict(
-                                    key_id=1,
-                                    password="md5pw001",
-                                ),
-                            ),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet1.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv4",
+                                "authentication_type": "message-digest",
+                                "message_digest_key": {
+                                    "key_id": 1,
+                                    "password": "md5pw001",
+                                },
+                            },
                         ],
-                    ),
+                    },
                 ],
-                state="merged",
-            ),
+                "state": "merged",
+            },
         )
         commands = [
             "interface GigaEthernet1.0",
@@ -560,7 +563,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         ]
         self.execute_module(changed=True, commands=commands, sort=False)
 
-    def test_ix_ospf_interfaces_merged_authentication_idempotent(self):
+    def test_ix_ospf_interfaces_merged_authentication_idempotent(self) -> None:
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address
@@ -570,28 +573,28 @@ class TestIxOspfInterfacesModule(TestIxModule):
             !
             """)
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet1.0",
-                        address_family=[
-                            dict(
-                                afi="ipv4",
-                                authentication_type="message-digest",
-                                message_digest_key=dict(
-                                    key_id=1,
-                                    password="md5pw001",
-                                ),
-                            ),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet1.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv4",
+                                "authentication_type": "message-digest",
+                                "message_digest_key": {
+                                    "key_id": 1,
+                                    "password": "md5pw001",
+                                },
+                            },
                         ],
-                    ),
+                    },
                 ],
-                state="merged",
-            ),
+                "state": "merged",
+            },
         )
         self.execute_module(changed=False, commands=[])
 
-    def test_ix_ospf_interfaces_merged_authentication_key_change(self):
+    def test_ix_ospf_interfaces_merged_authentication_key_change(self) -> None:
         # IX keeps one key per interface: a new KEY_ID replaces the old key.
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
@@ -602,23 +605,23 @@ class TestIxOspfInterfacesModule(TestIxModule):
             !
             """)
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet1.0",
-                        address_family=[
-                            dict(
-                                afi="ipv4",
-                                message_digest_key=dict(
-                                    key_id=1,
-                                    password="md5pw001",
-                                ),
-                            ),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet1.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv4",
+                                "message_digest_key": {
+                                    "key_id": 1,
+                                    "password": "md5pw001",
+                                },
+                            },
                         ],
-                    ),
+                    },
                 ],
-                state="merged",
-            ),
+                "state": "merged",
+            },
         )
         commands = [
             "interface GigaEthernet1.0",
@@ -626,7 +629,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         ]
         self.execute_module(changed=True, commands=commands, sort=False)
 
-    def test_ix_ospf_interfaces_replaced_authentication(self):
+    def test_ix_ospf_interfaces_replaced_authentication(self) -> None:
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address
@@ -637,20 +640,20 @@ class TestIxOspfInterfacesModule(TestIxModule):
             !
             """)
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet1.0",
-                        address_family=[
-                            dict(
-                                afi="ipv4",
-                                cost=10,
-                            ),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet1.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv4",
+                                "cost": 10,
+                            },
                         ],
-                    ),
+                    },
                 ],
-                state="replaced",
-            ),
+                "state": "replaced",
+            },
         )
         commands = [
             "interface GigaEthernet1.0",
@@ -659,7 +662,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         ]
         self.execute_module(changed=True, commands=commands, sort=False)
 
-    def test_ix_ospf_interfaces_replaced_text_authentication(self):
+    def test_ix_ospf_interfaces_replaced_text_authentication(self) -> None:
         # IX keeps an MD5 key next to text authentication; both must go.
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
@@ -671,20 +674,20 @@ class TestIxOspfInterfacesModule(TestIxModule):
             !
             """)
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet1.0",
-                        address_family=[
-                            dict(
-                                afi="ipv4",
-                                cost=10,
-                            ),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet1.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv4",
+                                "cost": 10,
+                            },
                         ],
-                    ),
+                    },
                 ],
-                state="replaced",
-            ),
+                "state": "replaced",
+            },
         )
         commands = [
             "interface GigaEthernet1.0",
@@ -695,7 +698,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         ]
         self.execute_module(changed=True, commands=commands, sort=False)
 
-    def test_ix_ospf_interfaces_replaced_md5_to_text_authentication(self):
+    def test_ix_ospf_interfaces_replaced_md5_to_text_authentication(self) -> None:
         # "ip ospf authentication" replaces "ip ospf authentication message-digest".
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
@@ -706,21 +709,21 @@ class TestIxOspfInterfacesModule(TestIxModule):
             !
             """)
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet1.0",
-                        address_family=[
-                            dict(
-                                afi="ipv4",
-                                authentication_type="text",
-                                authentication_key="txtpw001",
-                            ),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet1.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv4",
+                                "authentication_type": "text",
+                                "authentication_key": "txtpw001",
+                            },
                         ],
-                    ),
+                    },
                 ],
-                state="replaced",
-            ),
+                "state": "replaced",
+            },
         )
         commands = [
             "interface GigaEthernet1.0",
@@ -730,7 +733,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         ]
         self.execute_module(changed=True, commands=commands, sort=False)
 
-    def test_ix_ospf_interfaces_overridden_authentication(self):
+    def test_ix_ospf_interfaces_overridden_authentication(self) -> None:
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address
@@ -746,20 +749,20 @@ class TestIxOspfInterfacesModule(TestIxModule):
             !
             """)
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet2.0",
-                        address_family=[
-                            dict(
-                                afi="ipv4",
-                                cost=20,
-                            ),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet2.0",
+                        "address_family": [
+                            {
+                                "afi": "ipv4",
+                                "cost": 20,
+                            },
                         ],
-                    ),
+                    },
                 ],
-                state="overridden",
-            ),
+                "state": "overridden",
+            },
         )
         commands = [
             "interface GigaEthernet1.0",
@@ -772,7 +775,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         ]
         self.execute_module(changed=True, commands=commands, sort=False)
 
-    def test_ix_ospf_interfaces_deleted_authentication(self):
+    def test_ix_ospf_interfaces_deleted_authentication(self) -> None:
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address
@@ -788,14 +791,14 @@ class TestIxOspfInterfacesModule(TestIxModule):
             !
             """)
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet1.0",
-                    ),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet1.0",
+                    },
                 ],
-                state="deleted",
-            ),
+                "state": "deleted",
+            },
         )
         commands = [
             "interface GigaEthernet1.0",
@@ -804,7 +807,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         ]
         self.execute_module(changed=True, commands=commands, sort=False)
 
-    def test_ix_ospf_interfaces_gathered_authentication_no_log(self):
+    def test_ix_ospf_interfaces_gathered_authentication_no_log(self) -> None:
         # Only the password read from the device may be hidden in the result.
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
@@ -815,7 +818,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
               shutdown
             !
             """)
-        set_module_args(dict(state="gathered"))
+        set_module_args({"state": "gathered"})
         with patch.object(AnsibleModule, "exit_json", exit_json_no_log):
             result = self.execute_module(changed=False)
         gathered = [
@@ -834,9 +837,9 @@ class TestIxOspfInterfacesModule(TestIxModule):
                 ],
             },
         ]
-        self.assertEqual(gathered, result["gathered"])
+        assert gathered == result["gathered"]
 
-    def test_ix_ospf_interfaces_deleted_authentication_no_log(self):
+    def test_ix_ospf_interfaces_deleted_authentication_no_log(self) -> None:
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address
@@ -847,14 +850,14 @@ class TestIxOspfInterfacesModule(TestIxModule):
             !
             """)
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet1.0",
-                    ),
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet1.0",
+                    },
                 ],
-                state="deleted",
-            ),
+                "state": "deleted",
+            },
         )
         commands = [
             "interface GigaEthernet1.0",

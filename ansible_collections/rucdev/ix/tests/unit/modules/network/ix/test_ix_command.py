@@ -22,7 +22,7 @@ SHOW_VERSION = dedent("""\
 class TestIxCommandModule(TestIxModule):
     module = ix_command
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
 
         self.mock_run_commands = patch(
@@ -30,58 +30,58 @@ class TestIxCommandModule(TestIxModule):
         )
         self.run_commands = self.mock_run_commands.start()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         super().tearDown()
         self.mock_run_commands.stop()
 
-    def load_fixtures(self, commands=None):
+    def load_fixtures(self, commands=None) -> None:
         self.run_commands.return_value = [SHOW_VERSION]
 
-    def test_ix_command_wait_for(self):
+    def test_ix_command_wait_for(self) -> None:
         set_module_args(
-            dict(commands=["show version"], wait_for=["result[0] contains IX2215"]),
+            {"commands": ["show version"], "wait_for": ["result[0] contains IX2215"]},
         )
         result = self.execute_module(changed=False)
-        self.assertEqual(result["stdout"], [SHOW_VERSION])
-        self.assertEqual(self.run_commands.call_count, 1)
+        assert result["stdout"] == [SHOW_VERSION]
+        assert self.run_commands.call_count == 1
 
-    def test_ix_command_wait_for_fails(self):
+    def test_ix_command_wait_for_fails(self) -> None:
         set_module_args(
-            dict(
-                commands=["show version"],
-                wait_for=["result[0] contains IX3315"],
-                retries=1,
-            ),
+            {
+                "commands": ["show version"],
+                "wait_for": ["result[0] contains IX3315"],
+                "retries": 1,
+            },
         )
         result = self.execute_module(failed=True)
-        self.assertEqual(
-            result["msg"],
-            "One or more conditional statements have not been satisfied",
+        assert (
+            result["msg"]
+            == "One or more conditional statements have not been satisfied"
         )
-        self.assertEqual(result["failed_conditions"], ["result[0] contains IX3315"])
-        self.assertEqual(self.run_commands.call_count, 2)
+        assert result["failed_conditions"] == ["result[0] contains IX3315"]
+        assert self.run_commands.call_count == 2
 
-    def test_ix_command_waitfor(self):
+    def test_ix_command_waitfor(self) -> None:
         # waitfor is an alias of wait_for, as in other *_command modules
         set_module_args(
-            dict(commands=["show version"], waitfor=["result[0] contains IX2215"]),
+            {"commands": ["show version"], "waitfor": ["result[0] contains IX2215"]},
         )
         result = self.execute_module(changed=False)
-        self.assertEqual(result["stdout"], [SHOW_VERSION])
-        self.assertEqual(self.run_commands.call_count, 1)
+        assert result["stdout"] == [SHOW_VERSION]
+        assert self.run_commands.call_count == 1
 
-    def test_ix_command_waitfor_fails(self):
+    def test_ix_command_waitfor_fails(self) -> None:
         set_module_args(
-            dict(
-                commands=["show version"],
-                waitfor=["result[0] contains IX3315"],
-                retries=1,
-            ),
+            {
+                "commands": ["show version"],
+                "waitfor": ["result[0] contains IX3315"],
+                "retries": 1,
+            },
         )
         result = self.execute_module(failed=True)
-        self.assertEqual(
-            result["msg"],
-            "One or more conditional statements have not been satisfied",
+        assert (
+            result["msg"]
+            == "One or more conditional statements have not been satisfied"
         )
-        self.assertEqual(result["failed_conditions"], ["result[0] contains IX3315"])
-        self.assertEqual(self.run_commands.call_count, 2)
+        assert result["failed_conditions"] == ["result[0] contains IX3315"]
+        assert self.run_commands.call_count == 2

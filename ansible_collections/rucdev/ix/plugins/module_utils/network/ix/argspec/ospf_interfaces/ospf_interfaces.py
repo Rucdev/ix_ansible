@@ -18,11 +18,11 @@
 #
 #############################################
 
-"""The arg spec for the ix_ospf_interfaces module"""
+"""The arg spec for the ix_ospf_interfaces module."""
 
 
 class Ospf_interfacesArgs:  # pylint: disable=R0903
-    """The arg spec for the ix_ospf_interfaces module"""
+    """The arg spec for the ix_ospf_interfaces module."""
 
     argument_spec = {
         "config": {

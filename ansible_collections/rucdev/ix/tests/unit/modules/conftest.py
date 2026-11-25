@@ -11,7 +11,7 @@ from ansible.module_utils.common._collections_compat import MutableMapping
 
 
 @pytest.fixture
-def patch_ansible_module(request, mocker):
+def patch_ansible_module(request, mocker) -> None:
     if isinstance(request.param, str):
         args = request.param
     elif isinstance(request.param, MutableMapping):
@@ -23,6 +23,7 @@ def patch_ansible_module(request, mocker):
             request.param["ANSIBLE_MODULE_ARGS"]["_ansible_keep_remote_files"] = False
         args = json.dumps(request.param)
     else:
-        raise Exception("Malformed data to the patch_ansible_module pytest fixture")
+        msg = "Malformed data to the patch_ansible_module pytest fixture"
+        raise Exception(msg)
 
     mocker.patch("ansible.module_utils.basic._ANSIBLE_ARGS", to_bytes(args))

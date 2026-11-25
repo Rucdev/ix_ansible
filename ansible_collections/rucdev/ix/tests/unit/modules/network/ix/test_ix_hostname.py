@@ -28,7 +28,7 @@ RUNNING_CONFIG = dedent("""\
 class TestIxHostnameModule(TestIxModule):
     module = ix_hostname
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
 
         self.mock_get_resource_connection_facts = patch(
@@ -45,84 +45,84 @@ class TestIxHostnameModule(TestIxModule):
         )
         self.execute_show_command = self.mock_execute_show_command.start()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         super().tearDown()
         self.mock_get_resource_connection_facts.stop()
         self.mock_execute_show_command.stop()
 
-    def test_ix_hostname_merged(self):
+    def test_ix_hostname_merged(self) -> None:
         self.execute_show_command.return_value = RUNNING_CONFIG
-        set_module_args(dict(config=dict(hostname="Router2"), state="merged"))
+        set_module_args({"config": {"hostname": "Router2"}, "state": "merged"})
         self.execute_module(changed=True, commands=["hostname Router2"])
 
-    def test_ix_hostname_merged_from_empty(self):
+    def test_ix_hostname_merged_from_empty(self) -> None:
         self.execute_show_command.return_value = "timezone +09 00\n"
-        set_module_args(dict(config=dict(hostname="Router2"), state="merged"))
+        set_module_args({"config": {"hostname": "Router2"}, "state": "merged"})
         self.execute_module(changed=True, commands=["hostname Router2"])
 
-    def test_ix_hostname_merged_idempotent(self):
+    def test_ix_hostname_merged_idempotent(self) -> None:
         self.execute_show_command.return_value = RUNNING_CONFIG
-        set_module_args(dict(config=dict(hostname="Router1"), state="merged"))
+        set_module_args({"config": {"hostname": "Router1"}, "state": "merged"})
         self.execute_module(changed=False, commands=[])
 
-    def test_ix_hostname_replaced(self):
+    def test_ix_hostname_replaced(self) -> None:
         self.execute_show_command.return_value = RUNNING_CONFIG
-        set_module_args(dict(config=dict(hostname="Router2"), state="replaced"))
+        set_module_args({"config": {"hostname": "Router2"}, "state": "replaced"})
         self.execute_module(changed=True, commands=["hostname Router2"])
 
-    def test_ix_hostname_replaced_idempotent(self):
+    def test_ix_hostname_replaced_idempotent(self) -> None:
         self.execute_show_command.return_value = RUNNING_CONFIG
-        set_module_args(dict(config=dict(hostname="Router1"), state="replaced"))
+        set_module_args({"config": {"hostname": "Router1"}, "state": "replaced"})
         self.execute_module(changed=False, commands=[])
 
-    def test_ix_hostname_overridden(self):
+    def test_ix_hostname_overridden(self) -> None:
         self.execute_show_command.return_value = RUNNING_CONFIG
-        set_module_args(dict(config=dict(hostname="Router2"), state="overridden"))
+        set_module_args({"config": {"hostname": "Router2"}, "state": "overridden"})
         self.execute_module(changed=True, commands=["hostname Router2"])
 
-    def test_ix_hostname_overridden_idempotent(self):
+    def test_ix_hostname_overridden_idempotent(self) -> None:
         self.execute_show_command.return_value = RUNNING_CONFIG
-        set_module_args(dict(config=dict(hostname="Router1"), state="overridden"))
+        set_module_args({"config": {"hostname": "Router1"}, "state": "overridden"})
         self.execute_module(changed=False, commands=[])
 
-    def test_ix_hostname_deleted(self):
+    def test_ix_hostname_deleted(self) -> None:
         self.execute_show_command.return_value = RUNNING_CONFIG
-        set_module_args(dict(state="deleted"))
+        set_module_args({"state": "deleted"})
         self.execute_module(changed=True, commands=["no hostname"])
 
-    def test_ix_hostname_deleted_idempotent(self):
+    def test_ix_hostname_deleted_idempotent(self) -> None:
         self.execute_show_command.return_value = "timezone +09 00\n"
-        set_module_args(dict(state="deleted"))
+        set_module_args({"state": "deleted"})
         self.execute_module(changed=False, commands=[])
 
-    def test_ix_hostname_rendered(self):
-        set_module_args(dict(config=dict(hostname="Router1"), state="rendered"))
+    def test_ix_hostname_rendered(self) -> None:
+        set_module_args({"config": {"hostname": "Router1"}, "state": "rendered"})
         result = self.execute_module(changed=False)
-        self.assertEqual(result["rendered"], ["hostname Router1"])
+        assert result["rendered"] == ["hostname Router1"]
 
-    def test_ix_hostname_parsed(self):
-        set_module_args(dict(running_config=RUNNING_CONFIG, state="parsed"))
+    def test_ix_hostname_parsed(self) -> None:
+        set_module_args({"running_config": RUNNING_CONFIG, "state": "parsed"})
         result = self.execute_module(changed=False)
-        self.assertEqual(result["parsed"], {"hostname": "Router1"})
+        assert result["parsed"] == {"hostname": "Router1"}
 
-    def test_ix_hostname_parsed_ignores_indented_lines(self):
-        set_module_args(dict(running_config=" hostname NotThis\n", state="parsed"))
+    def test_ix_hostname_parsed_ignores_indented_lines(self) -> None:
+        set_module_args({"running_config": " hostname NotThis\n", "state": "parsed"})
         result = self.execute_module(changed=False)
-        self.assertEqual(result["parsed"], {})
+        assert result["parsed"] == {}
 
-    def test_ix_hostname_gathered(self):
+    def test_ix_hostname_gathered(self) -> None:
         self.execute_show_command.return_value = RUNNING_CONFIG
-        set_module_args(dict(state="gathered"))
+        set_module_args({"state": "gathered"})
         result = self.execute_module(changed=False)
-        self.assertEqual(result["gathered"], {"hostname": "Router1"})
+        assert result["gathered"] == {"hostname": "Router1"}
 
-    def test_ix_hostname_rejects_whitespace(self):
+    def test_ix_hostname_rejects_whitespace(self) -> None:
         # IX silently truncates "hostname lab ix" to "lab" (verified on IX2215)
         self.execute_show_command.return_value = RUNNING_CONFIG
-        set_module_args(dict(config=dict(hostname="lab ix"), state="merged"))
+        set_module_args({"config": {"hostname": "lab ix"}, "state": "merged"})
         result = self.execute_module(failed=True)
-        self.assertIn("without whitespace", result["msg"])
+        assert "without whitespace" in result["msg"]
 
-    def test_ix_hostname_rendered_rejects_whitespace(self):
-        set_module_args(dict(config=dict(hostname="lab ix"), state="rendered"))
+    def test_ix_hostname_rendered_rejects_whitespace(self) -> None:
+        set_module_args({"config": {"hostname": "lab ix"}, "state": "rendered"})
         self.execute_module(failed=True)

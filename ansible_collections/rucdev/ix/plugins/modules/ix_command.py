@@ -129,18 +129,18 @@ def parse_commands(module: AnsibleModule, warnings: list):
     return commands
 
 
-def main():
-    argument_spec = dict(
-        commands=dict(type="list", elements="raw", required=True),
-        wait_for=dict(type="list", elements="str", aliases=["waitfor"]),
-        retries=dict(default=9, type="int"),
-        interval=dict(default=1, type="int"),
-    )
+def main() -> None:
+    argument_spec = {
+        "commands": {"type": "list", "elements": "raw", "required": True},
+        "wait_for": {"type": "list", "elements": "str", "aliases": ["waitfor"]},
+        "retries": {"default": 9, "type": "int"},
+        "interval": {"default": 1, "type": "int"},
+    }
     module = AnsibleModule(argument_spec=argument_spec, supports_check_mode=True)
-    warnings = list()
-    result = dict(changed=False, warnings=warnings)
+    warnings = []
+    result = {"changed": False, "warnings": warnings}
     commands = parse_commands(module, warnings)
-    wait_for = module.params["wait_for"] or list()
+    wait_for = module.params["wait_for"] or []
     conditionals = []
 
     try:
@@ -166,7 +166,7 @@ def main():
         msg = "One or more conditional statements have not been satisfied"
         module.fail_json(msg=msg, failed_conditions=failed_conditions)
 
-    result.update(dict(stdout=responses, stdout_lines=list(to_lines(responses))))
+    result.update({"stdout": responses, "stdout_lines": list(to_lines(responses))})
     module.exit_json(**result)
 
 

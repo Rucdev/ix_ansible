@@ -18,11 +18,11 @@
 #
 #############################################
 
-"""The arg spec for the ix_static_routes module"""
+"""The arg spec for the ix_static_routes module."""
 
 
 class Static_routesArgs:  # pylint: disable=R0903
-    """The arg spec for the ix_static_routes module"""
+    """The arg spec for the ix_static_routes module."""
 
     argument_spec = {
         "config": {

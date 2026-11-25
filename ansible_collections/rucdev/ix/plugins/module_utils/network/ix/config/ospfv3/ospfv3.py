@@ -28,9 +28,9 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 
 
 class Ospfv3(ResourceModule):
-    """The ix_ospfv3 config class"""
+    """The ix_ospfv3 config class."""
 
-    def __init__(self, module):
+    def __init__(self, module) -> None:
         super().__init__(
             empty_fact_val={},
             facts_module=Facts(module),
@@ -46,7 +46,7 @@ class Ospfv3(ResourceModule):
         ]
 
     def execute_module(self):
-        """Execute the module
+        """Execute the module.
 
         :rtype: A dictionary
         :returns: The result from module execution
@@ -56,12 +56,12 @@ class Ospfv3(ResourceModule):
             self.run_commands()
         return self.result
 
-    def generate_commands(self):
+    def generate_commands(self) -> None:
         """Generate configuration commands to send based on
         want, have and desired state.
         """
-        wantd = dict()
-        haved = dict()
+        wantd = {}
+        haved = {}
 
         if self.want:
             for entry in self.want.get("processes", []):
@@ -93,7 +93,7 @@ class Ospfv3(ResourceModule):
         for k, want in wantd.items():
             self._compare(want=want, have=haved.pop(k, {}))
 
-    def _compare(self, want, have):
+    def _compare(self, want, have) -> None:
         """Leverages the base class `compare()` method and
         populates the list of commands to be run by comparing
         the `want` and `have` data with the `parsers` defined
@@ -105,7 +105,7 @@ class Ospfv3(ResourceModule):
             self._complex_compare(want=want, have=have)
             self._areas_compare(want, have)
 
-    def _complex_compare(self, want, have):
+    def _complex_compare(self, want, have) -> None:
         complex_parsers = ["network", "passive_interfaces"]
         for _parser in complex_parsers:
             wdist = want.get(_parser, {})
@@ -119,7 +119,7 @@ class Ospfv3(ResourceModule):
             for key, haveing in hdist.items():
                 self.addcmd(haveing, _parser, negate=True)
 
-    def _areas_compare(self, want, have):
+    def _areas_compare(self, want, have) -> None:
         wareas = want.get("areas", {})
         hareas = have.get("areas", {})
         for name, entry in wareas.items():
@@ -127,7 +127,7 @@ class Ospfv3(ResourceModule):
         for name, entry in hareas.items():
             self._area_compare(want={}, have=entry)
 
-    def _area_compare(self, want, have):
+    def _area_compare(self, want, have) -> None:
         parsers = [
             "area_id",
             "stub",
@@ -136,7 +136,7 @@ class Ospfv3(ResourceModule):
         self.compare(parsers=parsers, want=want, have=have)
         self._area_complex_compare(want, have, want.get("area_id"))
 
-    def _area_complex_compare(self, want, have, area_id):
+    def _area_complex_compare(self, want, have, area_id) -> None:
         area_complex_parsers = ["ranges"]
         for _parser in area_complex_parsers:
             wantr = want.get(_parser, {})
@@ -153,8 +153,8 @@ class Ospfv3(ResourceModule):
                 haveing["area_id"] = area_id
                 self.addcmd(haveing, _parser, negate=True)
 
-    def _list_to_dict(self, param):
-        for _pid, proc in param.items():
+    def _list_to_dict(self, param) -> None:
+        for proc in param.values():
             for area in proc.get("areas", []):
                 area["ranges"] = {
                     entry["address"]: entry for entry in area.get("ranges", [])

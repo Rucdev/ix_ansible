@@ -29,7 +29,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 
 
 class Ospf_interfaces(ResourceModule):
-    """The ix_ospf_interfaces config class"""
+    """The ix_ospf_interfaces config class."""
 
     # "ip ospf ..." commands that have no "ipv6 ospf ..." form in the IX
     # command reference (OSPFv3 authentication uses IPsec)
@@ -41,7 +41,7 @@ class Ospf_interfaces(ResourceModule):
         "interface_type",
     )
 
-    def __init__(self, module):
+    def __init__(self, module) -> None:
         super().__init__(
             empty_fact_val={},
             facts_module=Facts(module),
@@ -52,7 +52,7 @@ class Ospf_interfaces(ResourceModule):
         self.parsers = []
 
     def execute_module(self):
-        """Execute the module
+        """Execute the module.
 
         :rtype: A dictionary
         :returns: The result from module execution
@@ -62,7 +62,7 @@ class Ospf_interfaces(ResourceModule):
             self.run_commands()
         return self.result
 
-    def generate_commands(self):
+    def generate_commands(self) -> None:
         """Generate configuration commands to send based on
         want, have and desired state.
         """
@@ -88,7 +88,7 @@ class Ospf_interfaces(ResourceModule):
         for k, want in iteritems(wantd):
             self._compare(want=want, have=haved.pop(k, {}), interface=k)
 
-    def _validate_want(self):
+    def _validate_want(self) -> None:
         """Reject IPv4-only options unless afi is ipv4. Their setvals always
         render "ip ospf ...", so under afi ipv6 they would change the OSPFv2
         settings, and without afi they are silently ignored.
@@ -102,7 +102,7 @@ class Ospf_interfaces(ResourceModule):
                 ]
                 if invalid:
                     self._module.fail_json(
-                        msg="{0}: {1} can be used only with afi ipv4 (afi: {2}); IX "
+                        msg="{}: {} can be used only with afi ipv4 (afi: {}); IX "
                         "has no OSPFv3 equivalent".format(
                             intf.get("name"),
                             ", ".join(invalid),
@@ -110,7 +110,7 @@ class Ospf_interfaces(ResourceModule):
                         ),
                     )
 
-    def _compare(self, want, have, interface):
+    def _compare(self, want, have, interface) -> None:
         """Leverages the base class `compare()` method and
         populates the list of commands to be run by comparing
         the `want` and `have` data with the `parsers` defined
@@ -124,7 +124,7 @@ class Ospf_interfaces(ResourceModule):
                 self._tmplt.render({"name": interface}, "name", False),
             )
 
-    def _compare_afi(self, want, have):
+    def _compare_afi(self, want, have) -> None:
         parsers = [
             "name",
             "authentication_type",

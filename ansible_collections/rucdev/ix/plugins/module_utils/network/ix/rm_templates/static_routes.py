@@ -65,7 +65,7 @@ def _tmplt_route_remove(data):
 
 
 class Static_routesTemplate(NetworkTemplate):
-    def __init__(self, lines=None, module=None):
+    def __init__(self, lines=None, module=None) -> None:
         super().__init__(
             lines=lines,
             tmplt=self,

@@ -21,9 +21,9 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 
 
 class Static_routesFacts:
-    """The ix static_routes facts class"""
+    """The ix static_routes facts class."""
 
-    def __init__(self, module, subspec="config", options="options"):
+    def __init__(self, module, subspec="config", options="options") -> None:
         self._module = module
         self.argument_spec = Static_routesArgs.argument_spec
 
@@ -32,7 +32,7 @@ class Static_routesFacts:
 
     def process_static_routes(self, objs):
         strout = {}
-        for k, obj in objs.items():
+        for obj in objs.values():
             _routes = {"next_hops": []}
             _nx_hop = []
             is_vrf = False
@@ -109,7 +109,7 @@ class Static_routesFacts:
         :param ansible_facts: Facts dictionary
         :param data: previously collected conf
         :rtype: dictionary
-        :returns: facts
+        :returns: facts.
         """
         if not data:
             data = self.get_static_route_data(connection)

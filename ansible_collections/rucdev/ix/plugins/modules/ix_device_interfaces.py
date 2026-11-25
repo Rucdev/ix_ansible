@@ -21,7 +21,7 @@
 #
 #############################################
 
-"""The module file for ix_device_interfaces"""
+"""The module file for ix_device_interfaces."""
 
 ANSIBLE_METADATA = {
     "metadata_version": "1.1",
@@ -187,8 +187,8 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.config.device
 )
 
 
-def main():
-    """Main entry point for module execution
+def main() -> None:
+    """Main entry point for module execution.
 
     :returns: the result form module invocation
     """

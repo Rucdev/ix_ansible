@@ -52,9 +52,9 @@ DEFAULT_OPTIONS = {"distance": 1, "metric": 1}
 
 
 class Static_routes(ResourceModule):
-    """The ix_static_routes config class"""
+    """The ix_static_routes config class."""
 
-    def __init__(self, module):
+    def __init__(self, module) -> None:
         super().__init__(
             empty_fact_val=[],
             facts_module=Facts(module),
@@ -64,7 +64,7 @@ class Static_routes(ResourceModule):
         )
 
     def execute_module(self):
-        """Execute the module
+        """Execute the module.
 
         :rtype: A dictionary
         :returns: The result from module execution
@@ -74,7 +74,7 @@ class Static_routes(ResourceModule):
             self.run_commands()
         return self.result
 
-    def generate_commands(self):
+    def generate_commands(self) -> None:
         """Generate configuration commands to send based on
         want, have and desired state.
         """
@@ -98,10 +98,8 @@ class Static_routes(ResourceModule):
         # replaced: only destinations present in want are managed
         # overridden: every route on the device is managed
         if self.state == "replaced":
-            scope = set(self._dest_of(k) for k in wantd)
-            in_scope = dict(
-                (k, v) for k, v in haved.items() if self._dest_of(k) in scope
-            )
+            scope = {self._dest_of(k) for k in wantd}
+            in_scope = {k: v for k, v in haved.items() if self._dest_of(k) in scope}
         else:
             in_scope = haved
 
@@ -114,17 +112,18 @@ class Static_routes(ResourceModule):
             if key not in wantd:
                 self.addcmd(have, have["afi"], negate=True)
 
-    def _delete(self, haved):
-        if not self.want:
-            targets = haved.values()
-        else:
-            targets = [
+    def _delete(self, haved) -> None:
+        targets = (
+            haved.values()
+            if not self.want
+            else [
                 have for key, have in haved.items() if self._matches_delete_filter(have)
             ]
+        )
         for have in targets:
             self.addcmd(have, have["afi"], negate=True)
 
-    def _matches_delete_filter(self, have):
+    def _matches_delete_filter(self, have) -> bool:
         """Deleted with config: a vrf / afi / dest without next_hops selects
         every route below it; a next_hop selects that route only.
         """
@@ -200,7 +199,7 @@ class Static_routes(ResourceModule):
 
     def _flatten(self, config, validate=False):
         """[{vrf, address_families: [{afi, routes: [{dest, next_hops}]}]}]
-        -> {identity key: flat route dict}
+        -> {identity key: flat route dict}.
         """
         routes = {}
         for entry in config or []:
@@ -215,20 +214,19 @@ class Static_routes(ResourceModule):
                         routes[self._key(route)] = route
         return routes
 
-    def _validate(self, route):
+    def _validate(self, route) -> None:
         afi = route["afi"]
-        where = "%s route %s" % (afi, route["dest"])
+        where = "{} route {}".format(afi, route["dest"])
         if not route.get("forward_router_address") and not route.get("interface"):
             self._module.fail_json(
-                msg="%s: next_hops needs forward_router_address and/or interface"
-                % where,
+                msg=f"{where}: next_hops needs forward_router_address and/or interface",
             )
         if afi == "ipv4" and route.get("ra"):
-            self._module.fail_json(msg="%s: ra is only valid for ipv6" % where)
+            self._module.fail_json(msg=f"{where}: ra is only valid for ipv6")
         if afi == "ipv6" and route.get("connected"):
-            self._module.fail_json(msg="%s: connected is only valid for ipv4" % where)
+            self._module.fail_json(msg=f"{where}: connected is only valid for ipv4")
         if afi == "ipv6" and route.get("vrf"):
-            self._module.fail_json(msg="%s: IX has no vrf for ipv6 route" % where)
+            self._module.fail_json(msg=f"{where}: IX has no vrf for ipv6 route")
         for flag in ("dhcp", "ra"):
             if route.get(flag) and not route.get("interface"):
-                self._module.fail_json(msg="%s: %s requires interface" % (where, flag))
+                self._module.fail_json(msg=f"{where}: {flag} requires interface")

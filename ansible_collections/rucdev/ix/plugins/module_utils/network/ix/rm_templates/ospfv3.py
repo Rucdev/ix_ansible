@@ -32,10 +32,11 @@ def _tmplt_ospfv3_originate_default(config_data):
         if "tag" in config_data["originate_default"]:
             command += " tag {tag}".format(**config_data["originate_default"])
         return command
+    return None
 
 
 class Ospfv3Template(NetworkTemplate):
-    def __init__(self, lines=None, module=None):
+    def __init__(self, lines=None, module=None) -> None:
         super().__init__(lines=lines, tmplt=self, module=module)
 
     # fmt: off

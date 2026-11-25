@@ -22,9 +22,9 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 
 
 class Ospf_interfacesFacts:
-    """The ix ospf_interfaces facts class"""
+    """The ix ospf_interfaces facts class."""
 
-    def __init__(self, module, subspec="config", options="options"):
+    def __init__(self, module, subspec="config", options="options") -> None:
         self._module = module
         self.argument_spec = Ospf_interfacesArgs.argument_spec
 
@@ -32,7 +32,7 @@ class Ospf_interfacesFacts:
         return connection.configure_get("show running-config interface")
 
     def populate_facts(self, connection, ansible_facts, data=None):
-        """Populate the facts for Ospf_interfaces network resource
+        """Populate the facts for Ospf_interfaces network resource.
 
         :param connection: the device connection
         :param ansible_facts: Facts dictionary
@@ -56,7 +56,7 @@ class Ospf_interfacesFacts:
         objs = ospf_interfaces_parser.parse()
         final_objs = []
 
-        for key, value in objs.items():
+        for value in objs.values():
             temp_af = []
             if value["address_family"].get("ip"):
                 temp_af.append(value["address_family"].get("ip"))

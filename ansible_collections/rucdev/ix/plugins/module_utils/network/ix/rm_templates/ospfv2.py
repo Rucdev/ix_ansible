@@ -58,10 +58,11 @@ def _tmplt_ospf_area_nssa(config_data):
         if "default_metric_type" in nssa_data:
             command += " default-metric-type {default_metric_type}".format(**nssa_data)
         return command
+    return None
 
 
 class Ospfv2Template(NetworkTemplate):
-    def __init__(self, lines=None, module=None):
+    def __init__(self, lines=None, module=None) -> None:
         super().__init__(lines=lines, tmplt=self, module=module)
 
     # fmt: off

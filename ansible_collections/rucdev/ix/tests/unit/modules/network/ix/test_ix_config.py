@@ -29,7 +29,7 @@ RUNNING_CONFIG = dedent("""\
 class TestIxConfigModule(TestIxModule):
     module = ix_config
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
 
         self.mock_get_config = patch(
@@ -51,47 +51,47 @@ class TestIxConfigModule(TestIxModule):
         )
         self.run_commands = self.mock_run_commands.start()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         super().tearDown()
         self.mock_get_config.stop()
         self.mock_get_connection.stop()
         self.mock_run_commands.stop()
 
-    def load_fixtures(self, commands=None):
+    def load_fixtures(self, commands=None) -> None:
         self.get_config.return_value = RUNNING_CONFIG
         self.run_commands.return_value = [RUNNING_CONFIG]
 
-    def assert_str_warnings(self, result):
+    def assert_str_warnings(self, result) -> None:
         # ansible-core rejects any warning that is not a str.
         for warning in result.get("warnings", []):
-            self.assertIsInstance(warning, str, result["warnings"])
+            assert isinstance(warning, str), result["warnings"]
 
-    def test_ix_config_lines_diff(self):
-        set_module_args(dict(lines=["hostname Router2"], _ansible_diff=True))
+    def test_ix_config_lines_diff(self) -> None:
+        set_module_args({"lines": ["hostname Router2"], "_ansible_diff": True})
         result = self.execute_module(changed=True, commands=["hostname Router2"])
         self.conn.edit_config.assert_called_once_with(candidate=["hostname Router2"])
         self.assert_str_warnings(result)
 
-    def test_ix_config_lines_diff_check_mode(self):
+    def test_ix_config_lines_diff_check_mode(self) -> None:
         set_module_args(
-            dict(
-                lines=["hostname Router2"],
-                _ansible_diff=True,
-                _ansible_check_mode=True,
-            ),
+            {
+                "lines": ["hostname Router2"],
+                "_ansible_diff": True,
+                "_ansible_check_mode": True,
+            },
         )
         result = self.execute_module(changed=True, commands=["hostname Router2"])
         self.conn.edit_config.assert_not_called()
         self.assert_str_warnings(result)
 
-    def test_ix_config_src_diff(self):
-        set_module_args(dict(src="hostname Router2\n", _ansible_diff=True))
+    def test_ix_config_src_diff(self) -> None:
+        set_module_args({"src": "hostname Router2\n", "_ansible_diff": True})
         result = self.execute_module(changed=True, commands=["hostname Router2"])
         self.conn.edit_config.assert_called_once_with(candidate=["hostname Router2"])
         self.assert_str_warnings(result)
 
-    def test_ix_config_save_when_always_diff(self):
-        set_module_args(dict(save_when="always", _ansible_diff=True))
+    def test_ix_config_save_when_always_diff(self) -> None:
+        set_module_args({"save_when": "always", "_ansible_diff": True})
         result = self.execute_module(changed=True)
         self.run_commands.assert_any_call(
             ANY,
@@ -100,18 +100,18 @@ class TestIxConfigModule(TestIxModule):
         )
         self.assert_str_warnings(result)
 
-    def test_ix_config_diff_against_intended(self):
+    def test_ix_config_diff_against_intended(self) -> None:
         intended = RUNNING_CONFIG.replace("hostname Router1", "hostname Router9")
         set_module_args(
-            dict(
-                diff_against="intended",
-                intended_config=intended,
-                _ansible_diff=True,
-            ),
+            {
+                "diff_against": "intended",
+                "intended_config": intended,
+                "_ansible_diff": True,
+            },
         )
         result = self.execute_module(changed=True)
         self.conn.edit_config.assert_not_called()
-        self.assertIn("hostname Router1", result["diff"]["before"])
-        self.assertNotIn("hostname Router9", result["diff"]["before"])
-        self.assertIn("hostname Router9", result["diff"]["after"])
+        assert "hostname Router1" in result["diff"]["before"]
+        assert "hostname Router9" not in result["diff"]["before"]
+        assert "hostname Router9" in result["diff"]["after"]
         self.assert_str_warnings(result)

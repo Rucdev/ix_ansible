@@ -21,13 +21,13 @@
 #
 #############################################
 
-"""The arg spec for the ix_interfaces module"""
+"""The arg spec for the ix_interfaces module."""
 
 
 class InterfacesArgs:  # pylint: disable=R0903
-    """The arg spec for the ix_interfaces module"""
+    """The arg spec for the ix_interfaces module."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         pass
 
     argument_spec = {

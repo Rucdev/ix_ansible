@@ -31,15 +31,14 @@ class ActionModule(ActionNetworkModule):
         del tmp  # tmp no longer has any effect
 
         module_name = self._task.action.split(".")[-1]
-        self._config_module = True if module_name in ["ix_config", "config"] else False
+        self._config_module = module_name in ["ix_config", "config"]
         persistent_connection = self._play_context.connection.split(".")[-1]
         warnings = []
 
         if persistent_connection != "network_cli":
             return {
                 "failed": True,
-                "msg": "Connection type %s is not valid for this module"
-                % self._play_context.connection,
+                "msg": f"Connection type {self._play_context.connection} is not valid for this module",
             }
 
         result = super().run(task_vars=task_vars)

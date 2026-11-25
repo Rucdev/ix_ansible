@@ -6,7 +6,7 @@
 It is in this file where the current configuration (as dict)
 is compared to the provided configuration (as dict) and the command set
 necessary to bring the current configuration to it's desired end-state is
-created
+created.
 """
 
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module import (
@@ -29,9 +29,9 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.utils.utils i
 
 
 class L3_interfaces(ResourceModule):
-    """The ix_l3_interfaces class"""
+    """The ix_l3_interfaces class."""
 
-    def __init__(self, module):
+    def __init__(self, module) -> None:
         super().__init__(
             empty_fact_val={},
             facts_module=Facts(module),
@@ -47,7 +47,7 @@ class L3_interfaces(ResourceModule):
         ]
 
     def execute_module(self):
-        """Execute the module
+        """Execute the module.
 
         :rtype: A dictionary
         :returns: The result from module execution
@@ -57,7 +57,7 @@ class L3_interfaces(ResourceModule):
             self.run_commands()
         return self.result
 
-    def generate_commands(self):
+    def generate_commands(self) -> None:
         """Generate configuration commands to send based on
         want, have and desired state.
         """
@@ -93,13 +93,13 @@ class L3_interfaces(ResourceModule):
         for k, want in wantd.items():
             self._compare(want=want, have=haved.pop(k, {}))
 
-    def _compare(self, want, have):
+    def _compare(self, want, have) -> None:
         begin = len(self.commands)
         self._compare_lists(want=want, have=have)
         if len(self.commands) != begin:
             self.commands.insert(begin, self._tmplt.render(want or have, "name", False))
 
-    def _compare_lists(self, want, have):
+    def _compare_lists(self, want, have) -> None:
         for afi in ("ipv4", "ipv6"):
             wacls = want.pop(afi, {})
             hacls = have.pop(afi, {})
@@ -158,8 +158,8 @@ class L3_interfaces(ResourceModule):
                 self.validate_ips(afi, have=entry)
                 self.compare(parsers=self.parsers, want={}, have={afi: entry})
 
-    def purge(self, have):
-        """Handle operation for purged state"""
+    def purge(self, have) -> None:
+        """Handle operation for purged state."""
         self.commands.append(self._tmplt.render(have, "interface", True))
 
     def normalize_interface_names(self, param):
@@ -168,7 +168,7 @@ class L3_interfaces(ResourceModule):
         #         val["name"] = normalize_interface(val["name"])
         return param
 
-    def validate_ips(self, afi, want=None, have=None):
+    def validate_ips(self, afi, want=None, have=None) -> None:
         if afi == "ipv4" and want:
             v4_addr = (
                 validate_ipv4(self._module, want["address"])
@@ -177,9 +177,8 @@ class L3_interfaces(ResourceModule):
             )
             if v4_addr:
                 want["address"] = v4_addr
-        elif afi == "ipv6" and want:
-            if want.get("address"):
-                validate_ipv6(want["address"], self._module)
+        elif afi == "ipv6" and want and want.get("address"):
+            validate_ipv6(want["address"], self._module)
 
         if afi == "ipv4" and have:
             v4_addr_h = (
@@ -189,13 +188,12 @@ class L3_interfaces(ResourceModule):
             )
             if v4_addr_h:
                 have["address"] = v4_addr_h
-        elif afi == "ipv6" and have:
-            if have.get("address"):
-                validate_ipv6(have["address"], self._module)
+        elif afi == "ipv6" and have and have.get("address"):
+            validate_ipv6(have["address"], self._module)
 
-    def list_to_dict(self, param):
+    def list_to_dict(self, param) -> None:
         if param:
-            for _k, val in param.items():
+            for val in param.values():
                 if "ipv4" in val:
                     temp = {}
                     for each in val["ipv4"]:
@@ -214,7 +212,7 @@ class L3_interfaces(ResourceModule):
                                 },
                             )
                         if not each.get("address"):
-                            temp.update({list(each.keys())[0]: each})
+                            temp.update({next(iter(each.keys())): each})
                     val["ipv4"] = temp
                 if "ipv6" in val:
                     temp = {}
@@ -223,5 +221,5 @@ class L3_interfaces(ResourceModule):
                             each["address"] = each["address"].lower()
                             temp.update({each["address"]: each})
                         if not each.get("address"):
-                            temp.update({list(each.keys())[0]: each})
+                            temp.update({next(iter(each.keys())): each})
                     val["ipv6"] = temp

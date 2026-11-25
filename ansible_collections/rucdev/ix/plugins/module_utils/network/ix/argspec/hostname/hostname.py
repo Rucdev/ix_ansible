@@ -3,11 +3,11 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-"""The arg spec for the ix_hostname module"""
+"""The arg spec for the ix_hostname module."""
 
 
 class HostnameArgs:  # pylint: disable=R0903
-    """The arg spec for the ix_hostname module"""
+    """The arg spec for the ix_hostname module."""
 
     argument_spec = {
         "config": {

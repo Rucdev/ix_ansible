@@ -22,9 +22,9 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 
 
 class HostnameFacts:
-    """The ix hostname facts class"""
+    """The ix hostname facts class."""
 
-    def __init__(self, module, subspec="config", options="options"):
+    def __init__(self, module, subspec="config", options="options") -> None:
         self._module = module
         self.argument_spec = HostnameArgs.argument_spec
 
@@ -32,7 +32,7 @@ class HostnameFacts:
         return connection.configure_get("show running-config")
 
     def populate_facts(self, connection, ansible_facts, data=None):
-        """Populate the facts for Hostname network resource
+        """Populate the facts for Hostname network resource.
 
         :param connection: the device connection
         :param ansible_facts: Facts dictionary

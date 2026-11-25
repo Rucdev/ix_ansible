@@ -21,9 +21,9 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 
 
 class Device_interfacesFacts:
-    """The ix device_interfaces fact class"""
+    """The ix device_interfaces fact class."""
 
-    def __init__(self, module, subspec="config", options="options"):
+    def __init__(self, module, subspec="config", options="options") -> None:
         self._module = module
         self.argument_spec = Device_interfacesArgs.argument_spec
 
@@ -36,7 +36,7 @@ class Device_interfacesFacts:
         :param ansible_facts: Facts dictionary
         :param data: previously collected conf
         :rtype: dictionary
-        :returns: facts
+        :returns: facts.
         """
         if not data:
             # typically data is populated from the current device configuration
@@ -50,7 +50,7 @@ class Device_interfacesFacts:
         )
 
         objs = sorted(
-            list(device_interfaces_parser.parse().values()),
+            device_interfaces_parser.parse().values(),
             key=lambda k, sk="name": k[sk],
         )
 

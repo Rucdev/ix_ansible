@@ -47,7 +47,7 @@ def get_connection(module):
     if network_api == "cliconf":
         module._ix_connection = Connection(module._socket_path)
     else:
-        module.fail_json(msg="Invalid connection type %s" % network_api)
+        module.fail_json(msg=f"Invalid connection type {network_api}")
 
     return module._ix_connection
 

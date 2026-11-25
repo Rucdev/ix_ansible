@@ -9,7 +9,7 @@ from ansible_collections.ansible.netcommon.plugins.plugin_utils.terminal_base im
 
 
 class TerminalModule(TerminalBase):
-    def __init__(self, connection):
+    def __init__(self, connection) -> None:
         super().__init__(connection)
 
     terminal_stdout_re = [
@@ -34,10 +34,10 @@ class TerminalModule(TerminalBase):
 
     terminal_config_prompt = re.compile(r"^.+\(config\)#$")
 
-    def on_open_shell(self):
+    def on_open_shell(self) -> None:
         pass
 
-    def on_become(self, passwd=None):
+    def on_become(self, passwd=None) -> None:
         if self._get_prompt().endswith(b"(config)#"):
             return
         cmd = {"command": "configure"}
@@ -52,9 +52,10 @@ class TerminalModule(TerminalBase):
                 to_bytes(json.dumps(cmd), errors="surrogate_or_strict"),
             )
         except AnsibleConnectionFailure:
-            raise AnsibleConnectionFailure("unable to switch configure mode")
+            msg = "unable to switch configure mode"
+            raise AnsibleConnectionFailure(msg)
 
-    def on_unbecome(self):
+    def on_unbecome(self) -> None:
         prompt = self._get_prompt()
         if prompt is None:
             return

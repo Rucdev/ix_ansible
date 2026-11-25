@@ -10,7 +10,7 @@
 from ansible.module_utils.common.network import is_masklen, to_netmask
 
 
-def validate_ipv4(module, value):
+def validate_ipv4(module, value) -> None:
     if value:
         address = value.split("/")
         if len(address) != 2:
@@ -24,7 +24,7 @@ def validate_ipv4(module, value):
             )
 
 
-def validate_ipv6(value, module):
+def validate_ipv6(value, module) -> None:
     if value:
         address = value.split("/")
         if len(address) != 2:

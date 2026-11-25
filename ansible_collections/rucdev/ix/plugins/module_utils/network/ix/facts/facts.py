@@ -24,21 +24,21 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.static_
     Static_routesFacts,
 )
 
-FACT_RESOURCE_SUBSETS = dict(
-    hostname=HostnameFacts,
-    interfaces=InterfacesFacts,
-    l3_interfaces=L3_interfacesFacts,
-    ospf_interfaces=Ospf_interfacesFacts,
-    ospfv2=Ospfv2Facts,
-    ospfv3=Ospfv3Facts,
-    static_routes=Static_routesFacts,
-)
+FACT_RESOURCE_SUBSETS = {
+    "hostname": HostnameFacts,
+    "interfaces": InterfacesFacts,
+    "l3_interfaces": L3_interfacesFacts,
+    "ospf_interfaces": Ospf_interfacesFacts,
+    "ospfv2": Ospfv2Facts,
+    "ospfv3": Ospfv3Facts,
+    "static_routes": Static_routesFacts,
+}
 
 
 class Facts(FactsBase):
     VALID_RESOURCE_SUBSETS = frozenset(FACT_RESOURCE_SUBSETS.keys())
 
-    def __init__(self, module):
+    def __init__(self, module) -> None:
         super().__init__(module)
 
     def get_facts(self, legacy_facts_type=None, resource_facts_type=None, data=None):

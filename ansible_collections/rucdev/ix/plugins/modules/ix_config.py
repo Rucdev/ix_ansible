@@ -240,7 +240,7 @@ def get_candidate_config(module: AnsibleModule):
         candidate = module.params["src"]
     elif module.params["lines"]:
         candidate_obj = NetworkConfig(indent=1)
-        parents = module.params["parents"] or list()
+        parents = module.params["parents"] or []
         candidate_obj.add(module.params["lines"], parents=parents)
         candidate = dumps(candidate_obj, "raw")
     return candidate
@@ -249,14 +249,15 @@ def get_candidate_config(module: AnsibleModule):
 def get_running_config(module: AnsibleModule, current_config=None, flags=None):
     running = module.params["running_config"]
     if not running:
-        if not module.params["defaults"] and current_config:
-            running = current_config
-        else:
-            running = get_config(module, flags)
+        running = (
+            current_config
+            if not module.params["defaults"] and current_config
+            else get_config(module, flags)
+        )
     return running
 
 
-def save_config(module: AnsibleModule, result):
+def save_config(module: AnsibleModule, result) -> None:
     result["changed"] = True
     if not module.check_mode:
         run_commands(module, "copy running-config startup-config\r", configure=True)
@@ -266,29 +267,29 @@ def save_config(module: AnsibleModule, result):
         )
 
 
-def main():
-    """Main entry point for module execution"""
-    backup_spec = dict(filename=dict(), dir_path=dict(type="path"))
-    argument_spec = dict(
-        src=dict(type="str"),
-        lines=dict(aliases=["commands"], type="list", elements="str"),
-        parents=dict(type="list", elements="str"),
-        before=dict(type="list", elements="str"),
-        after=dict(type="list", elements="str"),
-        match=dict(default="line", choices=["line", "strict", "exact", "none"]),
-        replace=dict(default="line", choices=["line", "block"]),
-        running_config=dict(aliases=["config"]),
-        intended_config=dict(),
-        defaults=dict(type="bool", default=False),
-        backup=dict(type="bool", default=False),
-        backup_options=dict(type="dict", options=backup_spec),
-        save_when=dict(
-            choices=["always", "never", "modified", "changed"],
-            default="never",
-        ),
-        diff_against=dict(choices=["startup", "intended", "running"]),
-        diff_ignore_lines=dict(type="list", elements="str"),
-    )
+def main() -> None:
+    """Main entry point for module execution."""
+    backup_spec = {"filename": {}, "dir_path": {"type": "path"}}
+    argument_spec = {
+        "src": {"type": "str"},
+        "lines": {"aliases": ["commands"], "type": "list", "elements": "str"},
+        "parents": {"type": "list", "elements": "str"},
+        "before": {"type": "list", "elements": "str"},
+        "after": {"type": "list", "elements": "str"},
+        "match": {"default": "line", "choices": ["line", "strict", "exact", "none"]},
+        "replace": {"default": "line", "choices": ["line", "block"]},
+        "running_config": {"aliases": ["config"]},
+        "intended_config": {},
+        "defaults": {"type": "bool", "default": False},
+        "backup": {"type": "bool", "default": False},
+        "backup_options": {"type": "dict", "options": backup_spec},
+        "save_when": {
+            "choices": ["always", "never", "modified", "changed"],
+            "default": "never",
+        },
+        "diff_against": {"choices": ["startup", "intended", "running"]},
+        "diff_ignore_lines": {"type": "list", "elements": "str"},
+    }
 
     mutually_exclusive = [("lines", "src"), ("parents", "src")]
 
@@ -307,7 +308,7 @@ def main():
     )
 
     result = {"changed": False}
-    warnings = list()
+    warnings = []
     result["warnings"] = warnings
     diff_ignore_lines = module.params["diff_ignore_lines"]
     flags = []
@@ -351,9 +352,8 @@ def main():
             result["commands"] = commands
             result["updates"] = commands
 
-            if not module.check_mode:
-                if commands:
-                    connection.edit_config(candidate=commands)
+            if not module.check_mode and commands:
+                connection.edit_config(candidate=commands)
 
             result["changed"] = True
 
@@ -428,7 +428,10 @@ def main():
                     after = running_config
 
                 result.update(
-                    dict(changed=True, diff=dict(before=str(before), after=str(after))),
+                    {
+                        "changed": True,
+                        "diff": {"before": str(before), "after": str(after)},
+                    },
                 )
 
     module.exit_json(**result)

@@ -21,9 +21,9 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 
 
 class InterfacesFacts:
-    """The ios interfaces facts class"""
+    """The ios interfaces facts class."""
 
-    def __init__(self, module):
+    def __init__(self, module) -> None:
         self._module = module
         self.argument_spec = InterfacesArgs.argument_spec
 
@@ -31,7 +31,7 @@ class InterfacesFacts:
         return connection.configure_get("show running-config interface")
 
     def populate_facts(self, connection, ansible_facts, data=None):
-        """Populate the facts for Interfaces network resource
+        """Populate the facts for Interfaces network resource.
 
         :param connection: the device connection
         :param ansible_facts: Facts dictionary
@@ -49,7 +49,7 @@ class InterfacesFacts:
             module=self._module,
         )
         objs = sorted(
-            list(interfaces_parser.parse().values()),
+            interfaces_parser.parse().values(),
             key=lambda k, sk="name": k[sk],
         )
 

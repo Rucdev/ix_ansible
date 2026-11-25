@@ -20,10 +20,7 @@ b_FIXTURE_DIR = b"%s/fixtures/ix" % (
 
 def _connection_side_effect(*args, **kwargs):
     try:
-        if args:
-            value = args[0]
-        else:
-            value = kwargs.get("command")
+        value = args[0] if args else kwargs.get("command")
 
         fixture_path = path.abspath(
             b"%s/%s" % (b_FIXTURE_DIR, b"_".join(value.split(b" "))),
@@ -32,29 +29,27 @@ def _connection_side_effect(*args, **kwargs):
             return file_desc.read()
     except OSError:
         if args:
-            value = args[0]
-            return value
+            return args[0]
         if kwargs.get("command"):
-            value = kwargs.get("command")
-            return value
+            return kwargs.get("command")
 
         return "Nope"
 
 
 class TestPluginCLIConfIOS(TestCase):
-    """Test class for IX CLI Conf Methods"""
+    """Test class for IX CLI Conf Methods."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         self._mock_connection = MagicMock()
         self._mock_connection.send.side_effect = _connection_side_effect
         self._cliconf = ix.Cliconf(self._mock_connection)
         self.maxDiff = None
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         pass
 
-    def test_get_device_info(self):
-        """Test get_device_info"""
+    def test_get_device_info(self) -> None:
+        """Test get_device_info."""
         device_info = self._cliconf.get_device_info()
 
         mock_device_info = {
@@ -64,10 +59,10 @@ class TestPluginCLIConfIOS(TestCase):
             "network_os_image": "ix2105-ms-10.2.39.ldc",
         }
 
-        self.assertEqual(device_info, mock_device_info)
+        assert device_info == mock_device_info
 
-    def test_get_capabilities(self):
-        """Test get_capabilities"""
+    def test_get_capabilities(self) -> None:
+        """Test get_capabilities."""
         capabilities = json.loads(self._cliconf.get_capabilities())
         mock_capabilities = {
             "device_info": {
@@ -109,7 +104,7 @@ class TestPluginCLIConfIOS(TestCase):
                 "get_defaults_flag",
             ],
         }
-        self.assertEqual(sorted(mock_capabilities), sorted(capabilities))
+        assert sorted(mock_capabilities) == sorted(capabilities)
 
 
 class TestCliconfModeHandling(TestCase):
@@ -117,14 +112,14 @@ class TestCliconfModeHandling(TestCase):
     config-only show commands enter config mode on their own.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         self._conn = MagicMock()
         self._conn.connected = True
         self._prompt = b"ix2215# "
         self._conn.get_prompt.side_effect = lambda: self._prompt
         self._sent = []
 
-        def send(command, *args, **kwargs):
+        def send(command, *args, **kwargs) -> bytes:
             cmd = command.decode() if isinstance(command, bytes) else command
             self._sent.append(cmd)
             # emulate IX prompt transitions
@@ -142,58 +137,58 @@ class TestCliconfModeHandling(TestCase):
         self._conn.send.side_effect = send
         self._cliconf = ix.Cliconf(self._conn)
 
-    def test_set_cli_prompt_context_from_config(self):
+    def test_set_cli_prompt_context_from_config(self) -> None:
         self._prompt = b"ix2215(config)# "
         self._cliconf.set_cli_prompt_context()
-        self.assertEqual(self._sent, ["configure", "exit"])
-        self.assertEqual(self._prompt, b"ix2215# ")
+        assert self._sent == ["configure", "exit"]
+        assert self._prompt == b"ix2215# "
 
-    def test_set_cli_prompt_context_from_sub_mode(self):
+    def test_set_cli_prompt_context_from_sub_mode(self) -> None:
         self._prompt = b"ix2215(config-ospfv2-1)# "
         self._cliconf.set_cli_prompt_context()
-        self.assertEqual(self._sent, ["configure", "exit"])
-        self.assertEqual(self._prompt, b"ix2215# ")
+        assert self._sent == ["configure", "exit"]
+        assert self._prompt == b"ix2215# "
 
-    def test_set_cli_prompt_context_already_exec(self):
+    def test_set_cli_prompt_context_already_exec(self) -> None:
         self._cliconf.set_cli_prompt_context()
-        self.assertEqual(self._sent, [])
+        assert self._sent == []
 
-    def test_set_cli_prompt_context_not_connected(self):
+    def test_set_cli_prompt_context_not_connected(self) -> None:
         self._conn.connected = False
         self._prompt = b"ix2215(config)# "
         self._cliconf.set_cli_prompt_context()
-        self.assertEqual(self._sent, [])
+        assert self._sent == []
 
-    def test_run_commands_show_running_config_from_exec(self):
+    def test_run_commands_show_running_config_from_exec(self) -> None:
         self._cliconf.run_commands(["show running-config"])
-        self.assertEqual(self._sent, ["configure", "show running-config"])
+        assert self._sent == ["configure", "show running-config"]
 
-    def test_run_commands_show_startup_config_from_exec(self):
+    def test_run_commands_show_startup_config_from_exec(self) -> None:
         self._cliconf.run_commands(["show startup-config"])
-        self.assertEqual(self._sent, ["configure", "show startup-config"])
+        assert self._sent == ["configure", "show startup-config"]
 
-    def test_run_commands_show_running_config_in_config(self):
+    def test_run_commands_show_running_config_in_config(self) -> None:
         self._prompt = b"ix2215(config)# "
         self._cliconf.run_commands(["show running-config"])
-        self.assertEqual(self._sent, ["show running-config"])
+        assert self._sent == ["show running-config"]
 
-    def test_run_commands_other_commands_stay_in_exec(self):
+    def test_run_commands_other_commands_stay_in_exec(self) -> None:
         self._cliconf.run_commands(["show version", "show ip route"])
-        self.assertEqual(self._sent, ["show version", "show ip route"])
-        self.assertEqual(self._prompt, b"ix2215# ")
+        assert self._sent == ["show version", "show ip route"]
+        assert self._prompt == b"ix2215# "
 
-    def test_edit_config_then_task_start_is_exec(self):
+    def test_edit_config_then_task_start_is_exec(self) -> None:
         """edit_config leaves exec mode (like cisco.ios 'end'); the next
         task's show running-config still works.
         """
         self._cliconf.edit_config(candidate=["hostname lab"])
-        self.assertEqual(self._prompt, b"ix2215# ")
+        assert self._prompt == b"ix2215# "
         self._sent.clear()
         self._cliconf.set_cli_prompt_context()
         self._cliconf.run_commands(["show running-config"])
-        self.assertEqual(self._sent, ["configure", "show running-config"])
+        assert self._sent == ["configure", "show running-config"]
 
-    def test_get_device_info_leaves_exec_mode(self):
+    def test_get_device_info_leaves_exec_mode(self) -> None:
         self._cliconf.get_device_info()
-        self.assertEqual(self._sent[-2:], ["configure", "exit"])
-        self.assertEqual(self._prompt, b"ix2215# ")
+        assert self._sent[-2:] == ["configure", "exit"]
+        assert self._prompt == b"ix2215# "

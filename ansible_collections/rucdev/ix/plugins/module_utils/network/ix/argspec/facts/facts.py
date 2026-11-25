@@ -6,9 +6,9 @@
 
 
 class FactsArgs:  # pylint: disable=R0903
-    """The arg spec for the ix facts module"""
+    """The arg spec for the ix facts module."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         pass
 
     choices = [
@@ -23,6 +23,10 @@ class FactsArgs:  # pylint: disable=R0903
     ]
 
     argument_spec = {
-        "gather_subset": dict(default=["min"], type="list", elements="str"),
-        "gather_network_resources": dict(choices=choices, type="list", elements="str"),
+        "gather_subset": {"default": ["min"], "type": "list", "elements": "str"},
+        "gather_network_resources": {
+            "choices": choices,
+            "type": "list",
+            "elements": "str",
+        },
     }

@@ -21,9 +21,9 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 
 
 class L3_interfacesFacts:
-    """The ix l3_interfaces fact class"""
+    """The ix l3_interfaces fact class."""
 
-    def __init__(self, module, subspec="config", options="options"):
+    def __init__(self, module, subspec="config", options="options") -> None:
         self._module = module
         self.argument_spec = L3_interfacesArgs.argument_spec
 
@@ -36,7 +36,7 @@ class L3_interfacesFacts:
         :param ansible_facts: Facts dictionary
         :param data: previously collected conf
         :rtype: dictionary
-        :returns: facts
+        :returns: facts.
         """
         objs = []
 
@@ -49,7 +49,7 @@ class L3_interfacesFacts:
 
         objs = utils.remove_empties(objs)
         temp = []
-        for k, v in objs.items():
+        for v in objs.values():
             temp.append(v)
         # sorting the dict by interface name
         temp = sorted(temp, key=lambda k, sk="name": k[sk])

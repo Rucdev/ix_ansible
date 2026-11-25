@@ -22,9 +22,9 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 
 
 class Ospfv2Facts:
-    """The ix ospfv2 facts class"""
+    """The ix ospfv2 facts class."""
 
-    def __init__(self, module, subspec="config", options="options"):
+    def __init__(self, module, subspec="config", options="options") -> None:
         self._module = module
         self.argument_spec = Ospfv2Args.argument_spec
 
@@ -35,7 +35,7 @@ class Ospfv2Facts:
         """Converts areas in each process to list
         :param ospf_data: ospf data
         :rtype: dictionary
-        :returns: facts_output
+        :returns: facts_output.
         """
         facts_output = {"processes": []}
 
@@ -66,7 +66,7 @@ class Ospfv2Facts:
         return filtered_lines
 
     def populate_facts(self, connection, ansible_facts, data=None):
-        """Populate the facts for Ospfv2 network resource
+        """Populate the facts for Ospfv2 network resource.
 
         :param connection: the device connection
         :param ansible_facts: Facts dictionary
