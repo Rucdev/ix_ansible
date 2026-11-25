@@ -1,6 +1,8 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+"""Fact gathering of the ix_* resource modules."""
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.facts.facts import (
     FactsBase,
 )
@@ -39,12 +41,12 @@ FACT_RESOURCE_SUBSETS = {
 
 
 class Facts(FactsBase):
+    """Gather the facts of the resource modules."""
+
     VALID_RESOURCE_SUBSETS = frozenset(FACT_RESOURCE_SUBSETS.keys())
 
-    def __init__(self, module) -> None:
-        super().__init__(module)
-
     def get_facts(self, legacy_facts_type=None, resource_facts_type=None, data=None):
+        """Gather the facts of the requested resources and return them with the warnings."""
         if self.VALID_RESOURCE_SUBSETS:
             self.get_network_resources_facts(
                 FACT_RESOURCE_SUBSETS,

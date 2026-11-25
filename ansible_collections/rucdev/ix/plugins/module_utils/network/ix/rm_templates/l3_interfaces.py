@@ -3,7 +3,9 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-"""The L3 Interfaces parser templates file. This contains
+"""The L3 Interfaces parser templates file.
+
+This contains
 a list of parser definitions and associated functions that
 facilitates both facts gathering and native command generation for
 the given network resource.
@@ -19,7 +21,10 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.r
 
 
 class L3InterfacesTemplate(NetworkTemplate):
+    """Parsers and command templates of the ix_l3_interfaces module."""
+
     def __init__(self, lines=None, module=None) -> None:
+        """Set up the template with the parsers of the resource."""
         super().__init__(
             lines=lines,
             tmplt=self,

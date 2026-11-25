@@ -27,6 +27,8 @@
 #
 
 
+"""Helpers that modules use to talk to IX through the cliconf plugin."""
+
 import json
 
 from ansible.module_utils._text import to_text
@@ -40,6 +42,7 @@ _DEVICE_CONFIGS = {}
 
 
 def get_connection(module):
+    """Return the cliconf connection of the module, creating it on first use."""
     if hasattr(module, "ix_connection"):
         return module.ix_connection
 
@@ -54,6 +57,7 @@ def get_connection(module):
 
 
 def get_capabilities(module):
+    """Return the capabilities of the cliconf plugin, cached on the module."""
     if hasattr(module, "ix_capabilities"):
         return module.ix_capabilities
 
@@ -66,6 +70,7 @@ def get_capabilities(module):
 
 
 def get_defaults_flag(module):
+    """Return the flag that makes show running-config include the defaults."""
     connection = get_connection(module)
     try:
         out = connection.get_defaults_flag()
@@ -76,6 +81,7 @@ def get_defaults_flag(module):
 
 
 def get_config(module, flags=None):
+    """Return the running config for the given flags, read once per flags."""
     flags = to_list(flags)
 
     section_filter = False
@@ -101,6 +107,7 @@ def get_config(module, flags=None):
 
 
 def run_commands(module, commands, *, check_rc=True, configure=False):
+    """Run commands, in config mode when configure is true, and return their outputs."""
     connection = get_connection(module)
     try:
         if configure:

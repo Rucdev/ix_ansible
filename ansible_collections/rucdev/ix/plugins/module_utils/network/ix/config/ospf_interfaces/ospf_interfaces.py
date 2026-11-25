@@ -6,6 +6,7 @@
 
 
 """The ix_ospf_interfaces config file.
+
 It is in this file where the current configuration (as dict)
 is compared to the provided configuration (as dict) and the command set
 necessary to bring the current configuration to its desired end-state is
@@ -41,6 +42,7 @@ class OspfInterfaces(ResourceModule):
     )
 
     def __init__(self, module) -> None:
+        """Set up the resource module with the argument spec and the template."""
         super().__init__(
             empty_fact_val={},
             facts_module=Facts(module),
@@ -62,9 +64,7 @@ class OspfInterfaces(ResourceModule):
         return self.result
 
     def generate_commands(self) -> None:
-        """Generate configuration commands to send based on
-        want, have and desired state.
-        """
+        """Generate the commands to send based on want, have and the state."""
         self._validate_want()
         wantd = self._list_to_dict(self.want, "want")
         haved = self._list_to_dict(self.have)
@@ -88,9 +88,10 @@ class OspfInterfaces(ResourceModule):
             self._compare(want=want, have=haved.pop(k, {}), interface=k)
 
     def _validate_want(self) -> None:
-        """Reject IPv4-only options unless afi is ipv4. Their setvals always
-        render "ip ospf ...", so under afi ipv6 they would change the OSPFv2
-        settings, and without afi they are silently ignored.
+        """Reject IPv4-only options unless afi is ipv4.
+
+        Their setvals always render "ip ospf ...", so under afi ipv6 they would
+        change the OSPFv2 settings, and without afi they are silently ignored.
         """
         for intf in self.want or []:
             for af in intf.get("address_family") or []:
@@ -110,11 +111,7 @@ class OspfInterfaces(ResourceModule):
                     )
 
     def _compare(self, want, have, interface) -> None:
-        """Leverages the base class `compare()` method and
-        populates the list of commands to be run by comparing
-        the `want` and `have` data with the `parsers` defined
-        for the OspfInterfaces network resource.
-        """
+        """Add the commands that change have into want, using the parsers."""
         begin = len(self.commands)
         self._compare_afi(want=want, have=have)
         if len(self.commands) != begin:
@@ -160,6 +157,7 @@ class OspfInterfaces(ResourceModule):
         return list_to_dict
 
     def process_list_attr(self, add_fam):
+        """Return the address families of an interface keyed by AFI."""
         item = {}
         for ag in add_fam.get("address_family", []):
             item[ag.get("afi")] = ag

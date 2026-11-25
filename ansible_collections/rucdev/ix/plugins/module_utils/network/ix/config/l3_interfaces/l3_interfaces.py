@@ -2,7 +2,8 @@
 # Copyright 2023 AP Communications
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-"""The ix_l3_interfaces class
+"""The ix_l3_interfaces class.
+
 It is in this file where the current configuration (as dict)
 is compared to the provided configuration (as dict) and the command set
 necessary to bring the current configuration to it's desired end-state is
@@ -32,6 +33,7 @@ class L3Interfaces(ResourceModule):
     """The ix_l3_interfaces class."""
 
     def __init__(self, module) -> None:
+        """Set up the resource module with the argument spec and the template."""
         super().__init__(
             empty_fact_val={},
             facts_module=Facts(module),
@@ -58,9 +60,7 @@ class L3Interfaces(ResourceModule):
         return self.result
 
     def generate_commands(self) -> None:
-        """Generate configuration commands to send based on
-        want, have and desired state.
-        """
+        """Generate the commands to send based on want, have and the state."""
         wantd = {each["name"]: each for each in self.want or []}
         haved = {each["name"]: each for each in self.have or []}
 
@@ -160,9 +160,15 @@ class L3Interfaces(ResourceModule):
         self.commands.append(self._tmplt.render(have, "interface", negate=True))
 
     def normalize_interface_names(self, param):
+        """Return param unchanged; IX interface names need no normalization."""
         return param
 
     def validate_ips(self, afi, want=None, have=None) -> None:
+        """Fail the module unless the address in want and in have has a valid prefix length.
+
+        Each address must be "<address>/<prefix length>" with a prefix length in
+        range for afi. The address part itself is not checked.
+        """
         if afi == "ipv4" and want:
             v4_addr = (
                 validate_ipv4(self._module, want["address"])
@@ -186,6 +192,7 @@ class L3Interfaces(ResourceModule):
             validate_ipv6(have["address"], self._module)
 
     def list_to_dict(self, param) -> None:
+        """Turn the address lists of each interface into dicts keyed by address."""
         if param:
             for val in param.values():
                 if "ipv4" in val:

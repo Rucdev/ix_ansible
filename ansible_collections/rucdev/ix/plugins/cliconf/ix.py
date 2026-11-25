@@ -17,6 +17,8 @@
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
 
+"""Cliconf plugin for NEC IX routers."""
+
 DOCUMENTATION = """
 author: Yushi Takeda (@ruc_dev)
 name: ix
@@ -60,6 +62,8 @@ CONFIG_ONLY_COMMANDS_RE = re.compile(r"^\s*show\s+(running-config|startup-config
 
 
 def configure_mode(func):
+    """Decorate a Cliconf method so that it runs in config mode."""
+
     @wraps(func)
     def wrapped(self, *args, **kwargs):
         self._enter_config_mode()
@@ -69,7 +73,10 @@ def configure_mode(func):
 
 
 class Cliconf(CliconfBase):
+    """Cliconf plugin for NEC IX routers."""
+
     def __init__(self, *args, **kwargs) -> None:
+        """Set up the cache of the device information."""
         self._device_info = {}
         display.vvvvv("cliconf init")
         super().__init__(*args, **kwargs)
@@ -107,6 +114,12 @@ class Cliconf(CliconfBase):
 
     @configure_mode
     def get_config(self, source="running", flags=None, format=None):
+        """Return the output of show running-config.
+
+        flags are appended to the command without a space in between.
+        source="startup" is accepted, but only "running" sets the show command,
+        so the command is then built from the flags alone.
+        """
         # running, startup以外はエラーとする
         if source not in ("running", "startup"):
             msg = f"fetching configuration for {source} is not supported"
@@ -135,6 +148,7 @@ class Cliconf(CliconfBase):
         path=None,
         diff_replace=None,
     ):
+        """Return the lines of the candidate config that the running config lacks."""
         diff = {}
         device_operations = self.get_device_operations()
         option_values = self.get_option_values()
@@ -180,6 +194,7 @@ class Cliconf(CliconfBase):
         return diff
 
     def get_device_info(self) -> dict:
+        """Return the OS, version, model and hostname of the device."""
         if not self._device_info:
             device_info = {}
             device_info["network_os"] = "ix"
@@ -225,6 +240,7 @@ class Cliconf(CliconfBase):
         output=None,
         check_all=False,
     ):
+        """Send one command and return its output."""
         if not command:
             msg = "must provide value of command to execute"
             raise ValueError(msg)
@@ -252,6 +268,7 @@ class Cliconf(CliconfBase):
         output=None,
         check_all=False,
     ):
+        """Send one command in config mode and return its output."""
         return self.get(
             command,
             prompt,
@@ -263,6 +280,7 @@ class Cliconf(CliconfBase):
         )
 
     def get_capabilities(self) -> str:
+        """Return the capabilities of the plugin and the device as JSON."""
         result = super().get_capabilities()
         result["rpc"] += ["get_diff", "run_commands"]
         result["device_operations"] = self.get_device_operations()
@@ -270,6 +288,7 @@ class Cliconf(CliconfBase):
         return json.dumps(result)
 
     def get_device_operations(self) -> dict:
+        """Return the configuration operations that the device supports."""
         return {
             "supports_diff_replace": True,
             "supports_commit": False,
@@ -284,6 +303,7 @@ class Cliconf(CliconfBase):
         }
 
     def get_option_values(self):
+        """Return the accepted values of the format, diff and output options."""
         return {
             "format": ["text"],
             "diff_match": ["line", "strict", "exact", "none"],
@@ -292,6 +312,7 @@ class Cliconf(CliconfBase):
         }
 
     def run_commands(self, commands=None, check_rc=True) -> list:
+        """Run commands and return their outputs."""
         if commands is None:
             msg = "'commands' value is required"
             raise ValueError(msg)
@@ -322,6 +343,7 @@ class Cliconf(CliconfBase):
 
     @configure_mode
     def run_configs(self, commands=None, *, check_rc=True) -> list:
+        """Run commands in config mode and return their outputs."""
         return self.run_commands(commands=commands, check_rc=check_rc)
 
     @configure_mode
@@ -333,6 +355,7 @@ class Cliconf(CliconfBase):
         diff=False,
         comment=None,
     ):
+        """Send the candidate lines in config mode."""
         resp = {}
         operations = self.get_device_operations()
         self.check_edit_config_capability(
@@ -366,6 +389,7 @@ class Cliconf(CliconfBase):
         return resp
 
     def get_default_flag(self) -> str:
+        """Return the show running-config flag that includes the default values."""
         self.send_command(SVINTR_CONFIG)
         out = self.get("show running-config ?")
         out = to_text(out, errors="surrogate_then_replace")

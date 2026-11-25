@@ -29,9 +29,6 @@ from typing import ClassVar
 class DeviceInterfacesArgs:
     """The arg spec for the ix_device_interfaces module."""
 
-    def __init__(self, **kwargs) -> None:
-        pass
-
     argument_spec: ClassVar[dict] = {
         "config": {
             "type": "list",

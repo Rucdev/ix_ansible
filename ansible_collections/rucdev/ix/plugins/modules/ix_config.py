@@ -18,6 +18,8 @@
 #
 
 
+"""The ix_config module."""
+
 DOCUMENTATION = """
 module: ix_config
 author: Yushi Takeda (@ruc_dev)
@@ -235,6 +237,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.ix import (
 
 
 def get_candidate_config(module: AnsibleModule):
+    """Return the candidate config built from src, or from lines and parents."""
     candidate = ""
     if module.params["src"]:
         candidate = module.params["src"]
@@ -247,6 +250,7 @@ def get_candidate_config(module: AnsibleModule):
 
 
 def get_running_config(module: AnsibleModule, current_config=None, flags=None):
+    """Return the running config to compare with, reading it from the device if needed."""
     running = module.params["running_config"]
     if not running:
         running = (
@@ -258,6 +262,7 @@ def get_running_config(module: AnsibleModule, current_config=None, flags=None):
 
 
 def save_config(module: AnsibleModule, result) -> None:
+    """Copy the running config to the startup config, except in check mode."""
     result["changed"] = True
     if not module.check_mode:
         run_commands(module, "copy running-config startup-config\r", configure=True)
@@ -435,7 +440,7 @@ def report_diff(module, result, config, running_config, startup_config):
 
 
 def main() -> None:
-    """Main entry point for module execution."""
+    """Run the module."""
     module = AnsibleModule(
         argument_spec=argument_spec(),
         mutually_exclusive=[("lines", "src"), ("parents", "src")],

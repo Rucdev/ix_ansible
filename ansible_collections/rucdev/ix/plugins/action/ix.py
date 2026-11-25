@@ -18,6 +18,8 @@
 #
 
 
+"""Action plugin for the ix_* network modules."""
+
 from ansible.utils.display import Display
 from ansible_collections.ansible.netcommon.plugins.action.network import (
     ActionModule as ActionNetworkModule,
@@ -27,7 +29,10 @@ display = Display()
 
 
 class ActionModule(ActionNetworkModule):
+    """Run the ix_* modules over a network_cli connection."""
+
     def run(self, tmp=None, task_vars=None):
+        """Fail unless the connection is network_cli, then run the module."""
         del tmp  # tmp no longer has any effect
 
         module_name = self._task.action.split(".")[-1]

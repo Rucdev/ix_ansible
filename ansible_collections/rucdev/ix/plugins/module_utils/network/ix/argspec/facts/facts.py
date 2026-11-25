@@ -10,9 +10,6 @@ from typing import ClassVar
 class FactsArgs:
     """The arg spec for the ix facts module."""
 
-    def __init__(self, **kwargs) -> None:
-        pass
-
     choices: ClassVar[list] = [
         "all",
         "hostname",

@@ -3,7 +3,9 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-"""The Ospfv3 parser templates file. This contains
+"""The Ospfv3 parser templates file.
+
+This contains
 a list of parser definitions and associated functions that
 facilitates both facts gathering and native command generation for
 the given network resource.
@@ -38,7 +40,10 @@ def _tmplt_ospfv3_originate_default(config_data):
 
 
 class Ospfv3Template(NetworkTemplate):
+    """Parsers and command templates of the ix_ospfv3 module."""
+
     def __init__(self, lines=None, module=None) -> None:
+        """Set up the template with the parsers of the resource."""
         super().__init__(lines=lines, tmplt=self, module=module)
 
     PARSERS: ClassVar[list] = [

@@ -3,7 +3,8 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-"""The ix ospfv2 fact class
+"""The ix ospfv2 fact class.
+
 It is in this file the configuration is collected from the device
 for a given resource, parsed, and the facts tree is populated
 based on the configuration.
@@ -25,14 +26,17 @@ class Ospfv2Facts:
     """The ix ospfv2 facts class."""
 
     def __init__(self, module) -> None:
+        """Keep the module and the argument spec of the resource."""
         self._module = module
         self.argument_spec = Ospfv2Args.argument_spec
 
     def get_ospfv2_data(self, connection):
+        """Return the running config of the device."""
         return connection.configure_get("show running-config ospf")
 
     def dict_to_list(self, ospf_data):
-        """Converts areas in each process to list
+        """Convert the areas of each process to a list.
+
         :param ospf_data: ospf data
         :rtype: dictionary
         :returns: facts_output.
@@ -47,7 +51,8 @@ class Ospfv2Facts:
         return facts_output
 
     def preprocess_lines(self, lines):
-        """Filters input lines to extract only the relevant OSPFv3 configuration
+        """Filter the input lines to the OSPFv3 configuration.
+
         :param lines: A list of configuration lines.
 
         :rtypes: list

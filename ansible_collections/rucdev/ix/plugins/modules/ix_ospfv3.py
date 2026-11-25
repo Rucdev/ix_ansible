@@ -261,7 +261,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.config.ospfv3
 
 
 def main() -> None:
-    """Main entry point for module execution.
+    """Run the module.
 
     :returns: the result form module invocation
     """

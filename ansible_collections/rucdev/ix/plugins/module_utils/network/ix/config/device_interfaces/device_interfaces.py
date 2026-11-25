@@ -2,7 +2,8 @@
 # Copyright 2023 AP Communications
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-"""The ix_Device_interfaces class
+"""The ix_device_interfaces config class.
+
 It is in this file where the current configuration (as dict)
 is compared to the provided configuration (as dict) and the command set
 necessary to bring the current configuration to it's desired end-state is
@@ -25,9 +26,10 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 
 
 class DeviceInterfaces(ResourceModule):
-    """The ix_Device_interfaces class."""
+    """The ix_device_interfaces config class."""
 
     def __init__(self, module) -> None:
+        """Set up the resource module with the argument spec and the template."""
         super().__init__(
             empty_fact_val={},
             facts_module=Facts(module),
@@ -59,9 +61,7 @@ class DeviceInterfaces(ResourceModule):
         return self.result
 
     def generate_commands(self) -> None:
-        """Generate configuration commands to send based on
-        want, have and desired state.
-        """
+        """Generate the commands to send based on want, have and the state."""
         wantd = {entry["name"]: entry for entry in self.want}
         haved = {entry["name"]: entry for entry in self.have}
 
@@ -88,11 +88,7 @@ class DeviceInterfaces(ResourceModule):
                 self._compare(want=want, have=haved.pop(k, {}))
 
     def _compare(self, want, have) -> None:
-        """Leverages the base class `compare()` method and
-        populates the list of commands to be run by comparing
-        the `want` and `have` data with the `parsers` defined
-        for the DeviceInterfaces network resource.
-        """
+        """Add the commands that change have into want, using the parsers."""
         begin = len(self.commands)
         self.compare(parsers=self.parsers, want=want, have=have)
 
@@ -107,4 +103,5 @@ class DeviceInterfaces(ResourceModule):
         self.commands.append(self._tmplt.render(have, "device", negate=True))
 
     def normalize_interface_names(self, param):
+        """Return param unchanged; IX interface names need no normalization."""
         return param

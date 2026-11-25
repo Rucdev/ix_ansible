@@ -6,6 +6,7 @@
 
 
 """The ix_hostname config file.
+
 It is in this file where the current configuration (as dict)
 is compared to the provided configuration (as dict) and the command set
 necessary to bring the current configuration to its desired end-state is
@@ -28,6 +29,7 @@ class Hostname(ResourceModule):
     """The ix_hostname config class."""
 
     def __init__(self, module) -> None:
+        """Set up the resource module with the argument spec and the template."""
         super().__init__(
             empty_fact_val={},
             facts_module=Facts(module),
@@ -50,9 +52,10 @@ class Hostname(ResourceModule):
         return self.result
 
     def _validate_want(self) -> None:
-        """IX accepts ``hostname a b`` without error but stores only ``a``,
+        """Reject a hostname that is empty or contains whitespace.
+
+        IX accepts ``hostname a b`` without error but stores only ``a``,
         which would make the module report success and never converge.
-        Reject whitespace up front instead.
         """
         hostname = (self.want or {}).get("hostname")
         if hostname is not None and (
@@ -63,8 +66,7 @@ class Hostname(ResourceModule):
             )
 
     def generate_commands(self) -> None:
-        """Generate configuration commands to send based on
-        want, have and desired state.
+        """Generate the commands to send based on want, have and the state.
 
         hostname is a single value, so merged / replaced / overridden all
         behave the same: set the hostname when it differs from the device.

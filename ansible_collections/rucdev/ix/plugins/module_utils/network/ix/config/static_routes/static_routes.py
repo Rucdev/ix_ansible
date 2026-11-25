@@ -6,6 +6,7 @@
 
 
 """The ix_static_routes config file.
+
 It is in this file where the current configuration (as dict)
 is compared to the provided configuration (as dict) and the command set
 necessary to bring the current configuration to its desired end-state is
@@ -55,6 +56,7 @@ class StaticRoutes(ResourceModule):
     """The ix_static_routes config class."""
 
     def __init__(self, module) -> None:
+        """Set up the resource module with the argument spec and the template."""
         super().__init__(
             empty_fact_val=[],
             facts_module=Facts(module),
@@ -75,9 +77,7 @@ class StaticRoutes(ResourceModule):
         return self.result
 
     def generate_commands(self) -> None:
-        """Generate configuration commands to send based on
-        want, have and desired state.
-        """
+        """Generate the commands to send based on want, have and the state."""
         wantd = self._flatten(self.want, validate=True)
         haved = self._flatten(self.have)
 
@@ -124,8 +124,10 @@ class StaticRoutes(ResourceModule):
             self.addcmd(have, have["afi"], negate=True)
 
     def _matches_delete_filter(self, have) -> bool:
-        """Deleted with config: a vrf / afi / dest without next_hops selects
-        every route below it; a next_hop selects that route only.
+        """Return whether the config of state deleted selects the route.
+
+        A vrf, afi or dest without next_hops selects every route below it; a
+        next_hop selects that route only.
         """
         for entry in self.want:
             if (entry.get("vrf") or None) != have.get("vrf"):
@@ -202,8 +204,10 @@ class StaticRoutes(ResourceModule):
         return route
 
     def _flatten(self, config, *, validate=False):
-        """[{vrf, address_families: [{afi, routes: [{dest, next_hops}]}]}]
-        -> {identity key: flat route dict}.
+        """Flatten the config into routes keyed by their identity.
+
+        [{vrf, address_families: [{afi, routes: [{dest, next_hops}]}]}]
+        -> {identity key: flat route dict}
         """
         routes = {}
         for entry in config or []:

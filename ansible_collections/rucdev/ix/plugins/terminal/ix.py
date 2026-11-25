@@ -1,6 +1,8 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+"""Terminal plugin for NEC IX routers."""
+
 import json
 import re
 
@@ -14,8 +16,7 @@ from ansible_collections.ansible.netcommon.plugins.plugin_utils.terminal_base im
 
 
 class TerminalModule(TerminalBase):
-    def __init__(self, connection) -> None:
-        super().__init__(connection)
+    """Prompts and error messages of the IX CLI, and switching to config mode."""
 
     terminal_stdout_re: ClassVar[list] = [
         re.compile(
@@ -40,9 +41,10 @@ class TerminalModule(TerminalBase):
     terminal_config_prompt = re.compile(r"^.+\(config\)#$")
 
     def on_open_shell(self) -> None:
-        pass
+        """Do nothing when the shell opens."""
 
     def on_become(self, passwd=None) -> None:
+        """Enter config mode, answering the password prompt when a password is given."""
         if self._get_prompt().endswith(b"(config)#"):
             return
         cmd = {"command": "configure"}
@@ -61,6 +63,7 @@ class TerminalModule(TerminalBase):
             raise AnsibleConnectionFailure(msg) from exc
 
     def on_unbecome(self) -> None:
+        """Leave config mode."""
         prompt = self._get_prompt()
         if prompt is None:
             return

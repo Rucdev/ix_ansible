@@ -3,7 +3,9 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-"""The StaticRoutes parser templates file. This contains
+"""The StaticRoutes parser templates file.
+
+This contains
 a list of parser definitions and associated functions that
 facilitates both facts gathering and native command generation for
 the given network resource.
@@ -67,7 +69,10 @@ def _tmplt_route_remove(data):
 
 
 class StaticRoutesTemplate(NetworkTemplate):
+    """Parsers and command templates of the ix_static_routes module."""
+
     def __init__(self, lines=None, module=None) -> None:
+        """Set up the template with the parsers of the resource."""
         super().__init__(
             lines=lines,
             tmplt=self,

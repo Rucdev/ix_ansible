@@ -75,7 +75,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.facts i
 
 
 def main() -> None:
-    """Main entry point for module execution.
+    """Run the module.
 
     :returns: ansible_facts
     """

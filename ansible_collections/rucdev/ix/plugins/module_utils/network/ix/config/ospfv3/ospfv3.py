@@ -6,6 +6,7 @@
 
 
 """The ix_ospfv3 config file.
+
 It is in this file where the current configuration (as dict)
 is compared to the provided configuration (as dict) and the command set
 necessary to bring the current configuration to its desired end-state is
@@ -31,6 +32,7 @@ class Ospfv3(ResourceModule):
     """The ix_ospfv3 config class."""
 
     def __init__(self, module) -> None:
+        """Set up the resource module with the argument spec and the template."""
         super().__init__(
             empty_fact_val={},
             facts_module=Facts(module),
@@ -57,9 +59,7 @@ class Ospfv3(ResourceModule):
         return self.result
 
     def generate_commands(self) -> None:
-        """Generate configuration commands to send based on
-        want, have and desired state.
-        """
+        """Generate the commands to send based on want, have and the state."""
         wantd = self._processes_by_id(self.want)
         haved = self._processes_by_id(self.have)
 
@@ -93,11 +93,7 @@ class Ospfv3(ResourceModule):
         return processes
 
     def _compare(self, want, have) -> None:
-        """Leverages the base class `compare()` method and
-        populates the list of commands to be run by comparing
-        the `want` and `have` data with the `parsers` defined
-        for the Ospfv2 network resource.
-        """
+        """Add the commands that change have into want, using the parsers."""
         if want != have:
             self.addcmd(want or have, "pid", negate=False)
             self.compare(parsers=self.parsers, want=want, have=have)
