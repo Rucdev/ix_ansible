@@ -51,13 +51,13 @@ class Ospf_interfacesTemplate(NetworkTemplate):
                 (\s(?P<message_digest>message-digest))?
                 $""", re.VERBOSE),
             "setval": "ip ospf authentication"
-            "{{ ' message-digest' if authentication.message_digest is defined else '' }}",
+            "{{ ' message-digest' if authentication_type == 'message-digest' else '' }}",
             "result": {
                 "{{ name }}": {
                     "address_family": {
                         "ip": {
                             "afi": "ipv4",
-                            "authentication_type": "{{ 'message_digest' if message_digest is defined else 'text' }}"
+                            "authentication_type": "{{ 'message-digest' if message_digest is defined else 'text' }}"
                         },
                     },
                 },
@@ -149,13 +149,13 @@ class Ospf_interfacesTemplate(NetworkTemplate):
             "name": "message_digest_key",
             "getval": re.compile(
                 r"""
-                \s+ip\sospf\smessage-digest
+                \s+ip\sospf\smessage-digest-key
                 \s(?P<key_id>\S+)
                 \s(?P<password>\S+)
                 $""",
                 re.VERBOSE
             ),
-            "setval": "ip ospf message-digest "
+            "setval": "ip ospf message-digest-key "
             "{{ message_digest_key.key_id }} {{ message_digest_key.password }}",
             "result": {
                 "{{ name }}": {

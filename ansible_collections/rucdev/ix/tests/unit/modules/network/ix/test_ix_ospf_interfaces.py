@@ -11,10 +11,21 @@ __metaclass__ = type
 from textwrap import dedent
 from unittest.mock import patch
 
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.common.parameters import remove_values
 from ansible_collections.rucdev.ix.plugins.modules import ix_ospf_interfaces
-from ansible_collections.rucdev.ix.tests.unit.modules.utils import set_module_args
+from ansible_collections.rucdev.ix.tests.unit.modules.utils import (
+    AnsibleExitJson,
+    set_module_args,
+)
 
 from .ix_module import TestIxModule
+
+
+def exit_json_no_log(module, **kwargs):
+    # Hide the no_log values like the real AnsibleModule.exit_json does.
+    kwargs.setdefault("changed", False)
+    raise AnsibleExitJson(remove_values(kwargs, module.no_log_values))
 
 
 class TestIxOspfInterfacesModule(TestIxModule):
@@ -311,6 +322,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
             "ip ospf dead-interval 60",
             "ip ospf mtu-ignore",
             "ip ospf network point-to-point",
+            "ip ospf authentication",
             "ip ospf authentication-key mypassword",
             "interface GigaEthernet1.0",
             "ipv6 ospf priority 20",
@@ -320,3 +332,450 @@ class TestIxOspfInterfacesModule(TestIxModule):
         ]
         result = self.execute_module(changed=False)
         self.assertEqual(sorted(result["rendered"]), sorted(commands))
+
+    # The running-config snippets below are as printed by an IX2215 (10.11.18).
+    # IX stores the passwords in plain text, so they can be compared.
+
+    def test_ix_ospf_interfaces_parsed_authentication(self):
+        set_module_args(
+            dict(
+                running_config=dedent("""\
+                    interface GigaEthernet1.0
+                      no ip address
+                      ip ospf authentication message-digest
+                      ip ospf message-digest-key 1 md5pw001
+                      shutdown
+                    !
+                    interface GigaEthernet2.0
+                      no ip address
+                      ip ospf authentication
+                      ip ospf authentication-key txtpw001
+                      shutdown
+                    !
+                    """),
+                state="parsed",
+            )
+        )
+        result = self.execute_module(changed=False)
+        parsed_list = [
+            {
+                "name": "GigaEthernet1.0",
+                "address_family": [
+                    {
+                        "afi": "ipv4",
+                        "authentication_type": "message-digest",
+                        "message_digest_key": {
+                            "key_id": 1,
+                            "password": "md5pw001",
+                        },
+                    },
+                ],
+            },
+            {
+                "name": "GigaEthernet2.0",
+                "address_family": [
+                    {
+                        "afi": "ipv4",
+                        "authentication_type": "text",
+                        "authentication_key": "txtpw001",
+                    },
+                ],
+            },
+        ]
+        self.assertEqual(parsed_list, result["parsed"])
+
+    def test_ix_ospf_interfaces_gathered_authentication(self):
+        self.execute_show_command.return_value = dedent("""\
+            interface GigaEthernet1.0
+              no ip address
+              ip ospf authentication message-digest
+              ip ospf message-digest-key 1 md5pw001
+              shutdown
+            !
+            """)
+        set_module_args(dict(state="gathered"))
+        result = self.execute_module(changed=False)
+        gathered = [
+            {
+                "name": "GigaEthernet1.0",
+                "address_family": [
+                    {
+                        "afi": "ipv4",
+                        "authentication_type": "message-digest",
+                        "message_digest_key": {
+                            "key_id": 1,
+                            "password": "md5pw001",
+                        },
+                    },
+                ],
+            },
+        ]
+        self.assertEqual(gathered, result["gathered"])
+
+    def test_ix_ospf_interfaces_rendered_authentication(self):
+        set_module_args(
+            dict(
+                config=[
+                    dict(
+                        name="GigaEthernet1.0",
+                        address_family=[
+                            dict(
+                                afi="ipv4",
+                                authentication_type="message-digest",
+                                message_digest_key=dict(
+                                    key_id=1,
+                                    password="md5pw001",
+                                ),
+                            ),
+                        ],
+                    ),
+                ],
+                state="rendered",
+            )
+        )
+        commands = [
+            "interface GigaEthernet1.0",
+            "ip ospf authentication message-digest",
+            "ip ospf message-digest-key 1 md5pw001",
+        ]
+        result = self.execute_module(changed=False)
+        self.assertEqual(sorted(result["rendered"]), sorted(commands))
+
+    def test_ix_ospf_interfaces_merged_authentication(self):
+        self.execute_show_command.return_value = dedent("""\
+            interface GigaEthernet1.0
+              no ip address
+              shutdown
+            !
+            """)
+        set_module_args(
+            dict(
+                config=[
+                    dict(
+                        name="GigaEthernet1.0",
+                        address_family=[
+                            dict(
+                                afi="ipv4",
+                                authentication_type="message-digest",
+                                message_digest_key=dict(
+                                    key_id=1,
+                                    password="md5pw001",
+                                ),
+                            ),
+                        ],
+                    ),
+                ],
+                state="merged",
+            )
+        )
+        commands = [
+            "interface GigaEthernet1.0",
+            "ip ospf authentication message-digest",
+            "ip ospf message-digest-key 1 md5pw001",
+        ]
+        self.execute_module(changed=True, commands=commands, sort=False)
+
+    def test_ix_ospf_interfaces_merged_authentication_idempotent(self):
+        self.execute_show_command.return_value = dedent("""\
+            interface GigaEthernet1.0
+              no ip address
+              ip ospf authentication message-digest
+              ip ospf message-digest-key 1 md5pw001
+              shutdown
+            !
+            """)
+        set_module_args(
+            dict(
+                config=[
+                    dict(
+                        name="GigaEthernet1.0",
+                        address_family=[
+                            dict(
+                                afi="ipv4",
+                                authentication_type="message-digest",
+                                message_digest_key=dict(
+                                    key_id=1,
+                                    password="md5pw001",
+                                ),
+                            ),
+                        ],
+                    ),
+                ],
+                state="merged",
+            )
+        )
+        self.execute_module(changed=False, commands=[])
+
+    def test_ix_ospf_interfaces_merged_authentication_key_change(self):
+        # IX keeps one key per interface: a new KEY_ID replaces the old key.
+        self.execute_show_command.return_value = dedent("""\
+            interface GigaEthernet1.0
+              no ip address
+              ip ospf authentication message-digest
+              ip ospf message-digest-key 2 md5pw002
+              shutdown
+            !
+            """)
+        set_module_args(
+            dict(
+                config=[
+                    dict(
+                        name="GigaEthernet1.0",
+                        address_family=[
+                            dict(
+                                afi="ipv4",
+                                message_digest_key=dict(
+                                    key_id=1,
+                                    password="md5pw001",
+                                ),
+                            ),
+                        ],
+                    ),
+                ],
+                state="merged",
+            )
+        )
+        commands = [
+            "interface GigaEthernet1.0",
+            "ip ospf message-digest-key 1 md5pw001",
+        ]
+        self.execute_module(changed=True, commands=commands, sort=False)
+
+    def test_ix_ospf_interfaces_replaced_authentication(self):
+        self.execute_show_command.return_value = dedent("""\
+            interface GigaEthernet1.0
+              no ip address
+              ip ospf authentication message-digest
+              ip ospf message-digest-key 1 md5pw001
+              ip ospf cost 10
+              shutdown
+            !
+            """)
+        set_module_args(
+            dict(
+                config=[
+                    dict(
+                        name="GigaEthernet1.0",
+                        address_family=[
+                            dict(
+                                afi="ipv4",
+                                cost=10,
+                            ),
+                        ],
+                    ),
+                ],
+                state="replaced",
+            )
+        )
+        commands = [
+            "interface GigaEthernet1.0",
+            "no ip ospf authentication message-digest",
+            "no ip ospf message-digest-key 1 md5pw001",
+        ]
+        self.execute_module(changed=True, commands=commands, sort=False)
+
+    def test_ix_ospf_interfaces_replaced_text_authentication(self):
+        # IX keeps an MD5 key next to text authentication; both must go.
+        self.execute_show_command.return_value = dedent("""\
+            interface GigaEthernet1.0
+              no ip address
+              ip ospf authentication
+              ip ospf authentication-key txtpw001
+              ip ospf message-digest-key 1 md5pw001
+              shutdown
+            !
+            """)
+        set_module_args(
+            dict(
+                config=[
+                    dict(
+                        name="GigaEthernet1.0",
+                        address_family=[
+                            dict(
+                                afi="ipv4",
+                                cost=10,
+                            ),
+                        ],
+                    ),
+                ],
+                state="replaced",
+            )
+        )
+        commands = [
+            "interface GigaEthernet1.0",
+            "no ip ospf authentication",
+            "no ip ospf authentication-key txtpw001",
+            "ip ospf cost 10",
+            "no ip ospf message-digest-key 1 md5pw001",
+        ]
+        self.execute_module(changed=True, commands=commands, sort=False)
+
+    def test_ix_ospf_interfaces_replaced_md5_to_text_authentication(self):
+        # "ip ospf authentication" replaces "ip ospf authentication message-digest".
+        self.execute_show_command.return_value = dedent("""\
+            interface GigaEthernet1.0
+              no ip address
+              ip ospf authentication message-digest
+              ip ospf message-digest-key 1 md5pw001
+              shutdown
+            !
+            """)
+        set_module_args(
+            dict(
+                config=[
+                    dict(
+                        name="GigaEthernet1.0",
+                        address_family=[
+                            dict(
+                                afi="ipv4",
+                                authentication_type="text",
+                                authentication_key="txtpw001",
+                            ),
+                        ],
+                    ),
+                ],
+                state="replaced",
+            )
+        )
+        commands = [
+            "interface GigaEthernet1.0",
+            "ip ospf authentication",
+            "ip ospf authentication-key txtpw001",
+            "no ip ospf message-digest-key 1 md5pw001",
+        ]
+        self.execute_module(changed=True, commands=commands, sort=False)
+
+    def test_ix_ospf_interfaces_overridden_authentication(self):
+        self.execute_show_command.return_value = dedent("""\
+            interface GigaEthernet1.0
+              no ip address
+              ip ospf authentication message-digest
+              ip ospf message-digest-key 1 md5pw001
+              shutdown
+            !
+            interface GigaEthernet2.0
+              no ip address
+              ip ospf authentication
+              ip ospf authentication-key txtpw001
+              shutdown
+            !
+            """)
+        set_module_args(
+            dict(
+                config=[
+                    dict(
+                        name="GigaEthernet2.0",
+                        address_family=[
+                            dict(
+                                afi="ipv4",
+                                cost=20,
+                            ),
+                        ],
+                    ),
+                ],
+                state="overridden",
+            )
+        )
+        commands = [
+            "interface GigaEthernet1.0",
+            "no ip ospf authentication message-digest",
+            "no ip ospf message-digest-key 1 md5pw001",
+            "interface GigaEthernet2.0",
+            "no ip ospf authentication",
+            "no ip ospf authentication-key txtpw001",
+            "ip ospf cost 20",
+        ]
+        self.execute_module(changed=True, commands=commands, sort=False)
+
+    def test_ix_ospf_interfaces_deleted_authentication(self):
+        self.execute_show_command.return_value = dedent("""\
+            interface GigaEthernet1.0
+              no ip address
+              ip ospf authentication message-digest
+              ip ospf message-digest-key 1 md5pw001
+              shutdown
+            !
+            interface GigaEthernet2.0
+              no ip address
+              ip ospf authentication
+              ip ospf authentication-key txtpw001
+              shutdown
+            !
+            """)
+        set_module_args(
+            dict(
+                config=[
+                    dict(
+                        name="GigaEthernet1.0",
+                    ),
+                ],
+                state="deleted",
+            )
+        )
+        commands = [
+            "interface GigaEthernet1.0",
+            "no ip ospf authentication message-digest",
+            "no ip ospf message-digest-key 1 md5pw001",
+        ]
+        self.execute_module(changed=True, commands=commands, sort=False)
+
+    def test_ix_ospf_interfaces_gathered_authentication_no_log(self):
+        # Only the password read from the device may be hidden in the result.
+        self.execute_show_command.return_value = dedent("""\
+            interface GigaEthernet1.0
+              no ip address
+              ip ospf authentication message-digest
+              ip ospf message-digest-key 1 md5pw001
+              ip ospf cost 10
+              shutdown
+            !
+            """)
+        set_module_args(dict(state="gathered"))
+        with patch.object(AnsibleModule, "exit_json", exit_json_no_log):
+            result = self.execute_module(changed=False)
+        gathered = [
+            {
+                "name": "GigaEthernet1.0",
+                "address_family": [
+                    {
+                        "afi": "ipv4",
+                        "authentication_type": "message-digest",
+                        "cost": 10,
+                        "message_digest_key": {
+                            "key_id": 1,
+                            "password": "VALUE_SPECIFIED_IN_NO_LOG_PARAMETER",
+                        },
+                    },
+                ],
+            },
+        ]
+        self.assertEqual(gathered, result["gathered"])
+
+    def test_ix_ospf_interfaces_deleted_authentication_no_log(self):
+        self.execute_show_command.return_value = dedent("""\
+            interface GigaEthernet1.0
+              no ip address
+              ip ospf authentication message-digest
+              ip ospf message-digest-key 1 md5pw001
+              ip ospf cost 10
+              shutdown
+            !
+            """)
+        set_module_args(
+            dict(
+                config=[
+                    dict(
+                        name="GigaEthernet1.0",
+                    ),
+                ],
+                state="deleted",
+            )
+        )
+        commands = [
+            "interface GigaEthernet1.0",
+            "no ip ospf authentication message-digest",
+            "no ip ospf cost 10",
+            "no ip ospf message-digest-key 1 ********",
+        ]
+        with patch.object(AnsibleModule, "exit_json", exit_json_no_log):
+            self.execute_module(changed=True, commands=commands, sort=False)
