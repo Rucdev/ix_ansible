@@ -44,7 +44,7 @@ description: This module manages the interface attributes of Nec Univerge IX net
 version_added: 0.2.0
 author:
   - Yushi Takeda (@Rucdev)
-note:
+notes:
   - Tested against NEC IX 2105 version 10.2.39
 options:
   config:
@@ -167,12 +167,14 @@ RETURN = """
 before:
   description: The configuration prior to the model invocation.
   returned: always
+  type: list
   sample: >
     The configuration returned will always be in the same format
      of the parameters above.
 after:
   description: The resulting configuration model invocation.
   returned: when changed
+  type: list
   sample: >
     The configuration returned will always be in the same format
      of the parameters above.

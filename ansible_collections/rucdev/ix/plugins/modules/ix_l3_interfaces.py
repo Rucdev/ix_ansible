@@ -116,6 +116,12 @@ options:
           eui:
             description: Use eui-64 interface identifier
             type: bool
+  running_config:
+    description:
+      - This option is used only with state I(parsed).
+      - The value of this option should be the output received from the IX device
+        by executing the command B(show running-config).
+    type: str
   state:
     choices:
     - merged

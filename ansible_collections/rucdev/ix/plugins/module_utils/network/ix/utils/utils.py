@@ -11,12 +11,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-import socket
-
-from itertools import count, groupby
-
 from ansible.module_utils.common.network import is_masklen, to_netmask
-from ansible.module_utils.six import iteritems
 
 
 def validate_ipv4(module, value):

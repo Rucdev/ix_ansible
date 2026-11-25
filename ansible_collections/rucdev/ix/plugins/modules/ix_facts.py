@@ -40,9 +40,10 @@ options:
         list of values to include a larger subset. Values can also be used
         with an initial C(M(!)) to specify that a specific subset should
         not be collected.
+    type: list
+    elements: str
     required: false
     default: 'all'
-    version_added: "2.2"
   gather_network_resources:
     description:
       - When supplied, this argument will restrict the facts collected
@@ -51,8 +52,9 @@ options:
         Can specify a list of values to include a larger subset. Values
         can also be used with an initial C(M(!)) to specify that a
         specific subset should not be collected.
+    type: list
+    elements: str
     required: false
-    version_added: "2.9"
 """
 
 EXAMPLES = """

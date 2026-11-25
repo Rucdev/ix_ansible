@@ -56,7 +56,6 @@ options:
               - Sets the password if encryption is not used.
               - Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6 or without afi.
             type: str
-            no_log: true
           cost:
             description: Sets the value of cost on the interface.(1~65535)
             type: int
@@ -78,7 +77,6 @@ options:
               password:
                 description: md5 password
                 type: str
-                no_log: true
           mtu_ignore:
             description:
               - Ignore MTU mismatch

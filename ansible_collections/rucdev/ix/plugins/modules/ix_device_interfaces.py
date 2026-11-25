@@ -70,6 +70,8 @@ options:
       keepalive:
         description:
         - Enable device keepalive
+        type: list
+        elements: dict
         suboptions:
           down_notification_time:
             description:
@@ -86,13 +88,14 @@ options:
         choices:
         - mdi
         - mdix
-      output-buffer:
+      output_buffer:
         description:
         - The number of output buffers.
         type: int
       sflow:
         description:
         - The sFlow configuration of the interface.
+        type: dict
         suboptions:
           max_header_size:
             description:
@@ -120,9 +123,9 @@ options:
         - The speed of the interface.
         type: str
         choices:
-        - 10
-        - 100
-        - 1000
+        - "10"
+        - "100"
+        - "1000"
         - auto
   reset:
     description:
@@ -162,12 +165,14 @@ RETURN = """
 before:
   description: The configuration prior to the model invocation.
   returned: always
+  type: list
   sample: >
     The configuration returned will always be in the same format
      of the parameters above.
 after:
   description: The resulting configuration model invocation.
   returned: when changed
+  type: list
   sample: >
     The configuration returned will always be in the same format
      of the parameters above.

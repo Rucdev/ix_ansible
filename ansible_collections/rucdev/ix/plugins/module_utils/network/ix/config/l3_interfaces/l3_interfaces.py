@@ -11,15 +11,8 @@ is compared to the provided configuration (as dict) and the command set
 necessary to bring the current configuration to it's desired end-state is
 created
 """
-from ansible.module_utils.six import iteritems
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module import (
     ResourceModule,
-)
-from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.cfg.base import (
-    ConfigBase,
-)
-from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
-    to_list,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.facts import (
     Facts,
@@ -205,7 +198,7 @@ class L3_interfaces(ResourceModule):
 
     def list_to_dict(self, param):
         if param:
-            for _k, val in iteritems(param):
+            for _k, val in param.items():
                 if "ipv4" in val:
                     temp = {}
                     for each in val["ipv4"]:

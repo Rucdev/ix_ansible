@@ -17,9 +17,7 @@ necessary to bring the current configuration to its desired end-state is
 created.
 """
 
-from copy import deepcopy
 
-from ansible.module_utils.six import iteritems
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
     dict_merge,
 )
@@ -94,16 +92,16 @@ class Ospfv2(ResourceModule):
 
         # if state is deleted, empty out wantd and set haved to wantd
         if self.state == "deleted":
-            haved = {k: v for k, v in iteritems(haved) if k in wantd or not wantd}
+            haved = {k: v for k, v in haved.items() if k in wantd or not wantd}
             wantd = {}
 
         # delete processes first so we do run into "more than one" errors
         if self.state in ["overridden", "deleted"]:
-            for k, have in iteritems(haved):
+            for k, have in haved.items():
                 if k not in wantd:
                     self.addcmd(have, "pid", True)
 
-        for k, want in iteritems(wantd):
+        for k, want in wantd.items():
             self._compare(want=want, have=haved.pop(k, {}))
 
     def _compare(self, want, have):
@@ -123,7 +121,7 @@ class Ospfv2(ResourceModule):
         for _parser in complex_parsers:
             wdist = want.get(_parser, {})
             hdist = have.get(_parser, {})
-            for key, wanting in iteritems(wdist):
+            for key, wanting in wdist.items():
                 haveing = hdist.pop(key, {})
                 if wanting != haveing:
                     # IX identifies an nssa-range by its prefix and rejects
@@ -135,15 +133,15 @@ class Ospfv2(ResourceModule):
                     ):
                         self.addcmd(haveing, _parser, negate=True)
                     self.addcmd(wanting, _parser, False)
-            for key, haveing in iteritems(hdist):
+            for key, haveing in hdist.items():
                 self.addcmd(haveing, _parser, negate=True)
 
     def _areas_compare(self, want, have):
         wareas = want.get("areas", {})
         hareas = have.get("areas", {})
-        for name, entry in iteritems(wareas):
+        for name, entry in wareas.items():
             self._area_compare(want=entry, have=hareas.pop(name, {}))
-        for name, entry in iteritems(hareas):
+        for name, entry in hareas.items():
             self._area_compare(want={}, have=entry)
 
     def _area_compare(self, want, have):
@@ -161,7 +159,7 @@ class Ospfv2(ResourceModule):
         for _parser in area_complex_parsers:
             wantr = want.get(_parser, {})
             haver = have.get(_parser, {})
-            for key, wanting in iteritems(wantr):
+            for key, wanting in wantr.items():
                 haveing = haver.pop(key, {})
                 haveing["area_id"] = area_id
                 wanting["area_id"] = area_id
@@ -169,7 +167,7 @@ class Ospfv2(ResourceModule):
                     if haveing and self.state in ["overridden", "replaced"]:
                         self.addcmd(haveing, _parser, negate=True)
                     self.addcmd(wanting, _parser, False)
-            for key, haveing in iteritems(haver):
+            for key, haveing in haver.items():
                 self.addcmd(haveing, _parser, negate=True)
 
     def _list_to_dict(self, param):

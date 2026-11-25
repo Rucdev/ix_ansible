@@ -10,7 +10,6 @@ It is in this file the configuration is collected from the device
 for a given resource, parsed, and the facts tree is populated
 based on the configuration.
 """
-from ansible.module_utils.six import iteritems
 
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common import (
     utils,
@@ -52,7 +51,7 @@ class L3_interfacesFacts(object):
 
         objs = utils.remove_empties(objs)
         temp = []
-        for k, v in iteritems(objs):
+        for k, v in objs.items():
             temp.append(v)
         # sorting the dict by interface name
         temp = sorted(temp, key=lambda k, sk="name": k[sk])

@@ -185,6 +185,12 @@ Parameters
     <br/>
 
 
+Notes
+-----
+
+.. note::
+   - Tested against NEC IX 2105 version 10.2.39
+
 
 
 Examples
@@ -258,7 +264,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <b>after</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">-</span>
+                      <span style="color: purple">list</span>
                     </div>
                 </td>
                 <td>when changed</td>
@@ -276,7 +282,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <b>before</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">-</span>
+                      <span style="color: purple">list</span>
                     </div>
                 </td>
                 <td>always</td>
