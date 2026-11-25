@@ -52,7 +52,7 @@ class Ospf_interfacesArgs(object):  # pylint: disable=R0903
                         "dead_interval": {"type": "int"},
                         "message_digest_key": {
                             "type": "dict",
-                            "no_log": True,
+                            "no_log": False,
                             "options": {
                                 "key_id": {"type": "int"},
                                 "password": {"type": "str", "no_log": True},

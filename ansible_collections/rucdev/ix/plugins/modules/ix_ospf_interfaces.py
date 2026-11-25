@@ -65,7 +65,6 @@ options:
           message_digest_key:
             description: Configure of md5 password.(when you use this, the authentication must be message-digest.)
             type: dict
-            no_log: true
             suboptions:
               key_id:
                 description: md5 key id(1~255)
