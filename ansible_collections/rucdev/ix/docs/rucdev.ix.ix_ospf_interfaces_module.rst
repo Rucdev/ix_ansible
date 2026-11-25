@@ -102,7 +102,7 @@ Parameters
                 </td>
                 <td>
                         <div>Sets the password if encryption is not used.</div>
-                        <div>Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6.</div>
+                        <div>Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6 or without afi.</div>
                 </td>
             </tr>
             <tr>
@@ -124,7 +124,7 @@ Parameters
                 </td>
                 <td>
                         <div>Enable authentication</div>
-                        <div>Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6.</div>
+                        <div>Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6 or without afi.</div>
                 </td>
             </tr>
             <tr>
@@ -199,7 +199,7 @@ Parameters
                 </td>
                 <td>
                         <div>Configure type of the interface</div>
-                        <div>Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6.</div>
+                        <div>Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6 or without afi.</div>
                 </td>
             </tr>
             <tr>
@@ -217,7 +217,7 @@ Parameters
                 </td>
                 <td>
                         <div>Configure of md5 password.(when you use this, the authentication must be message-digest.)</div>
-                        <div>Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6.</div>
+                        <div>Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6 or without afi.</div>
                 </td>
             </tr>
                                 <tr>
@@ -276,7 +276,7 @@ Parameters
                 </td>
                 <td>
                         <div>Ignore MTU mismatch</div>
-                        <div>Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6.</div>
+                        <div>Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6 or without afi.</div>
                 </td>
             </tr>
             <tr>

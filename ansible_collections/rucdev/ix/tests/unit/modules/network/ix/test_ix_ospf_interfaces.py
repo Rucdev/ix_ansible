@@ -188,6 +188,28 @@ class TestIxOspfInterfacesModule(TestIxModule):
                 self.assertIn(option, result["msg"])
                 self.assertIn("GigaEthernet1.0", result["msg"])
 
+    def test_ix_ospf_interfaces_ipv4_only_options_without_afi(self):
+        # without afi these used to be silently ignored
+        for option, value in (
+            ("authentication_type", "message-digest"),
+            ("authentication_key", "secret01"),
+            ("message_digest_key", dict(key_id=1, password="secret01")),
+            ("mtu_ignore", True),
+            ("interface_type", "point-to-point"),
+        ):
+            with self.subTest(option=option, value=value):
+                af = dict(cost=10)
+                af[option] = value
+                set_module_args(
+                    dict(
+                        config=[dict(name="GigaEthernet1.0", address_family=[af])],
+                        state="rendered",
+                    )
+                )
+                result = self.execute_module(failed=True)
+                self.assertIn(option, result["msg"])
+                self.assertIn("afi: not set", result["msg"])
+
     def test_ix_ospf_interfaces_ipv4_only_options_under_ipv6_merged(self):
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0

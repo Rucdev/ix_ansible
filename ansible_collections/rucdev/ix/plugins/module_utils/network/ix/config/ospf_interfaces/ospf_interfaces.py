@@ -97,20 +97,25 @@ class Ospf_interfaces(ResourceModule):
             self._compare(want=want, have=haved.pop(k, {}), interface=k)
 
     def _validate_want(self):
-        """Reject IPv4-only options under afi ipv6. Their setvals always
-        render "ip ospf ...", so they would change the OSPFv2 settings.
+        """Reject IPv4-only options unless afi is ipv4. Their setvals always
+        render "ip ospf ...", so under afi ipv6 they would change the OSPFv2
+        settings, and without afi they are silently ignored.
         """
         for intf in self.want or []:
             for af in intf.get("address_family") or []:
-                if af.get("afi") != "ipv6":
+                if af.get("afi") == "ipv4":
                     continue
                 invalid = [
                     opt for opt in self.IPV4_ONLY_OPTIONS if af.get(opt) is not None
                 ]
                 if invalid:
                     self._module.fail_json(
-                        msg="{0}: {1} can be used only with afi ipv4; IX has no "
-                        "OSPFv3 equivalent".format(intf.get("name"), ", ".join(invalid))
+                        msg="{0}: {1} can be used only with afi ipv4 (afi: {2}); IX "
+                        "has no OSPFv3 equivalent".format(
+                            intf.get("name"),
+                            ", ".join(invalid),
+                            af.get("afi") or "not set",
+                        )
                     )
 
     def _compare(self, want, have, interface):

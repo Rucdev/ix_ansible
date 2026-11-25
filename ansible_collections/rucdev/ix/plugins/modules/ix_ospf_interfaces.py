@@ -46,7 +46,7 @@ options:
           authentication_type:
             description:
               - Enable authentication
-              - Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6.
+              - Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6 or without afi.
             type: str
             choices:
               - message-digest
@@ -54,7 +54,7 @@ options:
           authentication_key:
             description:
               - Sets the password if encryption is not used.
-              - Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6.
+              - Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6 or without afi.
             type: str
             no_log: true
           cost:
@@ -69,7 +69,7 @@ options:
           message_digest_key:
             description:
               - Configure of md5 password.(when you use this, the authentication must be message-digest.)
-              - Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6.
+              - Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6 or without afi.
             type: dict
             no_log: true
             suboptions:
@@ -83,7 +83,7 @@ options:
           mtu_ignore:
             description:
               - Ignore MTU mismatch
-              - Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6.
+              - Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6 or without afi.
             type: bool
           neighbor_v2:
             description:
@@ -132,7 +132,7 @@ options:
           interface_type:
             description:
               - Configure type of the interface
-              - Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6.
+              - Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6 or without afi.
             type: str
             choices:
               - broadcast
