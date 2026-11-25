@@ -1,0 +1,8 @@
+---
+rules:
+  unpinned-uses:
+    config:
+      policies:
+        # Actions are referenced by tag; require a ref but not a commit hash.
+        "*": "ref-pin"
+...

@@ -1,102 +1,135 @@
 ---
-name: Tests
-
-"on":
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-
 concurrency:
   # A pull request has one group, so a new push cancels its older run. Any other
   # run (push to main, workflow_dispatch) gets a group of its own and finishes.
-  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
   cancel-in-progress: true
+  group: "${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}"
 
 jobs:
+  lint:
+    name: "Lint"
+    runs-on: "ubuntu-24.04"
+    steps:
+      - uses: "actions/checkout@v7"
+        with:
+          persist-credentials: false
+
+      - uses: "astral-sh/setup-uv@v10.4.0"
+
+      # Each tool runs in its own environment with a pinned version. ansible-lint
+      # and zizmor cannot share the pyproject.toml environment (ansible 6.4.0).
+      - name: "black"
+        run: "uvx black@26.10.1 --check --diff ."
+
+      # --ignore-noqa: exceptions belong in pyproject.toml, not in the code.
+      - name: "ruff"
+        run: "uvx ruff@0.17.6 check --ignore-noqa ."
+
+      - name: "yamllint"
+        run: "uvx yamllint@1.38.0 --strict ."
+
+      - name: "actionlint"
+        run: "uvx --from actionlint-py@1.7.12.25 actionlint"
+
+      - name: "zizmor"
+        run: "uvx zizmor@1.33.1 --offline --persona=auditor ."
+
+      - name: "ansible-lint"
+        run: "uvx --with ansible-core==2.21.6 ansible-lint@26.11.1 --offline"
+        working-directory: "ansible_collections/rucdev/ix"
+
   sanity:
-    name: Sanity (ansible-core ${{ matrix.ansible-core }})
-    runs-on: ubuntu-24.04
+    name: "Sanity (ansible-core ${{ matrix.ansible-core }})"
+    runs-on: "ubuntu-24.04"
+    steps:
+      - uses: "actions/checkout@v7"
+        with:
+          persist-credentials: false
+
+      # ansible-core 2.22 needs Python 3.13 or later; 2.20 and 2.21 run on it too.
+      - uses: "actions/setup-python@v7"
+        with:
+          python-version: "3.13"
+
+      - env:
+          ANSIBLE_CORE_VERSION: "${{ matrix.ansible-core }}"
+        name: "Install ansible-core"
+        run: 'python -m pip install "ansible-core~=${ANSIBLE_CORE_VERSION}.0"'
+
+      # Installs into ./ansible_collections/ansible/, which .gitignore excludes.
+      - name: "Install collection dependencies"
+        run: "ansible-galaxy collection install -p . ansible.netcommon"
+
+      - name: "Run sanity tests"
+        run: "ansible-test sanity --docker default --color yes"
+        working-directory: "ansible_collections/rucdev/ix"
     strategy:
       fail-fast: false
       matrix:
         # ansible-core versions still in support. Each one needs
         # ansible_collections/rucdev/ix/tests/sanity/ignore-<version>.txt.
         ansible-core: ["2.20", "2.21", "2.22"]
+
+  units:
+    name: "Units (ansible-core ${{ matrix.ansible-core }})"
+    runs-on: "ubuntu-24.04"
     steps:
-      - uses: actions/checkout@v7
+      - uses: "actions/checkout@v7"
         with:
           persist-credentials: false
 
       # ansible-core 2.22 needs Python 3.13 or later; 2.20 and 2.21 run on it too.
-      - uses: actions/setup-python@v7
+      - uses: "actions/setup-python@v7"
         with:
           python-version: "3.13"
 
-      - name: Install ansible-core
-        env:
-          ANSIBLE_CORE_VERSION: ${{ matrix.ansible-core }}
-        run: python -m pip install "ansible-core~=${ANSIBLE_CORE_VERSION}.0"
+      - env:
+          ANSIBLE_CORE_VERSION: "${{ matrix.ansible-core }}"
+        name: "Install ansible-core and pytest"
+        run: 'python -m pip install "ansible-core~=${ANSIBLE_CORE_VERSION}.0" pytest'
 
-      # Installs into ./ansible_collections/ansible/, which .gitignore already excludes.
-      - name: Install collection dependencies
-        run: ansible-galaxy collection install -p . ansible.netcommon
+      # Installs into ./ansible_collections/ansible/, which .gitignore excludes.
+      - name: "Install collection dependencies"
+        run: "ansible-galaxy collection install -p . ansible.netcommon"
 
-      - name: Run sanity tests
-        working-directory: ansible_collections/rucdev/ix
-        run: ansible-test sanity --docker default --color yes
-
-  units:
-    name: Units (ansible-core ${{ matrix.ansible-core }})
-    runs-on: ubuntu-24.04
+      # "python -m" puts the repository root on sys.path, so ansible_collections
+      # (this collection and the dependencies installed above) is importable.
+      - name: "Run unit tests"
+        run: "python -m pytest ansible_collections/rucdev/ix/tests/unit"
     strategy:
       fail-fast: false
       matrix:
         # Same versions as the sanity job.
         ansible-core: ["2.20", "2.21", "2.22"]
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-
-      # ansible-core 2.22 needs Python 3.13 or later; 2.20 and 2.21 run on it too.
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.13"
-
-      - name: Install ansible-core and pytest
-        env:
-          ANSIBLE_CORE_VERSION: ${{ matrix.ansible-core }}
-        run: python -m pip install "ansible-core~=${ANSIBLE_CORE_VERSION}.0" pytest
-
-      # Installs into ./ansible_collections/ansible/, which .gitignore already excludes.
-      - name: Install collection dependencies
-        run: ansible-galaxy collection install -p . ansible.netcommon
-
-      # "python -m" puts the repository root on sys.path, so ansible_collections
-      # (this collection and the dependencies installed above) is importable.
-      - name: Run unit tests
-        run: python -m pytest ansible_collections/rucdev/ix/tests/unit
 
   units-dev:
-    name: Units (pyproject.toml)
-    runs-on: ubuntu-24.04
+    name: "Units (pyproject.toml)"
+    runs-on: "ubuntu-24.04"
     steps:
-      - uses: actions/checkout@v7
+      - uses: "actions/checkout@v7"
         with:
           persist-credentials: false
 
-      - uses: astral-sh/setup-uv@v10.4.0
+      - uses: "astral-sh/setup-uv@v10.4.0"
 
       # Same environment as local development: pyproject.toml, which pins ansible
       # to 6.4.0 (ansible-core 2.13). That is older than requires_ansible, so this
       # only checks the development environment, not a supported version.
-      - name: Install dependencies
-        run: uv sync
+      - name: "Install dependencies"
+        run: "uv sync"
 
-      - name: Run unit tests
-        run: uv run python -m pytest ansible_collections/rucdev/ix/tests/unit
+      - name: "Run unit tests"
+        run: "uv run python -m pytest ansible_collections/rucdev/ix/tests/unit"
+
+name: "Tests"
+
+"on":
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+  workflow_dispatch: {}
+
+permissions:
+  contents: "read"
+...

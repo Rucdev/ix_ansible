@@ -10,3 +10,4 @@ collectons/
 
 ansible_collections/ansible/
 ansible_collections/*.info/
+ansible_collections/rucdev/ix/tests/output/

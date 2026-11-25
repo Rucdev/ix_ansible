@@ -1,0 +1,24 @@
+---
+extends: "default"
+# Skip what git ignores, such as the collections that ansible-galaxy installs.
+ignore-from-file: ".gitignore"
+rules:
+  # Enable every rule, including those off by default, as errors.
+  comments:
+    level: "error"
+  comments-indentation:
+    level: "error"
+  document-end: "enable"
+  document-start:
+    level: "error"
+  empty-values: "enable"
+  float-values: "enable"
+  key-ordering: "enable"
+  line-length:
+    # Same limit as ruff (E501).
+    max: 160
+  octal-values: "enable"
+  quoted-strings: "enable"
+  truthy:
+    level: "error"
+...
