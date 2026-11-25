@@ -57,10 +57,30 @@ notice-rgx = '(?i)(?:copyright\b|\(c\)\s+\d{4})'
 
 [tool.ruff.lint.per-file-ignores]
 # E402: validate-modules (import-before-documentation) requires imports to
-# come after DOCUMENTATION, EXAMPLES and RETURN.
+# come after DOCUMENTATION, EXAMPLES and RETURN, in modules and in plugins.
 # EXE001: modules start with "#!/usr/bin/python", and the shebang test of
 # ansible-test requires modules not to be executable.
 "ansible_collections/rucdev/ix/plugins/modules/*.py" = ["E402", "EXE001"]
+"ansible_collections/rucdev/ix/plugins/cliconf/*.py" = ["E402"]
 # The empty-init test of ansible-test requires these __init__.py to be empty.
 "ansible_collections/rucdev/ix/plugins/modules/__init__.py" = ["D104"]
 "ansible_collections/rucdev/ix/tests/unit/**/__init__.py" = ["D104"]
+# pytest checks results with assert statements.
+"ansible_collections/rucdev/ix/tests/**" = ["S101"]
+# These methods keep the signatures of CliconfBase in ansible.netcommon,
+# which calls them with keyword arguments.
+"ansible_collections/rucdev/ix/plugins/cliconf/ix.py" = [
+    "ARG002",
+    "FBT002",
+    "PLR0913",
+    "PLR0917",
+]
+# ansible.netcommon calls get_facts(legacy_facts_type=...), which this
+# collection does not use.
+"ansible_collections/rucdev/ix/plugins/module_utils/network/ix/facts/facts.py" = ["ARG002"]
+# AnsibleModule exposes the persistent connection only as _socket_path and
+# the diff mode only as _diff.
+"ansible_collections/rucdev/ix/plugins/module_utils/network/ix/ix.py" = ["SLF001"]
+"ansible_collections/rucdev/ix/plugins/modules/ix_config.py" = ["SLF001"]
+# Module arguments are set the same way as in ansible.module_utils.testing.
+"ansible_collections/rucdev/ix/tests/unit/modules/utils.py" = ["SLF001"]

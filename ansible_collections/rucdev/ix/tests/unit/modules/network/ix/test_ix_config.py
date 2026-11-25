@@ -57,7 +57,7 @@ class TestIxConfigModule(TestIxModule):
         self.mock_get_connection.stop()
         self.mock_run_commands.stop()
 
-    def load_fixtures(self, commands=None) -> None:
+    def load_fixtures(self, _commands=None) -> None:
         self.get_config.return_value = RUNNING_CONFIG
         self.run_commands.return_value = [RUNNING_CONFIG]
 

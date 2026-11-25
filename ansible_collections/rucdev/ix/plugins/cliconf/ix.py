@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
+
 DOCUMENTATION = """
 author: Yushi Takeda (@ruc_dev)
 name: ix
@@ -24,7 +25,6 @@ description:
 - ""
 version_added: 0.1.0
 """
-
 
 import json
 import re
@@ -328,7 +328,7 @@ class Cliconf(CliconfBase):
         return responses
 
     @configure_mode
-    def run_configs(self, commands=None, check_rc=True) -> list:
+    def run_configs(self, commands=None, *, check_rc=True) -> list:
         return self.run_commands(commands=commands, check_rc=check_rc)
 
     @configure_mode

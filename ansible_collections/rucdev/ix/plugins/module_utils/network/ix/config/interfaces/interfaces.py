@@ -90,30 +90,30 @@ class Interfaces(ResourceModule):
         self.compare(parsers=self.parsers, want=want, have=have)
         if want.get("enabled") != have.get("enabled"):
             if want.get("enabled"):
-                self.addcmd(want, "enabled", True)
+                self.addcmd(want, "enabled", negate=True)
             elif want:
-                self.addcmd(want, "enabled", False)
+                self.addcmd(want, "enabled", negate=False)
             elif have.get("enabled"):
                 # handles deleted as want be blank and only
                 # negates if no shutdown
-                self.addcmd(have, "enabled", False)
+                self.addcmd(have, "enabled", negate=False)
         if want.get("mode") != have.get("mode"):
             if want.get("mode") == "layer3":
-                self.addcmd(want, "mode", True)
+                self.addcmd(want, "mode", negate=True)
             elif want:
-                self.addcmd(want, "mode", False)
+                self.addcmd(want, "mode", negate=False)
             elif have.get("mode"):  # can oly have layer2 as switchport no show cli
                 # handles deleted as want be blank and only
-                self.addcmd(have, "mode", False)
+                self.addcmd(have, "mode", negate=False)
         if len(self.commands) != begin:
             self.commands.insert(
                 begin,
-                self._tmplt.render(want or have, "interface", False),
+                self._tmplt.render(want or have, "interface", negate=False),
             )
 
     def purge(self, have) -> None:
         """Handle operation for purged state."""
-        self.commands.append(self._tmplt.render(have, "interface", True))
+        self.commands.append(self._tmplt.render(have, "interface", negate=True))
 
     def normalize_interface_names(self, param):
         # if param:

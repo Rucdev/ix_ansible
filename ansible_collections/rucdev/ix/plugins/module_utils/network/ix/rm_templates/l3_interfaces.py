@@ -17,7 +17,7 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.r
 
 
 class L3_interfacesTemplate(NetworkTemplate):
-    def __init__(self, lines=None, tmplt=None, prefix=None, module=None) -> None:
+    def __init__(self, lines=None, module=None) -> None:
         super().__init__(
             lines=lines,
             tmplt=self,

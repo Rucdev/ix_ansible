@@ -101,24 +101,24 @@ class Device_interfaces(ResourceModule):
 
         # if want.get("enabled") != have.get("enabled"):
         #     if want.get("enabled"):
-        #         self.addcmd(want, "enabled", True)
+        #         self.addcmd(want, "enabled", negate=True)
         #     else:
         #         if want:
-        #             self.addcmd(want, "enabled", False)
+        #             self.addcmd(want, "enabled", negate=False)
         #         elif have.get("enabled"):
         #             # handles deleted as want be blank and only
         #             # negates if no shutdown
-        #             self.addcmd(have, "enabled", False)
+        #             self.addcmd(have, "enabled", negate=False)
 
         if len(self.commands) != begin:
             self.commands.insert(
                 begin,
-                self._tmplt.render(want or have, "device", False),
+                self._tmplt.render(want or have, "device", negate=False),
             )
 
     def purge(self, have) -> None:
         """Handle operation for purged state."""
-        self.commands.append(self._tmplt.render(have, "device", True))
+        self.commands.append(self._tmplt.render(have, "device", negate=True))
 
     def normalize_interface_names(self, param):
         # if param:

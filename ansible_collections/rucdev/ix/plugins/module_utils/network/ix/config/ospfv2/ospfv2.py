@@ -92,7 +92,7 @@ class Ospfv2(ResourceModule):
         if self.state in ["overridden", "deleted"]:
             for k, have in haved.items():
                 if k not in wantd:
-                    self.addcmd(have, "pid", True)
+                    self.addcmd(have, "pid", negate=True)
 
         for k, want in wantd.items():
             self._compare(want=want, have=haved.pop(k, {}))
@@ -104,7 +104,7 @@ class Ospfv2(ResourceModule):
         for the Ospfv2 network resource.
         """
         if want != have:
-            self.addcmd(want or have, "pid", False)
+            self.addcmd(want or have, "pid", negate=False)
             self.compare(parsers=self.parsers, want=want, have=have)
             self._complex_compare(want=want, have=have)
             self._areas_compare(want, have)
@@ -125,7 +125,7 @@ class Ospfv2(ResourceModule):
                         or _parser == "nssa_ranges"
                     ):
                         self.addcmd(haveing, _parser, negate=True)
-                    self.addcmd(wanting, _parser, False)
+                    self.addcmd(wanting, _parser, negate=False)
             for key, haveing in hdist.items():
                 self.addcmd(haveing, _parser, negate=True)
 
@@ -159,7 +159,7 @@ class Ospfv2(ResourceModule):
                 if wanting != haveing:
                     if haveing and self.state in ["overridden", "replaced"]:
                         self.addcmd(haveing, _parser, negate=True)
-                    self.addcmd(wanting, _parser, False)
+                    self.addcmd(wanting, _parser, negate=False)
             for key, haveing in haver.items():
                 self.addcmd(haveing, _parser, negate=True)
 

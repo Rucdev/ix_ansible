@@ -2,6 +2,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import json
+import tempfile
 
 from typing import NoReturn
 from unittest import TestCase
@@ -13,7 +14,7 @@ from ansible.module_utils._text import to_bytes
 
 def set_module_args(args) -> None:
     if "_ansible_remote_tmp" not in args:
-        args["_ansible_remote_tmp"] = "/tmp"
+        args["_ansible_remote_tmp"] = tempfile.gettempdir()
     if "_ansible_keep_remote_files" not in args:
         args["_ansible_keep_remote_files"] = False
 
@@ -32,13 +33,13 @@ class AnsibleFailJson(Exception):
     pass
 
 
-def exit_json(*args, **kwargs) -> NoReturn:
+def exit_json(*_args, **kwargs) -> NoReturn:
     if "changed" not in kwargs:
         kwargs["changed"] = False
     raise AnsibleExitJson(kwargs)
 
 
-def fail_json(*args, **kwargs) -> NoReturn:
+def fail_json(*_args, **kwargs) -> NoReturn:
     kwargs["failed"] = True
     raise AnsibleFailJson(kwargs)
 

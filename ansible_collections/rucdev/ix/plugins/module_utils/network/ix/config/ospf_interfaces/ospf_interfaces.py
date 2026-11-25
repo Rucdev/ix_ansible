@@ -120,7 +120,7 @@ class Ospf_interfaces(ResourceModule):
         if len(self.commands) != begin:
             self.commands.insert(
                 begin,
-                self._tmplt.render({"name": interface}, "name", False),
+                self._tmplt.render({"name": interface}, "name", negate=False),
             )
 
     def _compare_afi(self, want, have) -> None:

@@ -23,7 +23,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 class Static_routesFacts:
     """The ix static_routes facts class."""
 
-    def __init__(self, module, subspec="config", options="options") -> None:
+    def __init__(self, module) -> None:
         self._module = module
         self.argument_spec = Static_routesArgs.argument_spec
 

@@ -24,7 +24,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 class Ospfv3Facts:
     """The ix ospfv3 facts class."""
 
-    def __init__(self, module, subspec="config", options="options") -> None:
+    def __init__(self, module) -> None:
         self._module = module
         self.argument_spec = Ospfv3Args.argument_spec
 

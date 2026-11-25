@@ -51,11 +51,11 @@ def load_fixture(name):
 class TestIxModule(ModuleTestCase):
     def execute_module(
         self,
+        *,
         failed=False,
         changed=False,
         commands=None,
         sort=True,
-        defaults=False,
     ):
         self.load_fixtures(commands)
 
@@ -63,7 +63,7 @@ class TestIxModule(ModuleTestCase):
             result = self.failed()
             assert result["failed"], result
         else:
-            result = self.changed(changed)
+            result = self.changed(changed=changed)
             assert result["changed"] == changed, result
 
         if commands is not None:
@@ -84,7 +84,7 @@ class TestIxModule(ModuleTestCase):
         assert result["failed"], result
         return result
 
-    def changed(self, changed=False):
+    def changed(self, *, changed=False):
         with pytest.raises(AnsibleExitJson) as exc:
             self.module.main()
 

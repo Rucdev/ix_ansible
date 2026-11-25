@@ -23,7 +23,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 class L3_interfacesFacts:
     """The ix l3_interfaces fact class."""
 
-    def __init__(self, module, subspec="config", options="options") -> None:
+    def __init__(self, module) -> None:
         self._module = module
         self.argument_spec = L3_interfacesArgs.argument_spec
 

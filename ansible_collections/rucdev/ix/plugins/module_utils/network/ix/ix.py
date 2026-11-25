@@ -39,29 +39,29 @@ _DEVICE_CONFIGS = {}
 
 
 def get_connection(module):
-    if hasattr(module, "_ix_connection"):
-        return module._ix_connection
+    if hasattr(module, "ix_connection"):
+        return module.ix_connection
 
     capabilities = get_capabilities(module)
     network_api = capabilities.get("network_api")
     if network_api == "cliconf":
-        module._ix_connection = Connection(module._socket_path)
+        module.ix_connection = Connection(module._socket_path)
     else:
         module.fail_json(msg=f"Invalid connection type {network_api}")
 
-    return module._ix_connection
+    return module.ix_connection
 
 
 def get_capabilities(module):
-    if hasattr(module, "_ix_capabilities"):
-        return module._ix_capabilities
+    if hasattr(module, "ix_capabilities"):
+        return module.ix_capabilities
 
     try:
         capabilities = Connection(module._socket_path).get_capabilities()
     except ConnectionError as exc:
         module.fail_json(msg=to_text(exc, errors="surrogate_then_replace"))
-    module._ix_capabilities = json.loads(capabilities)
-    return module._ix_capabilities
+    module.ix_capabilities = json.loads(capabilities)
+    return module.ix_capabilities
 
 
 def get_defaults_flag(module):
@@ -99,7 +99,7 @@ def get_config(module, flags=None):
         return cfg
 
 
-def run_commands(module, commands, check_rc=True, configure=False):
+def run_commands(module, commands, *, check_rc=True, configure=False):
     connection = get_connection(module)
     try:
         if configure:

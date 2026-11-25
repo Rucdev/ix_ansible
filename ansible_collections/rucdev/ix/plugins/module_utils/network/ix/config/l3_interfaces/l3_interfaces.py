@@ -97,7 +97,9 @@ class L3_interfaces(ResourceModule):
         begin = len(self.commands)
         self._compare_lists(want=want, have=have)
         if len(self.commands) != begin:
-            self.commands.insert(begin, self._tmplt.render(want or have, "name", False))
+            self.commands.insert(
+                begin, self._tmplt.render(want or have, "name", negate=False)
+            )
 
     def _compare_lists(self, want, have) -> None:
         for afi in ("ipv4", "ipv6"):
@@ -160,7 +162,7 @@ class L3_interfaces(ResourceModule):
 
     def purge(self, have) -> None:
         """Handle operation for purged state."""
-        self.commands.append(self._tmplt.render(have, "interface", True))
+        self.commands.append(self._tmplt.render(have, "interface", negate=True))
 
     def normalize_interface_names(self, param):
         # if param:

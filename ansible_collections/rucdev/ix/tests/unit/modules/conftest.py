@@ -3,6 +3,7 @@
 
 
 import json
+import tempfile
 
 import pytest
 
@@ -18,7 +19,9 @@ def patch_ansible_module(request, mocker) -> None:
         if "ANSIBLE_MODULE_ARGS" not in request.param:
             request.param = {"ANSIBLE_MODULE_ARGS": request.param}
         if "_ansible_remote_tmp" not in request.param["ANSIBLE_MODULE_ARGS"]:
-            request.param["ANSIBLE_MODULE_ARGS"]["_ansible_remote_tmp"] = "/tmp"
+            request.param["ANSIBLE_MODULE_ARGS"][
+                "_ansible_remote_tmp"
+            ] = tempfile.gettempdir()
         if "_ansible_keep_remote_files" not in request.param["ANSIBLE_MODULE_ARGS"]:
             request.param["ANSIBLE_MODULE_ARGS"]["_ansible_keep_remote_files"] = False
         args = json.dumps(request.param)

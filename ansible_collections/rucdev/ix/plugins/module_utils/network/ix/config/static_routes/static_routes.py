@@ -197,7 +197,7 @@ class Static_routes(ResourceModule):
             route[field] = value
         return route
 
-    def _flatten(self, config, validate=False):
+    def _flatten(self, config, *, validate=False):
         """[{vrf, address_families: [{afi, routes: [{dest, next_hops}]}]}]
         -> {identity key: flat route dict}.
         """

@@ -34,7 +34,7 @@ class TestIxCommandModule(TestIxModule):
         super().tearDown()
         self.mock_run_commands.stop()
 
-    def load_fixtures(self, commands=None) -> None:
+    def load_fixtures(self, _commands=None) -> None:
         self.run_commands.return_value = [SHOW_VERSION]
 
     def test_ix_command_wait_for(self) -> None:

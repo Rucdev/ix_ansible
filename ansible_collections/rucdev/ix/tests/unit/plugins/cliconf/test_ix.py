@@ -122,7 +122,7 @@ class TestCliconfModeHandling(TestCase):
         self._conn.get_prompt.side_effect = lambda: self._prompt
         self._sent = []
 
-        def send(command, *args, **kwargs) -> bytes:
+        def send(command, *_args, **_kwargs) -> bytes:
             cmd = command.decode() if isinstance(command, bytes) else command
             self._sent.append(cmd)
             # emulate IX prompt transitions
