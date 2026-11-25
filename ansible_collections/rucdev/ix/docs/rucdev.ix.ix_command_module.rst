@@ -96,6 +96,7 @@ Parameters
                 </td>
                 <td>
                         <div>List of conditions to evaluate against the output of the command. The task will wait for each condition to be true before moving forward. If the conditional is not true within the configured number of retries, the task fails. See examples.</div>
+                        <div style="font-size: small; color: darkgreen"><br/>aliases: waitfor</div>
                 </td>
             </tr>
     </table>

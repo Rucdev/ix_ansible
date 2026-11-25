@@ -46,6 +46,8 @@ options:
         command. The task will wait for each condition to be true
         before moving forward. If the conditional is not true within
         the configured number of retries, the task fails. See examples.
+    aliases:
+      - waitfor
     type: list
     elements: str
   retries:
@@ -131,7 +133,7 @@ def parse_commands(module: AnsibleModule, warnings: list):
 def main():
     argument_spec = dict(
         commands=dict(type="list", elements="raw", required=True),
-        wait_for=dict(type="list", elements="str", alias="waitfor"),
+        wait_for=dict(type="list", elements="str", aliases=["waitfor"]),
         retries=dict(default=9, type="int"),
         interval=dict(default=1, type="int"),
     )
