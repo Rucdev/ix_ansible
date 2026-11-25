@@ -4,6 +4,8 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
+"""Unit tests of the ix_command module."""
+
 from textwrap import dedent
 from unittest.mock import patch
 
@@ -23,9 +25,12 @@ SHOW_VERSION = dedent("""\
 
 
 class TestIxCommandModule(TestIxModule):
+    """Unit tests of the ix_command module."""
+
     module = ix_command
 
     def setUp(self) -> None:
+        """Patch run_commands."""
         super().setUp()
 
         self.mock_run_commands = patch(
@@ -34,13 +39,16 @@ class TestIxCommandModule(TestIxModule):
         self.run_commands = self.mock_run_commands.start()
 
     def tearDown(self) -> None:
+        """Stop the patches."""
         super().tearDown()
         self.mock_run_commands.stop()
 
     def load_fixtures(self, _commands=None) -> None:
+        """Return show version from run_commands."""
         self.run_commands.return_value = [SHOW_VERSION]
 
     def test_ix_command_wait_for(self) -> None:
+        """wait_for that matches the output succeeds on the first run."""
         set_module_args(
             {"commands": ["show version"], "wait_for": ["result[0] contains IX2215"]},
         )
@@ -49,6 +57,7 @@ class TestIxCommandModule(TestIxModule):
         assert self.run_commands.call_count == 1
 
     def test_ix_command_wait_for_fails(self) -> None:
+        """wait_for that never matches fails after the retries."""
         set_module_args(
             {
                 "commands": ["show version"],
@@ -66,6 +75,7 @@ class TestIxCommandModule(TestIxModule):
 
     def test_ix_command_waitfor(self) -> None:
         # waitfor is an alias of wait_for, as in other *_command modules
+        """The waitfor alias works like wait_for."""
         set_module_args(
             {"commands": ["show version"], "waitfor": ["result[0] contains IX2215"]},
         )
@@ -74,6 +84,7 @@ class TestIxCommandModule(TestIxModule):
         assert self.run_commands.call_count == 1
 
     def test_ix_command_waitfor_fails(self) -> None:
+        """The waitfor alias fails like wait_for when it never matches."""
         set_module_args(
             {
                 "commands": ["show version"],

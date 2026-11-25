@@ -1,6 +1,8 @@
 # Copyright: Contributors to the Ansible project
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+"""Unit tests of the ix cliconf plugin."""
+
 import json
 
 from pathlib import Path
@@ -33,13 +35,14 @@ class TestPluginCLIConfIOS(TestCase):
     """Test class for IX CLI Conf Methods."""
 
     def setUp(self) -> None:
+        """Create the plugin on a mocked connection that answers from fixture files."""
         self._mock_connection = MagicMock()
         self._mock_connection.send.side_effect = _connection_side_effect
         self._cliconf = ix.Cliconf(self._mock_connection)
         self.maxDiff = None
 
     def tearDown(self) -> None:
-        pass
+        """Nothing to clean up."""
 
     def test_get_device_info(self) -> None:
         """Test get_device_info."""
@@ -101,11 +104,14 @@ class TestPluginCLIConfIOS(TestCase):
 
 
 class TestCliconfModeHandling(TestCase):
-    """Session mode handling (#24): every task starts in exec mode, and the
-    config-only show commands enter config mode on their own.
+    """Session mode handling (#24).
+
+    Every task starts in exec mode, and the config-only show commands enter
+    config mode on their own.
     """
 
     def setUp(self) -> None:
+        """Create the plugin on a mocked connection that records the commands sent."""
         self._conn = MagicMock()
         self._conn.connected = True
         self._prompt = b"ix2215# "
@@ -131,48 +137,58 @@ class TestCliconfModeHandling(TestCase):
         self._cliconf = ix.Cliconf(self._conn)
 
     def test_set_cli_prompt_context_from_config(self) -> None:
+        """In config mode, set_cli_prompt_context leaves to exec mode."""
         self._prompt = b"ix2215(config)# "
         self._cliconf.set_cli_prompt_context()
         assert self._sent == ["configure", "exit"]
         assert self._prompt == b"ix2215# "
 
     def test_set_cli_prompt_context_from_sub_mode(self) -> None:
+        """In a sub mode of config, set_cli_prompt_context leaves to exec mode."""
         self._prompt = b"ix2215(config-ospfv2-1)# "
         self._cliconf.set_cli_prompt_context()
         assert self._sent == ["configure", "exit"]
         assert self._prompt == b"ix2215# "
 
     def test_set_cli_prompt_context_already_exec(self) -> None:
+        """In exec mode, set_cli_prompt_context sends nothing."""
         self._cliconf.set_cli_prompt_context()
         assert self._sent == []
 
     def test_set_cli_prompt_context_not_connected(self) -> None:
+        """Without a connection, set_cli_prompt_context sends nothing."""
         self._conn.connected = False
         self._prompt = b"ix2215(config)# "
         self._cliconf.set_cli_prompt_context()
         assert self._sent == []
 
     def test_run_commands_show_running_config_from_exec(self) -> None:
+        """From exec mode, show running-config enters config mode first."""
         self._cliconf.run_commands(["show running-config"])
         assert self._sent == ["configure", "show running-config"]
 
     def test_run_commands_show_startup_config_from_exec(self) -> None:
+        """From exec mode, show startup-config enters config mode first."""
         self._cliconf.run_commands(["show startup-config"])
         assert self._sent == ["configure", "show startup-config"]
 
     def test_run_commands_show_running_config_in_config(self) -> None:
+        """In config mode, show running-config is sent as it is."""
         self._prompt = b"ix2215(config)# "
         self._cliconf.run_commands(["show running-config"])
         assert self._sent == ["show running-config"]
 
     def test_run_commands_other_commands_stay_in_exec(self) -> None:
+        """Other show commands run in exec mode."""
         self._cliconf.run_commands(["show version", "show ip route"])
         assert self._sent == ["show version", "show ip route"]
         assert self._prompt == b"ix2215# "
 
     def test_edit_config_then_task_start_is_exec(self) -> None:
-        """edit_config leaves exec mode (like cisco.ios 'end'); the next
-        task's show running-config still works.
+        """After edit_config the session is back in exec mode.
+
+        Like 'end' in cisco.ios; show running-config in the next task still
+        works.
         """
         self._cliconf.edit_config(candidate=["hostname lab"])
         assert self._prompt == b"ix2215# "
@@ -182,6 +198,7 @@ class TestCliconfModeHandling(TestCase):
         assert self._sent == ["configure", "show running-config"]
 
     def test_get_device_info_leaves_exec_mode(self) -> None:
+        """get_device_info returns to exec mode after leaving config mode."""
         self._cliconf.get_device_info()
         assert self._sent[-2:] == ["configure", "exit"]
         assert self._prompt == b"ix2215# "

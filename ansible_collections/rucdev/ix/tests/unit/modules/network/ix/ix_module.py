@@ -16,6 +16,8 @@
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
 
+"""Base class for the unit tests of the ix_* modules."""
+
 import contextlib
 import json
 
@@ -34,6 +36,7 @@ fixture_data = {}
 
 
 def load_fixture(name):
+    """Return the content of a fixture file, parsed as JSON when possible."""
     path = fixture_path / name
 
     if path in fixture_data:
@@ -49,6 +52,8 @@ def load_fixture(name):
 
 
 class TestIxModule(ModuleTestCase):
+    """Base class that runs a module and checks the result."""
+
     def execute_module(
         self,
         *,
@@ -57,6 +62,7 @@ class TestIxModule(ModuleTestCase):
         commands=None,
         sort=True,
     ):
+        """Run the module and check whether it failed or changed and which commands it sent."""
         self.load_fixtures(commands)
 
         if failed:
@@ -77,6 +83,7 @@ class TestIxModule(ModuleTestCase):
         return result
 
     def failed(self):
+        """Run the module, expect it to fail and return the result."""
         with pytest.raises(AnsibleFailJsonError) as exc:
             self.module.main()
 
@@ -85,6 +92,7 @@ class TestIxModule(ModuleTestCase):
         return result
 
     def changed(self, *, changed=False):
+        """Run the module, check the changed flag and return the result."""
         with pytest.raises(AnsibleExitJsonError) as exc:
             self.module.main()
 
@@ -93,4 +101,4 @@ class TestIxModule(ModuleTestCase):
         return result
 
     def load_fixtures(self, commands=None) -> None:
-        pass
+        """Set what the mocked functions return; subclasses override this."""

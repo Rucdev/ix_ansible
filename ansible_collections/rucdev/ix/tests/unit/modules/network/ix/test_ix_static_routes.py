@@ -4,6 +4,8 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
+"""Unit tests of the ix_static_routes module."""
+
 from textwrap import dedent
 from unittest.mock import patch
 
@@ -141,7 +143,7 @@ PARSED = [
 
 
 def v4(*routes, **kw):
-    """Config helper: v4(("dest", [next_hops...]), ..., vrf=None)."""
+    """Return an IPv4 config entry from (dest, [next_hops...]) tuples and an optional vrf."""
     entry = {
         "address_families": [
             {
@@ -156,9 +158,12 @@ def v4(*routes, **kw):
 
 
 class TestIxStaticRoutesModule(TestIxModule):
+    """Unit tests of the ix_static_routes module."""
+
     module = ix_static_routes
 
     def setUp(self) -> None:
+        """Patch the connection and the function that returns the device config."""
         super().setUp()
         self.mock_get_resource_connection = patch(
             "ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module_base."
@@ -174,33 +179,39 @@ class TestIxStaticRoutesModule(TestIxModule):
         self.maxDiff = None
 
     def tearDown(self) -> None:
+        """Stop the patches."""
         super().tearDown()
         self.mock_get_resource_connection.stop()
         self.mock_get_data.stop()
 
     # ---- read ----
     def test_parsed(self) -> None:
+        """Parsed reads the routes from running_config."""
         set_module_args({"running_config": RUNNING_CONFIG, "state": "parsed"})
         result = self.execute_module(changed=False)
         assert result["parsed"] == PARSED
 
     def test_gathered(self) -> None:
+        """Gathered reads the routes of the device."""
         set_module_args({"state": "gathered"})
         result = self.execute_module(changed=False)
         assert result["gathered"] == PARSED
 
     def test_parsed_no_routes(self) -> None:
+        """Parsed returns nothing when there are no routes."""
         set_module_args({"running_config": NO_ROUTES_CONFIG, "state": "parsed"})
         result = self.execute_module(changed=False)
         assert result["parsed"] == []
 
     def test_gathered_no_routes(self) -> None:
+        """Gathered returns nothing when there are no routes."""
         self.get_data.return_value = NO_ROUTES_CONFIG
         set_module_args({"state": "gathered"})
         result = self.execute_module(changed=False)
         assert result["gathered"] == []
 
     def test_rendered(self) -> None:
+        """Rendered returns the route commands."""
         set_module_args(
             {
                 "config": [
@@ -254,6 +265,7 @@ class TestIxStaticRoutesModule(TestIxModule):
 
     # ---- merged ----
     def test_merged_new_route(self) -> None:
+        """Merged adds a new route."""
         set_module_args(
             {
                 "config": [
@@ -278,6 +290,7 @@ class TestIxStaticRoutesModule(TestIxModule):
         )
 
     def test_merged_first_route(self) -> None:
+        """Merged adds a route when there are none."""
         self.get_data.return_value = NO_ROUTES_CONFIG
         set_module_args(
             {
@@ -290,6 +303,7 @@ class TestIxStaticRoutesModule(TestIxModule):
         self.execute_module(changed=True, commands=["ip route default 192.168.37.26"])
 
     def test_merged_idempotent(self) -> None:
+        """Merged with the current routes changes nothing."""
         set_module_args(
             {
                 "config": [
@@ -314,6 +328,7 @@ class TestIxStaticRoutesModule(TestIxModule):
 
     def test_merged_default_values_idempotent(self) -> None:
         # distance 1 / metric 1 never appear in running-config
+        """Merged with distance 1 and metric 1, which running-config does not show, changes nothing."""
         set_module_args(
             {
                 "config": [
@@ -338,6 +353,7 @@ class TestIxStaticRoutesModule(TestIxModule):
     def test_merged_change_one_option_keeps_others(self) -> None:
         # IX replaces all options when a route is re-entered, so the command
         # must carry the existing distance and tag
+        """Merged that changes one option keeps the other options of the route."""
         set_module_args(
             {
                 "config": [
@@ -359,6 +375,7 @@ class TestIxStaticRoutesModule(TestIxModule):
         )
 
     def test_merged_omitted_option_keeps_device_value(self) -> None:
+        """Merged keeps the options of the device that the config leaves out."""
         set_module_args(
             {
                 "config": [
@@ -375,6 +392,7 @@ class TestIxStaticRoutesModule(TestIxModule):
         self.execute_module(changed=False, commands=[])
 
     def test_merged_gateway_case_insensitive(self) -> None:
+        """Merged compares IPv6 gateway addresses without regard to case."""
         set_module_args(
             {
                 "config": [
@@ -404,6 +422,7 @@ class TestIxStaticRoutesModule(TestIxModule):
 
     # ---- replaced ----
     def test_replaced(self) -> None:
+        """Replaced sets the routes of the destination and removes the others."""
         set_module_args(
             {
                 "config": [
@@ -430,6 +449,7 @@ class TestIxStaticRoutesModule(TestIxModule):
         )
 
     def test_replaced_idempotent(self) -> None:
+        """Replaced with the current routes changes nothing."""
         set_module_args(
             {
                 "config": [
@@ -453,6 +473,7 @@ class TestIxStaticRoutesModule(TestIxModule):
         self.execute_module(changed=False, commands=[])
 
     def test_replaced_no_routes(self) -> None:
+        """Replaced adds routes when there are none."""
         self.get_data.return_value = NO_ROUTES_CONFIG
         set_module_args(
             {
@@ -464,6 +485,7 @@ class TestIxStaticRoutesModule(TestIxModule):
 
     # ---- overridden ----
     def test_overridden(self) -> None:
+        """Overridden removes every route that is not given."""
         set_module_args(
             {
                 "config": [
@@ -493,10 +515,12 @@ class TestIxStaticRoutesModule(TestIxModule):
         )
 
     def test_overridden_idempotent(self) -> None:
+        """Overridden with the current routes changes nothing."""
         set_module_args({"config": PARSED, "state": "overridden"})
         self.execute_module(changed=False, commands=[])
 
     def test_overridden_no_routes(self) -> None:
+        """Overridden adds routes when there are none."""
         self.get_data.return_value = NO_ROUTES_CONFIG
         set_module_args(
             {
@@ -508,6 +532,7 @@ class TestIxStaticRoutesModule(TestIxModule):
 
     # ---- deleted ----
     def test_deleted_all(self) -> None:
+        """Deleted without config removes every route."""
         self.get_data.return_value = "ip route default 192.168.37.26\nip route vrf blue 198.51.100.0/24 Null0.0\n"
         set_module_args({"state": "deleted"})
         self.execute_module(
@@ -519,12 +544,14 @@ class TestIxStaticRoutesModule(TestIxModule):
         )
 
     def test_deleted_all_no_routes(self) -> None:
+        """Deleted without config changes nothing when there are no routes."""
         self.get_data.return_value = NO_ROUTES_CONFIG
         set_module_args({"state": "deleted"})
         self.execute_module(changed=False, commands=[])
 
     def test_deleted_last_route(self) -> None:
         # facts are read again for "after"; by then the device has no routes
+        """Deleted removes the last route."""
         self.get_data.side_effect = [
             "ip route default 192.168.37.26\n",
             NO_ROUTES_CONFIG,
@@ -537,6 +564,7 @@ class TestIxStaticRoutesModule(TestIxModule):
         assert result["after"] == []
 
     def test_deleted_by_dest(self) -> None:
+        """Deleted with a destination removes every route to it."""
         set_module_args(
             {
                 "config": [
@@ -558,6 +586,7 @@ class TestIxStaticRoutesModule(TestIxModule):
         )
 
     def test_deleted_by_next_hop_ignores_options(self) -> None:
+        """Deleted with a next hop removes that route whatever its options are."""
         set_module_args(
             {
                 "config": [v4(("198.51.100.0/24", [{"interface": "Null0.0"}]))],
@@ -570,6 +599,7 @@ class TestIxStaticRoutesModule(TestIxModule):
         )
 
     def test_deleted_by_vrf(self) -> None:
+        """Deleted with a VRF removes the routes of that VRF."""
         set_module_args({"config": [{"vrf": "blue"}], "state": "deleted"})
         self.execute_module(
             changed=True,
@@ -577,6 +607,7 @@ class TestIxStaticRoutesModule(TestIxModule):
         )
 
     def test_deleted_idempotent(self) -> None:
+        """Deleted for a route that does not exist changes nothing."""
         set_module_args(
             {
                 "config": [v4(("192.0.2.128/25", [{"interface": "Null0.0"}]))],
@@ -592,18 +623,21 @@ class TestIxStaticRoutesModule(TestIxModule):
         assert msg in result["msg"]
 
     def test_fail_no_next_hop_target(self) -> None:
+        """A next hop without a gateway or an interface is rejected."""
         self._fails(
             [v4(("192.0.2.0/24", [{"distance": 5}]))],
             "forward_router_address and/or interface",
         )
 
     def test_fail_ra_on_ipv4(self) -> None:
+        """An IPv4 route with ra is rejected."""
         self._fails(
             [v4(("192.0.2.0/24", [{"interface": "GigaEthernet0.0", "ra": True}]))],
             "ra is only valid for ipv6",
         )
 
     def test_fail_dhcp_without_interface(self) -> None:
+        """A route with dhcp but no interface is rejected."""
         self._fails(
             [
                 v4(
@@ -618,9 +652,12 @@ class TestIxStaticRoutesModule(TestIxModule):
 
 
 class TestIxFactsStaticRoutes(TestIxModule):
+    """Unit tests of ix_facts for static routes."""
+
     module = ix_facts
 
     def setUp(self) -> None:
+        """Patch the connection and the function that returns the device config."""
         super().setUp()
         self.mock_get_resource_connection = patch(
             "ansible_collections.ansible.netcommon.plugins.module_utils.network.common.facts.facts."
@@ -635,11 +672,13 @@ class TestIxFactsStaticRoutes(TestIxModule):
         self.get_data.return_value = NO_ROUTES_CONFIG
 
     def tearDown(self) -> None:
+        """Stop the patches."""
         super().tearDown()
         self.mock_get_resource_connection.stop()
         self.mock_get_data.stop()
 
     def test_ix_facts_static_routes_no_routes(self) -> None:
+        """ix_facts succeeds and returns no routes when there are none."""
         set_module_args({"gather_network_resources": ["static_routes"]})
         result = self.execute_module(changed=False)
         assert (

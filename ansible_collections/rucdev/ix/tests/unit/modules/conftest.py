@@ -2,6 +2,8 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
+"""Pytest fixtures for the module tests."""
+
 import json
 import tempfile
 
@@ -13,6 +15,7 @@ from ansible.module_utils.common._collections_compat import MutableMapping
 
 @pytest.fixture
 def patch_ansible_module(request, mocker) -> None:
+    """Patch the module arguments with the parameters of the test."""
     if isinstance(request.param, str):
         args = request.param
     elif isinstance(request.param, MutableMapping):

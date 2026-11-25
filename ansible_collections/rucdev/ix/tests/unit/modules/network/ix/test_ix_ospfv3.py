@@ -4,6 +4,8 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
+"""Unit tests of the ix_ospfv3 module."""
+
 from textwrap import dedent
 from unittest.mock import patch
 
@@ -14,9 +16,12 @@ from .ix_module import TestIxModule
 
 
 class TestIxOspfv3Module(TestIxModule):
+    """Unit tests of the ix_ospfv3 module."""
+
     module = ix_ospfv3
 
     def setUp(self) -> None:
+        """Patch the connection and the function that returns the device config."""
         super().setUp()
 
         self.mock_get_resource_connection_facts = patch(
@@ -35,11 +40,13 @@ class TestIxOspfv3Module(TestIxModule):
         self.maxDiff = 10000
 
     def tearDown(self) -> None:
+        """Stop the patches."""
         super().tearDown()
         self.mock_get_resource_connection_facts.stop()
         self.mock_execute_show_command.stop()
 
     def test_ix_ospfv3_merged(self) -> None:
+        """Merged adds the OSPFv3 process settings."""
         self.execute_show_command.return_value = dedent("""\
             ipv6 router ospf 200
              router-id 192.168.1.1
@@ -99,6 +106,7 @@ class TestIxOspfv3Module(TestIxModule):
         assert sorted(result["commands"]) == sorted(commands)
 
     def test_ix_ospfv3_merged_idempotent(self) -> None:
+        """Merged with the current settings changes nothing."""
         self.execute_show_command.return_value = dedent("""\
             ipv6 router ospf 200
              router-id 192.168.1.1
@@ -134,6 +142,7 @@ class TestIxOspfv3Module(TestIxModule):
         self.execute_module(changed=False, commands=[])
 
     def test_ix_ospfv3_replaced(self) -> None:
+        """Replaced sets the process settings and removes the others."""
         self.execute_show_command.return_value = dedent("""\
             ipv6 router ospf 200
              router-id 192.168.1.1
@@ -174,6 +183,7 @@ class TestIxOspfv3Module(TestIxModule):
         assert sorted(result["commands"]) == sorted(commands)
 
     def test_ix_ospfv3_overridden(self) -> None:
+        """Overridden removes the processes that are not given."""
         self.execute_show_command.return_value = dedent("""\
             ipv6 router ospf 200
              router-id 192.168.1.1
@@ -234,6 +244,7 @@ class TestIxOspfv3Module(TestIxModule):
         assert sorted(result["commands"]) == sorted(commands)
 
     def test_ix_ospfv3_deleted(self) -> None:
+        """Deleted removes the OSPFv3 process."""
         self.execute_show_command.return_value = dedent("""\
             ipv6 router ospf 200
              router-id 192.168.1.1
@@ -251,6 +262,7 @@ class TestIxOspfv3Module(TestIxModule):
         self.execute_module(changed=True, commands=commands)
 
     def test_ix_ospfv3_parsed(self) -> None:
+        """Parsed reads the OSPFv3 settings from running_config."""
         self.execute_show_command.return_value = dedent("""\
             ipv6 router ospf 200
              router-id 192.168.1.1
@@ -286,6 +298,7 @@ class TestIxOspfv3Module(TestIxModule):
         assert parsed_list == result["parsed"]
 
     def test_ix_ospfv3_rendered(self) -> None:
+        """Rendered returns the OSPFv3 commands."""
         set_module_args(
             {
                 "config": {

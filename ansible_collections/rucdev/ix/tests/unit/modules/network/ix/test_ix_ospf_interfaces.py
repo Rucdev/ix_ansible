@@ -4,6 +4,8 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
+"""Unit tests of the ix_ospf_interfaces module."""
+
 from textwrap import dedent
 from typing import NoReturn
 from unittest.mock import patch
@@ -22,14 +24,18 @@ from .ix_module import TestIxModule
 
 def exit_json_no_log(module, **kwargs) -> NoReturn:
     # Hide the no_log values like the real AnsibleModule.exit_json does.
+    """Raise AnsibleExitJsonError with the no_log values hidden, as exit_json does."""
     kwargs.setdefault("changed", False)
     raise AnsibleExitJsonError(remove_values(kwargs, module.no_log_values))
 
 
 class TestIxOspfInterfacesModule(TestIxModule):
+    """Unit tests of the ix_ospf_interfaces module."""
+
     module = ix_ospf_interfaces
 
     def setUp(self) -> None:
+        """Patch the connection and the function that returns the device config."""
         super().setUp()
 
         self.mock_get_resource_connection_facts = patch(
@@ -48,11 +54,13 @@ class TestIxOspfInterfacesModule(TestIxModule):
         self.maxDiff = None
 
     def tearDown(self) -> None:
+        """Stop the patches."""
         super().tearDown()
         self.mock_get_resource_connection_facts.stop()
         self.mock_execute_show_command.stop()
 
     def test_ix_ospf_interfaces_merged(self) -> None:
+        """Merged adds the OSPF interface settings."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
@@ -98,6 +106,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         assert sorted(result["commands"]) == sorted(commands)
 
     def test_ix_ospf_interfaces_merged_idempotent(self) -> None:
+        """Merged with the current settings changes nothing."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
@@ -134,6 +143,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         self.execute_module(changed=False, commands=[])
 
     def test_ix_ospf_interfaces_replaced(self) -> None:
+        """Replaced sets the interface settings and removes the others."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
@@ -170,6 +180,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
 
     def test_ix_ospf_interfaces_ipv4_only_options_under_ipv6(self) -> None:
         # IX has no "ipv6 ospf" form of these; they used to render "ip ospf ..."
+        """Each IPv4-only option under afi ipv6 is rejected."""
         for option, value in (
             ("authentication_type", "message-digest"),
             ("authentication_key", "secret01"),
@@ -193,6 +204,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
 
     def test_ix_ospf_interfaces_ipv4_only_options_without_afi(self) -> None:
         # without afi these used to be silently ignored
+        """Each IPv4-only option without afi is rejected."""
         for option, value in (
             ("authentication_type", "message-digest"),
             ("authentication_key", "secret01"),
@@ -214,6 +226,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
                 assert "afi: not set" in result["msg"]
 
     def test_ix_ospf_interfaces_ipv4_only_options_under_ipv6_merged(self) -> None:
+        """Several IPv4-only options under afi ipv6 are rejected together."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               ipv6 ospf cost 20
@@ -242,6 +255,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
 
     def test_ix_ospf_interfaces_ipv6_common_options(self) -> None:
         # options with an "ipv6 ospf" form are still accepted under ipv6
+        """Options that have an ipv6 ospf form are accepted under afi ipv6."""
         set_module_args(
             {
                 "config": [
@@ -271,6 +285,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         )
 
     def test_ix_ospf_interfaces_overridden(self) -> None:
+        """Overridden removes the settings of the interfaces that are not given."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
@@ -309,6 +324,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         assert sorted(result["commands"]) == sorted(commands)
 
     def test_ix_ospf_interfaces_deleted(self) -> None:
+        """Deleted removes the OSPF settings of the interface."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
@@ -336,6 +352,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         self.execute_module(changed=True, commands=commands)
 
     def test_ix_ospf_interfaces_parsed(self) -> None:
+        """Parsed reads the OSPF interface settings from running_config."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
@@ -367,6 +384,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         assert parsed_list == result["parsed"]
 
     def test_ix_ospf_interfaces_rendered(self) -> None:
+        """Rendered returns the OSPF interface commands."""
         set_module_args(
             {
                 "config": [
@@ -425,6 +443,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
     # IX stores the passwords in plain text, so they can be compared.
 
     def test_ix_ospf_interfaces_parsed_authentication(self) -> None:
+        """Parsed reads the authentication type and the MD5 key."""
         set_module_args(
             {
                 "running_config": dedent("""\
@@ -473,6 +492,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         assert parsed_list == result["parsed"]
 
     def test_ix_ospf_interfaces_gathered_authentication(self) -> None:
+        """Gathered reads the authentication settings of the device."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address
@@ -501,6 +521,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         assert gathered == result["gathered"]
 
     def test_ix_ospf_interfaces_rendered_authentication(self) -> None:
+        """Rendered returns the authentication commands."""
         set_module_args(
             {
                 "config": [
@@ -530,6 +551,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         assert sorted(result["rendered"]) == sorted(commands)
 
     def test_ix_ospf_interfaces_merged_authentication(self) -> None:
+        """Merged adds the authentication type and the MD5 key."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address
@@ -564,6 +586,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         self.execute_module(changed=True, commands=commands, sort=False)
 
     def test_ix_ospf_interfaces_merged_authentication_idempotent(self) -> None:
+        """Merged with the current authentication changes nothing."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address
@@ -596,6 +619,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
 
     def test_ix_ospf_interfaces_merged_authentication_key_change(self) -> None:
         # IX keeps one key per interface: a new KEY_ID replaces the old key.
+        """Merged replaces the MD5 key with a new one."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address
@@ -630,6 +654,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         self.execute_module(changed=True, commands=commands, sort=False)
 
     def test_ix_ospf_interfaces_replaced_authentication(self) -> None:
+        """Replaced removes the authentication that is not given."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address
@@ -664,6 +689,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
 
     def test_ix_ospf_interfaces_replaced_text_authentication(self) -> None:
         # IX keeps an MD5 key next to text authentication; both must go.
+        """Replaced sets text authentication."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address
@@ -700,6 +726,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
 
     def test_ix_ospf_interfaces_replaced_md5_to_text_authentication(self) -> None:
         # "ip ospf authentication" replaces "ip ospf authentication message-digest".
+        """Replaced changes MD5 authentication to text authentication."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address
@@ -734,6 +761,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         self.execute_module(changed=True, commands=commands, sort=False)
 
     def test_ix_ospf_interfaces_overridden_authentication(self) -> None:
+        """Overridden removes the authentication of the other interfaces."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address
@@ -776,6 +804,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         self.execute_module(changed=True, commands=commands, sort=False)
 
     def test_ix_ospf_interfaces_deleted_authentication(self) -> None:
+        """Deleted removes the authentication settings."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address
@@ -809,6 +838,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
 
     def test_ix_ospf_interfaces_gathered_authentication_no_log(self) -> None:
         # Only the password read from the device may be hidden in the result.
+        """Gathered hides only the password, not the key ID or other values."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address
@@ -840,6 +870,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
         assert gathered == result["gathered"]
 
     def test_ix_ospf_interfaces_deleted_authentication_no_log(self) -> None:
+        """Deleted hides only the password in the result."""
         self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet1.0
               no ip address

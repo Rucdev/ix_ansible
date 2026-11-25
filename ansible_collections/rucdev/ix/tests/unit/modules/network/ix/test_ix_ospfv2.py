@@ -4,6 +4,8 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
+"""Unit tests of the ix_ospfv2 module."""
+
 from textwrap import dedent
 from unittest.mock import patch
 
@@ -14,9 +16,12 @@ from .ix_module import TestIxModule
 
 
 class TestIxOspfv2Module(TestIxModule):
+    """Unit tests of the ix_ospfv2 module."""
+
     module = ix_ospfv2
 
     def setUp(self) -> None:
+        """Patch the connection and the function that returns the device config."""
         super().setUp()
 
         self.mock_get_resource_connection_facts = patch(
@@ -35,11 +40,13 @@ class TestIxOspfv2Module(TestIxModule):
         self.maxDiff = 10000
 
     def tearDown(self) -> None:
+        """Stop the patches."""
         super().tearDown()
         self.mock_get_resource_connection_facts.stop()
         self.mock_execute_show_command.stop()
 
     def test_ix_ospfv2_merged(self) -> None:
+        """Merged adds the OSPFv2 process settings."""
         self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
@@ -102,6 +109,7 @@ class TestIxOspfv2Module(TestIxModule):
         assert sorted(result["commands"]) == sorted(commands)
 
     def test_ix_ospfv2_merged_idempotent(self) -> None:
+        """Merged with the current settings changes nothing."""
         self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
@@ -146,6 +154,7 @@ class TestIxOspfv2Module(TestIxModule):
         self.execute_module(changed=False, commands=[])
 
     def test_ix_ospfv2_replaced(self) -> None:
+        """Replaced sets the process settings and removes the others."""
         self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
@@ -195,6 +204,7 @@ class TestIxOspfv2Module(TestIxModule):
         assert sorted(result["commands"]) == sorted(commands)
 
     def test_ix_ospfv2_overridden(self) -> None:
+        """Overridden removes the processes that are not given."""
         self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
@@ -277,6 +287,7 @@ class TestIxOspfv2Module(TestIxModule):
         assert sorted(result["commands"]) == sorted(commands)
 
     def test_ix_ospfv2_deleted(self) -> None:
+        """Deleted removes the OSPFv2 process."""
         self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
@@ -296,6 +307,7 @@ class TestIxOspfv2Module(TestIxModule):
         self.execute_module(changed=True, commands=commands)
 
     def test_ix_ospfv2_parsed(self) -> None:
+        """Parsed reads the OSPFv2 settings from running_config."""
         self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
@@ -334,6 +346,7 @@ class TestIxOspfv2Module(TestIxModule):
         assert parsed_list == result["parsed"]
 
     def test_ix_ospfv2_rendered(self) -> None:
+        """Rendered returns the OSPFv2 commands."""
         set_module_args(
             {
                 "config": {
@@ -473,6 +486,7 @@ class TestIxOspfv2Module(TestIxModule):
         """)
 
     def test_ix_ospfv2_nssa_ranges_parsed(self) -> None:
+        """Parsed reads the NSSA ranges."""
         set_module_args({"running_config": self.NSSA_RANGES_CONFIG, "state": "parsed"})
         result = self.execute_module(changed=False)
         assert result["parsed"]["processes"][0]["nssa_ranges"] == [
@@ -481,6 +495,7 @@ class TestIxOspfv2Module(TestIxModule):
         ]
 
     def test_ix_ospfv2_nssa_ranges_gathered(self) -> None:
+        """Gathered reads the NSSA ranges of the device."""
         self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
         set_module_args({"state": "gathered"})
         result = self.execute_module(changed=False)
@@ -490,6 +505,7 @@ class TestIxOspfv2Module(TestIxModule):
         ]
 
     def test_ix_ospfv2_nssa_ranges_merged(self) -> None:
+        """Merged adds an NSSA range."""
         self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
         set_module_args(
             {
@@ -510,6 +526,7 @@ class TestIxOspfv2Module(TestIxModule):
         )
 
     def test_ix_ospfv2_nssa_ranges_merged_idempotent(self) -> None:
+        """Merged with the current NSSA ranges changes nothing."""
         self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
         set_module_args(
             {
@@ -531,6 +548,7 @@ class TestIxOspfv2Module(TestIxModule):
         self.execute_module(changed=False, commands=[])
 
     def test_ix_ospfv2_nssa_ranges_replaced(self) -> None:
+        """Replaced removes the NSSA ranges that are not given."""
         self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
         set_module_args(
             {
@@ -560,6 +578,7 @@ class TestIxOspfv2Module(TestIxModule):
         )
 
     def test_ix_ospfv2_nssa_ranges_merged_change_tag(self) -> None:
+        """Merged changes the tag of an NSSA range."""
         self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
         set_module_args(
             {
@@ -585,6 +604,7 @@ class TestIxOspfv2Module(TestIxModule):
         )
 
     def test_ix_ospfv2_nssa_ranges_deleted(self) -> None:
+        """Deleted removes the NSSA ranges with the process."""
         self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
         set_module_args({"state": "deleted"})
         self.execute_module(changed=True, commands=["no ip router ospf 1"])
