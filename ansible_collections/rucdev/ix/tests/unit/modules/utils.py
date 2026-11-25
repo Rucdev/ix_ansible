@@ -19,6 +19,9 @@ def set_module_args(args):
 
     args = json.dumps({"ANSIBLE_MODULE_ARGS": args})
     basic._ANSIBLE_ARGS = to_bytes(args)
+    # ansible-core 2.19+ also needs the serialization profile; older
+    # versions ignore it. "legacy" is what ansible.module_utils.testing uses.
+    basic._ANSIBLE_PROFILE = "legacy"
 
 
 class AnsibleExitJson(Exception):
