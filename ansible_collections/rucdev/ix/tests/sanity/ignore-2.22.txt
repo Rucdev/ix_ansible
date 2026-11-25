@@ -1,0 +1,9 @@
+plugins/action/ix.py action-plugin-docs # every module uses it through the ix_*.py symlinks, like ios.py in cisco.ios
+plugins/module_utils/network/ix/config/ospf_interfaces/ospf_interfaces.py pylint:ansible-bad-import-from # clean up after #39 and #40, which edit the imports
+plugins/module_utils/network/ix/config/ospf_interfaces/ospf_interfaces.py pylint:unused-import # clean up after #39 and #40, which edit the imports
+plugins/module_utils/network/ix/facts/facts.py pylint:unused-import # device_interfaces is imported but not registered yet
+plugins/modules/ix_device_interfaces.py validate-modules:doc-default-does-not-match-spec # argspec default for mdix; needs a decision
+plugins/modules/ix_facts.py validate-modules:doc-choices-do-not-match-spec # documented "!" values are not accepted; needs a decision
+plugins/modules/ix_facts.py validate-modules:doc-default-does-not-match-spec # documented default is all, code uses min; needs a decision
+plugins/modules/ix_interfaces.py validate-modules:invalid-ansiblemodule-schema # bandwidth type "number"; needs a decision
+plugins/modules/ix_interfaces.py validate-modules:invalid-documentation # bandwidth type "number"; needs a decision

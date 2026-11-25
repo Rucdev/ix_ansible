@@ -13,7 +13,8 @@ dependencies = [
     "antsibull-docs>=2.20.0",
 ]
 
-[tool.uv]
-dev-dependencies = [
-    "black>=23.7.0",
+[dependency-groups]
+dev = [
+    # black keeps its stable style within a calendar year; 27.x will change it.
+    "black>=26.1.0,<27",
 ]

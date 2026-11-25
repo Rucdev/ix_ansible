@@ -9,3 +9,4 @@ uv.lock
 collectons/
 
 ansible_collections/ansible/
+ansible_collections/*.info/
