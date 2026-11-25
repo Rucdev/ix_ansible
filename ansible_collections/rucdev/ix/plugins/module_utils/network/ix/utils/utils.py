@@ -9,14 +9,21 @@
 
 """Address validation helpers."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from ansible.module_utils.common.network import is_masklen, to_netmask
+
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
 
 # An address with a prefix length, "<address>/<length>", splits into two parts.
 ADDRESS_PARTS = 2
 IPV6_MAX_PREFIX_LENGTH = 128
 
 
-def validate_ipv4(module, value) -> None:
+def validate_ipv4(module: AnsibleModule, value: str) -> None:
     """Fail the module unless value is an IPv4 address with a prefix length."""
     if value:
         address = value.split("/")
@@ -31,7 +38,7 @@ def validate_ipv4(module, value) -> None:
             )
 
 
-def validate_ipv6(value, module) -> None:
+def validate_ipv6(value: str, module: AnsibleModule) -> None:
     """Fail the module unless value is an IPv6 address with a prefix length up to 128."""
     if value:
         address = value.split("/")
@@ -45,7 +52,7 @@ def validate_ipv6(value, module) -> None:
             )
 
 
-def validate_n_expand_ipv4(module, want):
+def validate_n_expand_ipv4(module: AnsibleModule, want: dict) -> str:
     # Check if input IPV4 is valid IP and expand IPV4 with its subnet mask
     """Validate the IPv4 address of want and return it as "address netmask"."""
     ip_addr_want = want.get("address")

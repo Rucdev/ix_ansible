@@ -10,6 +10,10 @@ necessary to bring the current configuration to it's desired end-state is
 created.
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module import (
     ResourceModule,
 )
@@ -28,11 +32,14 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.utils.utils i
     validate_ipv6,
 )
 
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
+
 
 class L3Interfaces(ResourceModule):
     """The ix_l3_interfaces class."""
 
-    def __init__(self, module) -> None:
+    def __init__(self, module: AnsibleModule) -> None:
         """Set up the resource module with the argument spec and the template."""
         super().__init__(
             empty_fact_val={},
@@ -48,7 +55,7 @@ class L3Interfaces(ResourceModule):
             "ipv6.autoconfig",
         ]
 
-    def execute_module(self):
+    def execute_module(self) -> dict:
         """Execute the module.
 
         :rtype: A dictionary
@@ -83,7 +90,7 @@ class L3Interfaces(ResourceModule):
         for k, want in wantd.items():
             self._compare(want=want, have=haved.pop(k, {}))
 
-    def _compare(self, want, have) -> None:
+    def _compare(self, want: dict, have: dict) -> None:
         begin = len(self.commands)
         self._compare_lists(want=want, have=have)
         if len(self.commands) != begin:
@@ -92,7 +99,7 @@ class L3Interfaces(ResourceModule):
                 self._tmplt.render(want or have, "name", negate=False),
             )
 
-    def _compare_lists(self, want, have) -> None:
+    def _compare_lists(self, want: dict, have: dict) -> None:
         for afi in ("ipv4", "ipv6"):
             wacls = want.pop(afi, {})
             hacls = have.pop(afi, {})
@@ -106,7 +113,7 @@ class L3Interfaces(ResourceModule):
                 self.validate_ips(afi, have=entry)
                 self.compare(parsers=self.parsers, want={}, have={afi: entry})
 
-    def _compare_primaries(self, afi, wacls, hacls):
+    def _compare_primaries(self, afi: str, wacls: dict, hacls: dict) -> None:
         """Compare the primary addresses; matched ones are removed from hacls."""
         for key, entry in wacls.items():
             if entry.get("secondary", False) is True:
@@ -126,7 +133,7 @@ class L3Interfaces(ResourceModule):
                 have={afi: hacl},
             )
 
-    def _compare_secondaries(self, afi, wacls, hacls):
+    def _compare_secondaries(self, afi: str, wacls: dict, hacls: dict) -> None:
         """Compare the secondary addresses; matched ones are removed from hacls."""
         for key, entry in wacls.items():
             if entry.get("secondary", False) is False:
@@ -155,15 +162,20 @@ class L3Interfaces(ResourceModule):
                 have={afi: hacl},
             )
 
-    def purge(self, have) -> None:
+    def purge(self, have: dict) -> None:
         """Handle operation for purged state."""
         self.commands.append(self._tmplt.render(have, "interface", negate=True))
 
-    def normalize_interface_names(self, param):
+    def normalize_interface_names(self, param: dict) -> dict:
         """Return param unchanged; IX interface names need no normalization."""
         return param
 
-    def validate_ips(self, afi, want=None, have=None) -> None:
+    def validate_ips(
+        self,
+        afi: str,
+        want: dict | None = None,
+        have: dict | None = None,
+    ) -> None:
         """Fail the module unless the address in want and in have has a valid prefix length.
 
         Each address must be "<address>/<prefix length>" with a prefix length in
@@ -191,7 +203,7 @@ class L3Interfaces(ResourceModule):
         elif afi == "ipv6" and have and have.get("address"):
             validate_ipv6(have["address"], self._module)
 
-    def list_to_dict(self, param) -> None:
+    def list_to_dict(self, param: dict) -> None:
         """Turn the address lists of each interface into dicts keyed by address."""
         if param:
             for val in param.values():
@@ -201,7 +213,7 @@ class L3Interfaces(ResourceModule):
                     val["ipv6"] = self._ipv6_to_dict(val["ipv6"])
 
     @staticmethod
-    def _ipv4_to_dict(entries):
+    def _ipv4_to_dict(entries: list) -> dict:
         """Key the IPv4 address entries by address."""
         temp = {}
         for each in entries:
@@ -224,7 +236,7 @@ class L3Interfaces(ResourceModule):
         return temp
 
     @staticmethod
-    def _ipv6_to_dict(entries):
+    def _ipv6_to_dict(entries: list) -> dict:
         """Key the IPv6 address entries by lower-case address."""
         temp = {}
         for each in entries:

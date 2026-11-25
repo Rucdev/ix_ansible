@@ -14,7 +14,7 @@ from ansible.module_utils import basic
 from ansible.module_utils._text import to_bytes
 
 
-def set_module_args(args) -> None:
+def set_module_args(args: dict) -> None:
     """Set the arguments that the next AnsibleModule reads."""
     if "_ansible_remote_tmp" not in args:
         args["_ansible_remote_tmp"] = tempfile.gettempdir()
@@ -36,14 +36,14 @@ class AnsibleFailJsonError(Exception):
     """Raised instead of exiting when the module calls fail_json."""
 
 
-def exit_json(*_args, **kwargs) -> NoReturn:
+def exit_json(*_args: object, **kwargs: object) -> NoReturn:
     """Raise AnsibleExitJsonError with the result."""
     if "changed" not in kwargs:
         kwargs["changed"] = False
     raise AnsibleExitJsonError(kwargs)
 
 
-def fail_json(*_args, **kwargs) -> NoReturn:
+def fail_json(*_args: object, **kwargs: object) -> NoReturn:
     """Raise AnsibleFailJsonError with the result."""
     kwargs["failed"] = True
     raise AnsibleFailJsonError(kwargs)

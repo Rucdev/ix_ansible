@@ -18,6 +18,8 @@
 
 """Base class for the unit tests of the ix_* modules."""
 
+from __future__ import annotations
+
 import contextlib
 import json
 
@@ -35,7 +37,7 @@ fixture_path = Path(__file__).parent / "fixtures"
 fixture_data = {}
 
 
-def load_fixture(name):
+def load_fixture(name: str) -> str | dict:
     """Return the content of a fixture file, parsed as JSON when possible."""
     path = fixture_path / name
 
@@ -57,11 +59,11 @@ class TestIxModule(ModuleTestCase):
     def execute_module(
         self,
         *,
-        failed=False,
-        changed=False,
-        commands=None,
-        sort=True,
-    ):
+        failed: bool = False,
+        changed: bool = False,
+        commands: list | None = None,
+        sort: bool = True,
+    ) -> dict:
         """Run the module and check whether it failed or changed and which commands it sent."""
         self.load_fixtures(commands)
 
@@ -82,7 +84,7 @@ class TestIxModule(ModuleTestCase):
 
         return result
 
-    def failed(self):
+    def failed(self) -> dict:
         """Run the module, expect it to fail and return the result."""
         with pytest.raises(AnsibleFailJsonError) as exc:
             self.module.main()
@@ -91,7 +93,7 @@ class TestIxModule(ModuleTestCase):
         assert result["failed"], result
         return result
 
-    def changed(self, *, changed=False):
+    def changed(self, *, changed: bool = False) -> dict:
         """Run the module, check the changed flag and return the result."""
         with pytest.raises(AnsibleExitJsonError) as exc:
             self.module.main()
@@ -100,5 +102,5 @@ class TestIxModule(ModuleTestCase):
         assert result["changed"] == changed, result
         return result
 
-    def load_fixtures(self, commands=None) -> None:
+    def load_fixtures(self, commands: list | None = None) -> None:
         """Set what the mocked functions return; subclasses override this."""

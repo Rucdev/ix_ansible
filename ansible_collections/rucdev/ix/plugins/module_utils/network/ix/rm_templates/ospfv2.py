@@ -11,16 +11,21 @@ facilitates both facts gathering and native command generation for
 the given network resource.
 """
 
+from __future__ import annotations
+
 import re
 
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.network_template import (
     NetworkTemplate,
 )
 
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
 
-def _tmplt_ospf_virtual_link(config_data):
+
+def _tmplt_ospf_virtual_link(config_data: dict) -> str:
     # if "virtual_links" in config_data:
     virtual_links_data = config_data
     command = "area {area_id} virtual-link {address}".format(**virtual_links_data)
@@ -47,7 +52,7 @@ def _tmplt_ospf_virtual_link(config_data):
     return command
 
 
-def _tmplt_ospf_area_nssa(config_data):
+def _tmplt_ospf_area_nssa(config_data: dict) -> str | None:
     if "nssa" in config_data:
         nssa_data = config_data["nssa"]
         command = "area {area_id} nssa".format(**config_data)
@@ -68,7 +73,11 @@ def _tmplt_ospf_area_nssa(config_data):
 class Ospfv2Template(NetworkTemplate):
     """Parsers and command templates of the ix_ospfv2 module."""
 
-    def __init__(self, lines=None, module=None) -> None:
+    def __init__(
+        self,
+        lines: list[str] | None = None,
+        module: AnsibleModule | None = None,
+    ) -> None:
         """Set up the template with the parsers of the resource."""
         super().__init__(lines=lines, tmplt=self, module=module)
 

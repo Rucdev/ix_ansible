@@ -4,17 +4,24 @@
 
 """Pytest fixtures for the module tests."""
 
+from __future__ import annotations
+
 import json
 import tempfile
+
+from typing import TYPE_CHECKING
 
 import pytest
 
 from ansible.module_utils._text import to_bytes
 from ansible.module_utils.common._collections_compat import MutableMapping
 
+if TYPE_CHECKING:
+    from pytest_mock import MockerFixture
+
 
 @pytest.fixture
-def patch_ansible_module(request, mocker) -> None:
+def patch_ansible_module(request: pytest.FixtureRequest, mocker: MockerFixture) -> None:
     """Patch the module arguments with the parameters of the test."""
     if isinstance(request.param, str):
         args = request.param

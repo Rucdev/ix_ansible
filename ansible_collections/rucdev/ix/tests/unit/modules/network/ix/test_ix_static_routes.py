@@ -142,7 +142,7 @@ PARSED = [
 ]
 
 
-def v4(*routes, **kw):
+def v4(*routes: tuple, **kw: str) -> dict:
     """Return an IPv4 config entry from (dest, [next_hops...]) tuples and an optional vrf."""
     entry = {
         "address_families": [
@@ -617,7 +617,7 @@ class TestIxStaticRoutesModule(TestIxModule):
         self.execute_module(changed=False, commands=[])
 
     # ---- validation ----
-    def _fails(self, config, msg) -> None:
+    def _fails(self, config: list, msg: str) -> None:
         set_module_args({"config": config, "state": "merged"})
         result = self.execute_module(failed=True)
         assert msg in result["msg"]

@@ -24,13 +24,18 @@ Re-entering the same route REPLACES its options, and "no ip route <dest>
 <gateway>" removes it regardless of options.
 """
 
+from __future__ import annotations
+
 import re
 
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.network_template import (
     NetworkTemplate,
 )
+
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
 
 INTERFACE_RE = r"(?:Tunnel|Loopback|Null|Dialer|BVI|USB-Serial|BRI|GigaEthernet)\S+"
 
@@ -38,7 +43,7 @@ INTERFACE_RE = r"(?:Tunnel|Loopback|Null|Dialer|BVI|USB-Serial|BRI|GigaEthernet)
 IDENTITY_FLAGS = {"ipv4": ("connected", "dhcp"), "ipv6": ("dhcp", "ra")}
 
 
-def _route_head(data):
+def _route_head(data: dict) -> str:
     afi = data["afi"]
     cmd = "ip route" if afi == "ipv4" else "ipv6 route"
     if data.get("vrf"):
@@ -54,7 +59,7 @@ def _route_head(data):
     return cmd
 
 
-def _tmplt_route(data):
+def _tmplt_route(data: dict) -> str:
     """Full command in running-config order. Default values are omitted."""
     cmd = _route_head(data)
     for opt in ("distance", "metric", "tag"):
@@ -63,7 +68,7 @@ def _tmplt_route(data):
     return cmd
 
 
-def _tmplt_route_remove(data):
+def _tmplt_route_remove(data: dict) -> str:
     """Identity only; IX removes the route regardless of its options."""
     return _route_head(data)
 
@@ -71,7 +76,11 @@ def _tmplt_route_remove(data):
 class StaticRoutesTemplate(NetworkTemplate):
     """Parsers and command templates of the ix_static_routes module."""
 
-    def __init__(self, lines=None, module=None) -> None:
+    def __init__(
+        self,
+        lines: list[str] | None = None,
+        module: AnsibleModule | None = None,
+    ) -> None:
         """Set up the template with the parsers of the resource."""
         super().__init__(
             lines=lines,

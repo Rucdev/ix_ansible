@@ -20,6 +20,8 @@
 
 """Action plugin for the ix_* network modules."""
 
+from __future__ import annotations
+
 from ansible.utils.display import Display
 from ansible_collections.ansible.netcommon.plugins.action.network import (
     ActionModule as ActionNetworkModule,
@@ -31,7 +33,7 @@ display = Display()
 class ActionModule(ActionNetworkModule):
     """Run the ix_* modules over a network_cli connection."""
 
-    def run(self, tmp=None, task_vars=None):
+    def run(self, tmp: str | None = None, task_vars: dict | None = None) -> dict:
         """Fail unless the connection is network_cli, then run the module."""
         del tmp  # tmp no longer has any effect
 

@@ -29,7 +29,11 @@
 
 """Helpers that modules use to talk to IX through the cliconf plugin."""
 
+from __future__ import annotations
+
 import json
+
+from typing import TYPE_CHECKING
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.connection import Connection
@@ -38,10 +42,13 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.u
     to_list,
 )
 
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
+
 _DEVICE_CONFIGS = {}
 
 
-def get_connection(module):
+def get_connection(module: AnsibleModule) -> Connection:
     """Return the cliconf connection of the module, creating it on first use."""
     if hasattr(module, "ix_connection"):
         return module.ix_connection
@@ -56,7 +63,7 @@ def get_connection(module):
     return module.ix_connection
 
 
-def get_capabilities(module):
+def get_capabilities(module: AnsibleModule) -> dict:
     """Return the capabilities of the cliconf plugin, cached on the module."""
     if hasattr(module, "ix_capabilities"):
         return module.ix_capabilities
@@ -69,7 +76,7 @@ def get_capabilities(module):
     return module.ix_capabilities
 
 
-def get_defaults_flag(module):
+def get_defaults_flag(module: AnsibleModule) -> str:
     """Return the flag that makes show running-config include the defaults."""
     connection = get_connection(module)
     try:
@@ -80,7 +87,7 @@ def get_defaults_flag(module):
     return to_text(out, errors="surrogate_then_replace").strip()
 
 
-def get_config(module, flags=None):
+def get_config(module: AnsibleModule, flags: list | str | None = None) -> str:
     """Return the running config for the given flags, read once per flags."""
     flags = to_list(flags)
 
@@ -106,7 +113,13 @@ def get_config(module, flags=None):
         return cfg
 
 
-def run_commands(module, commands, *, check_rc=True, configure=False):
+def run_commands(
+    module: AnsibleModule,
+    commands: list | str,
+    *,
+    check_rc: bool = True,
+    configure: bool = False,
+) -> list:
     """Run commands, in config mode when configure is true, and return their outputs."""
     connection = get_connection(module)
     try:

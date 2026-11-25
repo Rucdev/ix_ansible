@@ -3,6 +3,8 @@
 
 """Terminal plugin for NEC IX routers."""
 
+from __future__ import annotations
+
 import json
 import re
 
@@ -43,7 +45,7 @@ class TerminalModule(TerminalBase):
     def on_open_shell(self) -> None:
         """Do nothing when the shell opens."""
 
-    def on_become(self, passwd=None) -> None:
+    def on_become(self, passwd: str | None = None) -> None:
         """Enter config mode, answering the password prompt when a password is given."""
         if self._get_prompt().endswith(b"(config)#"):
             return

@@ -9,6 +9,10 @@ for a given resource, parsed, and the facts tree is populated
 based on the configuration.
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common import (
     utils,
 )
@@ -20,20 +24,29 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
     DeviceInterfacesTemplate,
 )
 
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
+    from ansible.module_utils.connection import Connection
+
 
 class DeviceInterfacesFacts:
     """The ix device_interfaces fact class."""
 
-    def __init__(self, module) -> None:
+    def __init__(self, module: AnsibleModule) -> None:
         """Keep the module and the argument spec of the resource."""
         self._module = module
         self.argument_spec = DeviceInterfacesArgs.argument_spec
 
-    def get_device_interfaces_data(self, connection):
+    def get_device_interfaces_data(self, connection: Connection) -> str:
         """Return the running config of the device."""
         return connection.configure_get("show running-config device")
 
-    def populate_facts(self, connection, ansible_facts, data=None):
+    def populate_facts(
+        self,
+        connection: Connection,
+        ansible_facts: dict,
+        data: str | None = None,
+    ) -> dict:
         """Populate the facts for device_interfaces.
 
         :param connection: the device connection

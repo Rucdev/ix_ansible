@@ -118,7 +118,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.ix import (
 )
 
 
-def parse_commands(module: AnsibleModule, warnings: list):
+def parse_commands(module: AnsibleModule, warnings: list) -> list:
     """Return the commands to run; in check mode, skip non-show commands with a warning."""
     commands = transform_commands(module)
 

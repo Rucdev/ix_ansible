@@ -3,6 +3,8 @@
 
 """Fact gathering of the ix_* resource modules."""
 
+from __future__ import annotations
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.facts.facts import (
     FactsBase,
 )
@@ -45,7 +47,12 @@ class Facts(FactsBase):
 
     VALID_RESOURCE_SUBSETS = frozenset(FACT_RESOURCE_SUBSETS.keys())
 
-    def get_facts(self, legacy_facts_type=None, resource_facts_type=None, data=None):
+    def get_facts(
+        self,
+        legacy_facts_type: list | None = None,
+        resource_facts_type: list | None = None,
+        data: str | None = None,
+    ) -> tuple[dict, list]:
         """Gather the facts of the requested resources and return them with the warnings."""
         if self.VALID_RESOURCE_SUBSETS:
             self.get_network_resources_facts(

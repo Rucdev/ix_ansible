@@ -72,6 +72,7 @@ notice-rgx = '(?i)(?:copyright\b|\(c\)\s+\d{4})'
 "ansible_collections/rucdev/ix/plugins/cliconf/ix.py" = [
     "A002",
     "ARG002",
+    "FBT001",
     "FBT002",
     "PLR0913",
     "PLR0917",

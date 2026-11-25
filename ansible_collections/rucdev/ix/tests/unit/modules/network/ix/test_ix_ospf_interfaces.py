@@ -22,7 +22,7 @@ from ansible_collections.rucdev.ix.tests.unit.modules.utils import (
 from .ix_module import TestIxModule
 
 
-def exit_json_no_log(module, **kwargs) -> NoReturn:
+def exit_json_no_log(module: AnsibleModule, **kwargs: object) -> NoReturn:
     # Hide the no_log values like the real AnsibleModule.exit_json does.
     """Raise AnsibleExitJsonError with the no_log values hidden, as exit_json does."""
     kwargs.setdefault("changed", False)

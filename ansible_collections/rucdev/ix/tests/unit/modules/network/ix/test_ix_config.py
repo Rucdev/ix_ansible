@@ -6,6 +6,8 @@
 
 """Unit tests of the ix_config module."""
 
+from __future__ import annotations
+
 from textwrap import dedent
 from unittest.mock import ANY, MagicMock, patch
 
@@ -63,12 +65,12 @@ class TestIxConfigModule(TestIxModule):
         self.mock_get_connection.stop()
         self.mock_run_commands.stop()
 
-    def load_fixtures(self, _commands=None) -> None:
+    def load_fixtures(self, _commands: list | None = None) -> None:
         """Return the running config from get_config and run_commands."""
         self.get_config.return_value = RUNNING_CONFIG
         self.run_commands.return_value = [RUNNING_CONFIG]
 
-    def assert_str_warnings(self, result) -> None:
+    def assert_str_warnings(self, result: dict) -> None:
         # ansible-core rejects any warning that is not a str.
         """Check that every warning is a str, as ansible-core requires."""
         for warning in result.get("warnings", []):

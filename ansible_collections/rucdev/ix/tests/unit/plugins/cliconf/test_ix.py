@@ -3,6 +3,8 @@
 
 """Unit tests of the ix cliconf plugin."""
 
+from __future__ import annotations
+
 import json
 
 from pathlib import Path
@@ -16,7 +18,7 @@ from ansible_collections.rucdev.ix.plugins.cliconf import ix
 FIXTURE_DIR = Path(__file__).resolve().parent / "fixtures" / "ix"
 
 
-def _connection_side_effect(*args, **kwargs):
+def _connection_side_effect(*args: bytes, **kwargs: bytes) -> bytes | str:
     try:
         value = args[0] if args else kwargs.get("command")
 
@@ -118,7 +120,7 @@ class TestCliconfModeHandling(TestCase):
         self._conn.get_prompt.side_effect = lambda: self._prompt
         self._sent = []
 
-        def send(command, *_args, **_kwargs) -> bytes:
+        def send(command: bytes, *_args: object, **_kwargs: object) -> bytes:
             cmd = command.decode() if isinstance(command, bytes) else command
             self._sent.append(cmd)
             # emulate IX prompt transitions

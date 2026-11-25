@@ -10,6 +10,10 @@ for a given resource, parsed, and the facts tree is populated
 based on the configuration.
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common import (
     utils,
 )
@@ -21,20 +25,24 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
     Ospfv2Template,
 )
 
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
+    from ansible.module_utils.connection import Connection
+
 
 class Ospfv2Facts:
     """The ix ospfv2 facts class."""
 
-    def __init__(self, module) -> None:
+    def __init__(self, module: AnsibleModule) -> None:
         """Keep the module and the argument spec of the resource."""
         self._module = module
         self.argument_spec = Ospfv2Args.argument_spec
 
-    def get_ospfv2_data(self, connection):
+    def get_ospfv2_data(self, connection: Connection) -> str:
         """Return the running config of the device."""
         return connection.configure_get("show running-config ospf")
 
-    def dict_to_list(self, ospf_data):
+    def dict_to_list(self, ospf_data: dict) -> dict:
         """Convert the areas of each process to a list.
 
         :param ospf_data: ospf data
@@ -50,7 +58,7 @@ class Ospfv2Facts:
 
         return facts_output
 
-    def preprocess_lines(self, lines):
+    def preprocess_lines(self, lines: list) -> list:
         """Filter the input lines to the OSPFv3 configuration.
 
         :param lines: A list of configuration lines.
@@ -70,7 +78,12 @@ class Ospfv2Facts:
                 get_line = False
         return filtered_lines
 
-    def populate_facts(self, connection, ansible_facts, data=None):
+    def populate_facts(
+        self,
+        connection: Connection,
+        ansible_facts: dict,
+        data: str | None = None,
+    ) -> dict:
         """Populate the facts for Ospfv2 network resource.
 
         :param connection: the device connection

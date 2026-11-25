@@ -13,6 +13,10 @@ necessary to bring the current configuration to its desired end-state is
 created.
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module import (
     ResourceModule,
 )
@@ -26,6 +30,9 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.facts i
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.ospf_interfaces import (
     OspfInterfacesTemplate,
 )
+
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
 
 
 class OspfInterfaces(ResourceModule):
@@ -41,7 +48,7 @@ class OspfInterfaces(ResourceModule):
         "interface_type",
     )
 
-    def __init__(self, module) -> None:
+    def __init__(self, module: AnsibleModule) -> None:
         """Set up the resource module with the argument spec and the template."""
         super().__init__(
             empty_fact_val={},
@@ -52,7 +59,7 @@ class OspfInterfaces(ResourceModule):
         )
         self.parsers = []
 
-    def execute_module(self):
+    def execute_module(self) -> dict:
         """Execute the module.
 
         :rtype: A dictionary
@@ -110,7 +117,7 @@ class OspfInterfaces(ResourceModule):
                         ),
                     )
 
-    def _compare(self, want, have, interface) -> None:
+    def _compare(self, want: dict, have: dict, interface: str) -> None:
         """Add the commands that change have into want, using the parsers."""
         begin = len(self.commands)
         self._compare_afi(want=want, have=have)
@@ -120,7 +127,7 @@ class OspfInterfaces(ResourceModule):
                 self._tmplt.render({"name": interface}, "name", negate=False),
             )
 
-    def _compare_afi(self, want, have) -> None:
+    def _compare_afi(self, want: dict, have: dict) -> None:
         parsers = [
             "name",
             "authentication_type",
@@ -143,7 +150,7 @@ class OspfInterfaces(ResourceModule):
 
             self.compare(parsers=parsers, want=wafis, have=hafis)
 
-    def _list_to_dict(self, entry, attr_type=None):
+    def _list_to_dict(self, entry: list, attr_type: str | None = None) -> dict:
         if self.state == "deleted" and attr_type == "want":
             del_list = {}
             for intf in entry:
@@ -156,7 +163,7 @@ class OspfInterfaces(ResourceModule):
                 list_to_dict[intf.get("name")] = self.process_list_attr(intf)
         return list_to_dict
 
-    def process_list_attr(self, add_fam):
+    def process_list_attr(self, add_fam: dict) -> dict:
         """Return the address families of an interface keyed by AFI."""
         item = {}
         for ag in add_fam.get("address_family", []):

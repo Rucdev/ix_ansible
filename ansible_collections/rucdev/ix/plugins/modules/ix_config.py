@@ -20,6 +20,8 @@
 
 """The ix_config module."""
 
+from __future__ import annotations
+
 DOCUMENTATION = """
 module: ix_config
 author: Yushi Takeda (@ruc_dev)
@@ -221,6 +223,8 @@ EXAMPLES = """
 
 RETURN = """"""
 
+from typing import TYPE_CHECKING
+
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.connection import ConnectionError as AnsibleConnectionError
@@ -235,8 +239,11 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.ix import (
     run_commands,
 )
 
+if TYPE_CHECKING:
+    from ansible.module_utils.connection import Connection
 
-def get_candidate_config(module: AnsibleModule):
+
+def get_candidate_config(module: AnsibleModule) -> str:
     """Return the candidate config built from src, or from lines and parents."""
     candidate = ""
     if module.params["src"]:
@@ -249,7 +256,11 @@ def get_candidate_config(module: AnsibleModule):
     return candidate
 
 
-def get_running_config(module: AnsibleModule, current_config=None, flags=None):
+def get_running_config(
+    module: AnsibleModule,
+    current_config: str | None = None,
+    flags: list | None = None,
+) -> str:
     """Return the running config to compare with, reading it from the device if needed."""
     running = module.params["running_config"]
     if not running:
@@ -261,7 +272,7 @@ def get_running_config(module: AnsibleModule, current_config=None, flags=None):
     return running
 
 
-def save_config(module: AnsibleModule, result) -> None:
+def save_config(module: AnsibleModule, result: dict) -> None:
     """Copy the running config to the startup config, except in check mode."""
     result["changed"] = True
     if not module.check_mode:
@@ -272,7 +283,7 @@ def save_config(module: AnsibleModule, result) -> None:
         )
 
 
-def argument_spec():
+def argument_spec() -> dict:
     """Return the argument spec of the module."""
     backup_spec = {"filename": {}, "dir_path": {"type": "path"}}
     return {
@@ -297,7 +308,11 @@ def argument_spec():
     }
 
 
-def read_running_config(module, flags, result):
+def read_running_config(
+    module: AnsibleModule,
+    flags: list,
+    result: dict,
+) -> tuple[str | None, NetworkConfig | None]:
     """Read the running config when backup or a diff against it needs it.
 
     Return the text and the parsed config, or (None, None).
@@ -312,7 +327,13 @@ def read_running_config(module, flags, result):
     return contents, NetworkConfig(indent=1, contents=contents)
 
 
-def apply_lines(module, connection, contents, flags, result):
+def apply_lines(
+    module: AnsibleModule,
+    connection: Connection,
+    contents: str | None,
+    flags: list,
+    result: dict,
+) -> None:
     """Send the lines or src that differ from the running config."""
     if not any((module.params["lines"], module.params["src"])):
         return
@@ -348,7 +369,11 @@ def apply_lines(module, connection, contents, flags, result):
     result["changed"] = True
 
 
-def save_when(module, result, diff_ignore_lines):
+def save_when(
+    module: AnsibleModule,
+    result: dict,
+    diff_ignore_lines: list | None,
+) -> tuple[str | NetworkConfig | None, NetworkConfig | None]:
     """Save the running config as save_when asks.
 
     Return the running and startup configs that were read for it, if any.
@@ -381,7 +406,12 @@ def save_when(module, result, diff_ignore_lines):
     return running_config, startup_config
 
 
-def diff_base_contents(module, config, startup_config, running_contents):
+def diff_base_contents(
+    module: AnsibleModule,
+    config: NetworkConfig | None,
+    startup_config: NetworkConfig | None,
+    running_contents: str | NetworkConfig,
+) -> str | NetworkConfig | None:
     """Return the config to compare the running config with, or None."""
     if module.params["diff_against"] == "running":
         if module.check_mode:
@@ -400,7 +430,13 @@ def diff_base_contents(module, config, startup_config, running_contents):
     return running_contents
 
 
-def report_diff(module, result, config, running_config, startup_config):
+def report_diff(
+    module: AnsibleModule,
+    result: dict,
+    config: NetworkConfig | None,
+    running_config: str | NetworkConfig | None,
+    startup_config: NetworkConfig | None,
+) -> None:
     """Add the diff between the running config and diff_against to the result."""
     diff_ignore_lines = module.params["diff_ignore_lines"]
     if not running_config:

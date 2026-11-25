@@ -6,6 +6,8 @@
 
 """Unit tests of the ix_command module."""
 
+from __future__ import annotations
+
 from textwrap import dedent
 from unittest.mock import patch
 
@@ -43,7 +45,7 @@ class TestIxCommandModule(TestIxModule):
         super().tearDown()
         self.mock_run_commands.stop()
 
-    def load_fixtures(self, _commands=None) -> None:
+    def load_fixtures(self, _commands: list | None = None) -> None:
         """Return show version from run_commands."""
         self.run_commands.return_value = [SHOW_VERSION]
 

@@ -19,6 +19,8 @@
 
 """Cliconf plugin for NEC IX routers."""
 
+from __future__ import annotations
+
 DOCUMENTATION = """
 author: Yushi Takeda (@ruc_dev)
 name: ix
@@ -32,6 +34,7 @@ import json
 import re
 
 from functools import wraps
+from typing import TYPE_CHECKING
 
 from ansible.errors import AnsibleConnectionFailure
 from ansible.module_utils._text import to_text
@@ -48,6 +51,9 @@ from ansible_collections.ansible.netcommon.plugins.plugin_utils.cliconf_base imp
     CliconfBase,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 display = Display()
 
 
@@ -61,11 +67,11 @@ CONFIG_PROMPT_RE = re.compile(r"\(config[^)]*\)#$")
 CONFIG_ONLY_COMMANDS_RE = re.compile(r"^\s*show\s+(running-config|startup-config)\b")
 
 
-def configure_mode(func):
+def configure_mode(func: Callable[..., object]) -> Callable[..., object]:
     """Decorate a Cliconf method so that it runs in config mode."""
 
     @wraps(func)
-    def wrapped(self, *args, **kwargs):
+    def wrapped(self: Cliconf, *args: object, **kwargs: object) -> object:
         self._enter_config_mode()
         return func(self, *args, **kwargs)
 
@@ -75,13 +81,13 @@ def configure_mode(func):
 class Cliconf(CliconfBase):
     """Cliconf plugin for NEC IX routers."""
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: object, **kwargs: object) -> None:
         """Set up the cache of the device information."""
         self._device_info = {}
         display.vvvvv("cliconf init")
         super().__init__(*args, **kwargs)
 
-    def _current_prompt(self):
+    def _current_prompt(self) -> str:
         prompt = self._connection.get_prompt()
         return to_text(prompt, errors="surrogate_or_strict").strip() if prompt else ""
 
@@ -113,7 +119,12 @@ class Cliconf(CliconfBase):
             self.send_command("exit")
 
     @configure_mode
-    def get_config(self, source="running", flags=None, format=None):
+    def get_config(
+        self,
+        source: str = "running",
+        flags: list | str | None = None,
+        format: str | None = None,
+    ) -> str:
         """Return the output of show running-config.
 
         flags are appended to the command without a space in between.
@@ -141,13 +152,13 @@ class Cliconf(CliconfBase):
 
     def get_diff(
         self,
-        candidate=None,
-        running=None,
-        diff_match=None,
-        diff_ignore_lines=None,
-        path=None,
-        diff_replace=None,
-    ):
+        candidate: str | None = None,
+        running: str | None = None,
+        diff_match: str | None = None,
+        diff_ignore_lines: list | None = None,
+        path: list | None = None,
+        diff_replace: str | None = None,
+    ) -> dict:
         """Return the lines of the candidate config that the running config lacks."""
         diff = {}
         device_operations = self.get_device_operations()
@@ -232,14 +243,14 @@ class Cliconf(CliconfBase):
 
     def get(
         self,
-        command=None,
-        prompt=None,
-        answer=None,
-        sendonly=False,
-        newline=True,
-        output=None,
-        check_all=False,
-    ):
+        command: str | None = None,
+        prompt: str | None = None,
+        answer: str | None = None,
+        sendonly: bool = False,
+        newline: bool = True,
+        output: str | None = None,
+        check_all: bool = False,
+    ) -> str:
         """Send one command and return its output."""
         if not command:
             msg = "must provide value of command to execute"
@@ -260,14 +271,14 @@ class Cliconf(CliconfBase):
     @configure_mode
     def configure_get(
         self,
-        command=None,
-        prompt=None,
-        answer=None,
-        sendonly=False,
-        newline=True,
-        output=None,
-        check_all=False,
-    ):
+        command: str | None = None,
+        prompt: str | None = None,
+        answer: str | None = None,
+        sendonly: bool = False,
+        newline: bool = True,
+        output: str | None = None,
+        check_all: bool = False,
+    ) -> str:
         """Send one command in config mode and return its output."""
         return self.get(
             command,
@@ -302,7 +313,7 @@ class Cliconf(CliconfBase):
             "supports_replace": False,
         }
 
-    def get_option_values(self):
+    def get_option_values(self) -> dict:
         """Return the accepted values of the format, diff and output options."""
         return {
             "format": ["text"],
@@ -311,7 +322,7 @@ class Cliconf(CliconfBase):
             "output": [],
         }
 
-    def run_commands(self, commands=None, check_rc=True) -> list:
+    def run_commands(self, commands: list | None = None, check_rc: bool = True) -> list:
         """Run commands and return their outputs."""
         if commands is None:
             msg = "'commands' value is required"
@@ -342,19 +353,24 @@ class Cliconf(CliconfBase):
         return responses
 
     @configure_mode
-    def run_configs(self, commands=None, *, check_rc=True) -> list:
+    def run_configs(
+        self,
+        commands: list | None = None,
+        *,
+        check_rc: bool = True,
+    ) -> list:
         """Run commands in config mode and return their outputs."""
         return self.run_commands(commands=commands, check_rc=check_rc)
 
     @configure_mode
     def edit_config(
         self,
-        candidate=None,
-        commit=True,
-        replace=None,
-        diff=False,
-        comment=None,
-    ):
+        candidate: list | str | None = None,
+        commit: bool = True,
+        replace: str | None = None,
+        diff: bool = False,
+        comment: str | None = None,
+    ) -> dict:
         """Send the candidate lines in config mode."""
         resp = {}
         operations = self.get_device_operations()

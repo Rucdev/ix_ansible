@@ -11,16 +11,21 @@ facilitates both facts gathering and native command generation for
 the given network resource.
 """
 
+from __future__ import annotations
+
 import re
 
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.network_template import (
     NetworkTemplate,
 )
 
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
 
-def _tmplt_ospfv3_originate_default(config_data):
+
+def _tmplt_ospfv3_originate_default(config_data: dict) -> str | None:
     if "originate_default" in config_data:
         command = "originate-default"
         if "metric" in config_data["originate_default"]:
@@ -42,7 +47,11 @@ def _tmplt_ospfv3_originate_default(config_data):
 class Ospfv3Template(NetworkTemplate):
     """Parsers and command templates of the ix_ospfv3 module."""
 
-    def __init__(self, lines=None, module=None) -> None:
+    def __init__(
+        self,
+        lines: list[str] | None = None,
+        module: AnsibleModule | None = None,
+    ) -> None:
         """Set up the template with the parsers of the resource."""
         super().__init__(lines=lines, tmplt=self, module=module)
 

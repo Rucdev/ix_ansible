@@ -10,6 +10,10 @@ necessary to bring the current configuration to it's desired end-state is
 created.
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module import (
     ResourceModule,
 )
@@ -24,11 +28,14 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
     DeviceInterfacesTemplate,
 )
 
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
+
 
 class DeviceInterfaces(ResourceModule):
     """The ix_device_interfaces config class."""
 
-    def __init__(self, module) -> None:
+    def __init__(self, module: AnsibleModule) -> None:
         """Set up the resource module with the argument spec and the template."""
         super().__init__(
             empty_fact_val={},
@@ -49,7 +56,7 @@ class DeviceInterfaces(ResourceModule):
             "speed",
         ]
 
-    def execute_module(self):
+    def execute_module(self) -> dict:
         """Execute the module.
 
         :rtype: A dictionary
@@ -87,7 +94,7 @@ class DeviceInterfaces(ResourceModule):
             for k, want in wantd.items():
                 self._compare(want=want, have=haved.pop(k, {}))
 
-    def _compare(self, want, have) -> None:
+    def _compare(self, want: dict, have: dict) -> None:
         """Add the commands that change have into want, using the parsers."""
         begin = len(self.commands)
         self.compare(parsers=self.parsers, want=want, have=have)
@@ -98,10 +105,10 @@ class DeviceInterfaces(ResourceModule):
                 self._tmplt.render(want or have, "device", negate=False),
             )
 
-    def purge(self, have) -> None:
+    def purge(self, have: dict) -> None:
         """Handle operation for purged state."""
         self.commands.append(self._tmplt.render(have, "device", negate=True))
 
-    def normalize_interface_names(self, param):
+    def normalize_interface_names(self, param: dict) -> dict:
         """Return param unchanged; IX interface names need no normalization."""
         return param
