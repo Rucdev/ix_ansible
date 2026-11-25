@@ -13,19 +13,19 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common i
 )
 
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.device_interfaces.device_interfaces import (
-    Device_interfacesArgs,
+    DeviceInterfacesArgs,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.device_interfaces import (
-    Device_interfacesTemplate,
+    DeviceInterfacesTemplate,
 )
 
 
-class Device_interfacesFacts:
+class DeviceInterfacesFacts:
     """The ix device_interfaces fact class."""
 
     def __init__(self, module) -> None:
         self._module = module
-        self.argument_spec = Device_interfacesArgs.argument_spec
+        self.argument_spec = DeviceInterfacesArgs.argument_spec
 
     def get_device_interfaces_data(self, connection):
         return connection.configure_get("show running-config device")
@@ -41,7 +41,7 @@ class Device_interfacesFacts:
         if not data:
             data = self.get_device_interfaces_data(connection)
 
-        device_interfaces_parser = Device_interfacesTemplate(
+        device_interfaces_parser = DeviceInterfacesTemplate(
             lines=data.splitlines(),
             module=self._module,
         )

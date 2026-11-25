@@ -23,6 +23,8 @@
 
 """The arg spec for the ix_interfaces module."""
 
+from typing import ClassVar
+
 
 class InterfacesArgs:  # pylint: disable=R0903
     """The arg spec for the ix_interfaces module."""
@@ -30,7 +32,7 @@ class InterfacesArgs:  # pylint: disable=R0903
     def __init__(self, **kwargs) -> None:
         pass
 
-    argument_spec = {
+    argument_spec: ClassVar[dict] = {
         "config": {
             "type": "list",
             "elements": "dict",

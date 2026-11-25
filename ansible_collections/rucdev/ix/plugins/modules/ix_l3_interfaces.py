@@ -218,10 +218,10 @@ commands:
 from ansible.module_utils.basic import AnsibleModule
 
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.l3_interfaces.l3_interfaces import (
-    L3_interfacesArgs,
+    L3InterfacesArgs,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.config.l3_interfaces.l3_interfaces import (
-    L3_interfaces,
+    L3Interfaces,
 )
 
 
@@ -231,11 +231,11 @@ def main() -> None:
     :returns: the result form module invocation
     """
     module = AnsibleModule(
-        argument_spec=L3_interfacesArgs.argument_spec,
+        argument_spec=L3InterfacesArgs.argument_spec,
         supports_check_mode=True,
     )
 
-    result = L3_interfaces(module).execute_module()
+    result = L3Interfaces(module).execute_module()
     module.exit_json(**result)
 
 

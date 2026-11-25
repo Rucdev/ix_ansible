@@ -167,7 +167,7 @@ class TestIxStaticRoutesModule(TestIxModule):
         self.mock_get_resource_connection.start()
         self.mock_get_data = patch(
             "ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.static_routes.static_routes."
-            "Static_routesFacts.get_static_route_data",
+            "StaticRoutesFacts.get_static_route_data",
         )
         self.get_data = self.mock_get_data.start()
         self.get_data.return_value = RUNNING_CONFIG
@@ -629,7 +629,7 @@ class TestIxFactsStaticRoutes(TestIxModule):
         self.mock_get_resource_connection.start()
         self.mock_get_data = patch(
             "ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.static_routes.static_routes."
-            "Static_routesFacts.get_static_route_data",
+            "StaticRoutesFacts.get_static_route_data",
         )
         self.get_data = self.mock_get_data.start()
         self.get_data.return_value = NO_ROUTES_CONFIG

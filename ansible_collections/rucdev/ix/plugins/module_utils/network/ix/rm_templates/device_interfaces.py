@@ -11,12 +11,14 @@ the given network resource.
 
 import re
 
+from typing import ClassVar
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.network_template import (
     NetworkTemplate,
 )
 
 
-class Device_interfacesTemplate(NetworkTemplate):
+class DeviceInterfacesTemplate(NetworkTemplate):
     def __init__(self, lines=None, module=None) -> None:
         super().__init__(
             lines,
@@ -24,7 +26,7 @@ class Device_interfacesTemplate(NetworkTemplate):
             module=module,
         )
 
-    PARSERS = [
+    PARSERS: ClassVar[list] = [
         {
             "name": "device",
             "getval": re.compile(

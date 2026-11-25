@@ -180,10 +180,10 @@ commands:
 from ansible.module_utils.basic import AnsibleModule
 
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.device_interfaces.device_interfaces import (
-    Device_interfacesArgs,
+    DeviceInterfacesArgs,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.config.device_interfaces.device_interfaces import (
-    Device_interfaces,
+    DeviceInterfaces,
 )
 
 
@@ -193,11 +193,11 @@ def main() -> None:
     :returns: the result form module invocation
     """
     module = AnsibleModule(
-        argument_spec=Device_interfacesArgs.argument_spec,
+        argument_spec=DeviceInterfacesArgs.argument_spec,
         supports_check_mode=True,
     )
 
-    result = Device_interfaces(module).execute_module()
+    result = DeviceInterfaces(module).execute_module()
     module.exit_json(**result)
 
 

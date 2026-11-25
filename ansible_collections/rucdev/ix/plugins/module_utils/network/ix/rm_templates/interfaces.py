@@ -11,6 +11,8 @@ the given network resource.
 
 import re
 
+from typing import ClassVar
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.network_template import (
     NetworkTemplate,
 )
@@ -20,7 +22,7 @@ class InterfacesTemplate(NetworkTemplate):
     def __init__(self, lines=None, module=None) -> None:
         super().__init__(lines=lines, tmplt=self, module=module)
 
-    PARSERS = [
+    PARSERS: ClassVar[list] = [
         {
             "name": "interface",
             "getval": re.compile(

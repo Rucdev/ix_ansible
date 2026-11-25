@@ -4,6 +4,8 @@
 import json
 import re
 
+from typing import ClassVar
+
 from ansible.errors import AnsibleConnectionFailure
 from ansible.module_utils._text import to_bytes, to_text
 from ansible_collections.ansible.netcommon.plugins.plugin_utils.terminal_base import (
@@ -15,14 +17,14 @@ class TerminalModule(TerminalBase):
     def __init__(self, connection) -> None:
         super().__init__(connection)
 
-    terminal_stdout_re = [
+    terminal_stdout_re: ClassVar[list] = [
         re.compile(
             rb"[\r\n]?[\w\+\-\.:\/\[\]]+(?:\([^\)]+\)){0,3}(?:[%$#]) ?$",
         ),
     ]
 
     # IX error messages that mean a command failed. Add new ones as they are found.
-    terminal_stderr_re = [
+    terminal_stderr_re: ClassVar[list] = [
         re.compile(rb"% .* Invalid command\."),
         re.compile(rb"% .* -- Ambiguous command."),
         re.compile(rb"% Expects a subcommand or item selection."),

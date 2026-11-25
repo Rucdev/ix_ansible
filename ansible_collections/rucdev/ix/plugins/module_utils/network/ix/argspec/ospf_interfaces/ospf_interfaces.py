@@ -20,11 +20,13 @@
 
 """The arg spec for the ix_ospf_interfaces module."""
 
+from typing import ClassVar
 
-class Ospf_interfacesArgs:  # pylint: disable=R0903
+
+class OspfInterfacesArgs:  # pylint: disable=R0903
     """The arg spec for the ix_ospf_interfaces module."""
 
-    argument_spec = {
+    argument_spec: ClassVar[dict] = {
         "config": {
             "type": "list",
             "elements": "dict",

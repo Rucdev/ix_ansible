@@ -12,10 +12,10 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.interfa
     InterfacesFacts,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.l3_interfaces.l3_interfaces import (
-    L3_interfacesFacts,
+    L3InterfacesFacts,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.ospf_interfaces.ospf_interfaces import (
-    Ospf_interfacesFacts,
+    OspfInterfacesFacts,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.ospfv2.ospfv2 import (
     Ospfv2Facts,
@@ -24,17 +24,17 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.ospfv3.
     Ospfv3Facts,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.static_routes.static_routes import (
-    Static_routesFacts,
+    StaticRoutesFacts,
 )
 
 FACT_RESOURCE_SUBSETS = {
     "hostname": HostnameFacts,
     "interfaces": InterfacesFacts,
-    "l3_interfaces": L3_interfacesFacts,
-    "ospf_interfaces": Ospf_interfacesFacts,
+    "l3_interfaces": L3InterfacesFacts,
+    "ospf_interfaces": OspfInterfacesFacts,
     "ospfv2": Ospfv2Facts,
     "ospfv3": Ospfv3Facts,
-    "static_routes": Static_routesFacts,
+    "static_routes": StaticRoutesFacts,
 }
 
 

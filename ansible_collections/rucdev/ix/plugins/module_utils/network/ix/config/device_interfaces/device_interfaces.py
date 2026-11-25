@@ -20,11 +20,11 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.facts i
     Facts,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.device_interfaces import (
-    Device_interfacesTemplate,
+    DeviceInterfacesTemplate,
 )
 
 
-class Device_interfaces(ResourceModule):
+class DeviceInterfaces(ResourceModule):
     """The ix_Device_interfaces class."""
 
     def __init__(self, module) -> None:
@@ -33,7 +33,7 @@ class Device_interfaces(ResourceModule):
             facts_module=Facts(module),
             module=module,
             resource="device_interfaces",
-            tmplt=Device_interfacesTemplate(),
+            tmplt=DeviceInterfacesTemplate(),
         )
         self.parsers = [
             "duplex",
@@ -91,7 +91,7 @@ class Device_interfaces(ResourceModule):
         """Leverages the base class `compare()` method and
         populates the list of commands to be run by comparing
         the `want` and `have` data with the `parsers` defined
-        for the Device_interfaces network resource.
+        for the DeviceInterfaces network resource.
         """
         begin = len(self.commands)
         self.compare(parsers=self.parsers, want=want, have=have)

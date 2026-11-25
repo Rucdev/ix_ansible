@@ -5,11 +5,13 @@
 
 """The arg spec for the ix_hostname module."""
 
+from typing import ClassVar
+
 
 class HostnameArgs:  # pylint: disable=R0903
     """The arg spec for the ix_hostname module."""
 
-    argument_spec = {
+    argument_spec: ClassVar[dict] = {
         "config": {
             "type": "dict",
             "options": {

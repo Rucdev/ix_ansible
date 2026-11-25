@@ -13,19 +13,19 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common i
 )
 
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.l3_interfaces.l3_interfaces import (
-    L3_interfacesArgs,
+    L3InterfacesArgs,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.l3_interfaces import (
-    L3_interfacesTemplate,
+    L3InterfacesTemplate,
 )
 
 
-class L3_interfacesFacts:
+class L3InterfacesFacts:
     """The ix l3_interfaces fact class."""
 
     def __init__(self, module) -> None:
         self._module = module
-        self.argument_spec = L3_interfacesArgs.argument_spec
+        self.argument_spec = L3InterfacesArgs.argument_spec
 
     def get_l3_interfaces_data(self, connection):
         return connection.configure_get("show running-config interface")
@@ -44,7 +44,7 @@ class L3_interfacesFacts:
             data = self.get_l3_interfaces_data(connection)
 
         # parse native config using the l3_interfaces template
-        l3_interfaces_parser = L3_interfacesTemplate(lines=data.splitlines())
+        l3_interfaces_parser = L3InterfacesTemplate(lines=data.splitlines())
         objs = l3_interfaces_parser.parse()
 
         objs = utils.remove_empties(objs)

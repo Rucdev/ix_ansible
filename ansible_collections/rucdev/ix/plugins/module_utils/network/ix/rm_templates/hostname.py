@@ -11,6 +11,8 @@ the given network resource.
 
 import re
 
+from typing import ClassVar
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.network_template import (
     NetworkTemplate,
 )
@@ -21,7 +23,7 @@ class HostnameTemplate(NetworkTemplate):
         super().__init__(lines=lines, tmplt=self, module=module)
 
     # fmt: off
-    PARSERS = [
+    PARSERS: ClassVar[list] = [
         {
             "name": "hostname",
             "getval": re.compile(

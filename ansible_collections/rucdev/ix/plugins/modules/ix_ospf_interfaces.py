@@ -253,10 +253,10 @@ parsed:
 from ansible.module_utils.basic import AnsibleModule
 
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.ospf_interfaces.ospf_interfaces import (
-    Ospf_interfacesArgs,
+    OspfInterfacesArgs,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.config.ospf_interfaces.ospf_interfaces import (
-    Ospf_interfaces,
+    OspfInterfaces,
 )
 
 
@@ -266,7 +266,7 @@ def main() -> None:
     :returns: the result form module invocation
     """
     module = AnsibleModule(
-        argument_spec=Ospf_interfacesArgs.argument_spec,
+        argument_spec=OspfInterfacesArgs.argument_spec,
         mutually_exclusive=[["config", "running_config"]],
         required_if=[
             ["state", "merged", ["config"]],
@@ -278,7 +278,7 @@ def main() -> None:
         supports_check_mode=True,
     )
 
-    result = Ospf_interfaces(module).execute_module()
+    result = OspfInterfaces(module).execute_module()
     module.exit_json(**result)
 
 

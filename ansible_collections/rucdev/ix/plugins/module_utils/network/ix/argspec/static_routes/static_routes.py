@@ -20,11 +20,13 @@
 
 """The arg spec for the ix_static_routes module."""
 
+from typing import ClassVar
 
-class Static_routesArgs:  # pylint: disable=R0903
+
+class StaticRoutesArgs:  # pylint: disable=R0903
     """The arg spec for the ix_static_routes module."""
 
-    argument_spec = {
+    argument_spec: ClassVar[dict] = {
         "config": {
             "type": "list",
             "elements": "dict",

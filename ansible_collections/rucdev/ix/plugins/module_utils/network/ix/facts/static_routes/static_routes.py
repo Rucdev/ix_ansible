@@ -13,19 +13,19 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common i
 )
 
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.static_routes.static_routes import (
-    Static_routesArgs,
+    StaticRoutesArgs,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.static_routes import (
-    Static_routesTemplate,
+    StaticRoutesTemplate,
 )
 
 
-class Static_routesFacts:
+class StaticRoutesFacts:
     """The ix static_routes facts class."""
 
     def __init__(self, module) -> None:
         self._module = module
-        self.argument_spec = Static_routesArgs.argument_spec
+        self.argument_spec = StaticRoutesArgs.argument_spec
 
     def get_static_route_data(self, connection):
         return connection.configure_get("show running-config")
@@ -104,7 +104,7 @@ class Static_routesFacts:
         return _static_route_facts
 
     def populate_facts(self, connection, ansible_facts, data=None):
-        """Populate the facts for Static_routes network resource
+        """Populate the facts for StaticRoutes network resource
         :param connection: the device connection
         :param ansible_facts: Facts dictionary
         :param data: previously collected conf
@@ -114,7 +114,7 @@ class Static_routesFacts:
         if not data:
             data = self.get_static_route_data(connection)
 
-        static_routes_parser = Static_routesTemplate(
+        static_routes_parser = StaticRoutesTemplate(
             lines=data.splitlines(),
             module=self._module,
         )

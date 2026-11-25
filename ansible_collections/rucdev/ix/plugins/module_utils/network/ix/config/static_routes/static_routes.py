@@ -29,7 +29,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.facts i
     Facts,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.static_routes import (
-    Static_routesTemplate,
+    StaticRoutesTemplate,
 )
 
 ROUTE_IDENTITY = (
@@ -51,7 +51,7 @@ ROUTE_OPTIONS = ("distance", "metric", "tag")
 DEFAULT_OPTIONS = {"distance": 1, "metric": 1}
 
 
-class Static_routes(ResourceModule):
+class StaticRoutes(ResourceModule):
     """The ix_static_routes config class."""
 
     def __init__(self, module) -> None:
@@ -60,7 +60,7 @@ class Static_routes(ResourceModule):
             facts_module=Facts(module),
             module=module,
             resource="static_routes",
-            tmplt=Static_routesTemplate(),
+            tmplt=StaticRoutesTemplate(),
         )
 
     def execute_module(self):

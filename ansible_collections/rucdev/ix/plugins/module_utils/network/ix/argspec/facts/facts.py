@@ -4,6 +4,8 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 """The arg spec for the ix facts module."""
 
+from typing import ClassVar
+
 
 class FactsArgs:  # pylint: disable=R0903
     """The arg spec for the ix facts module."""
@@ -11,7 +13,7 @@ class FactsArgs:  # pylint: disable=R0903
     def __init__(self, **kwargs) -> None:
         pass
 
-    choices = [
+    choices: ClassVar[list] = [
         "all",
         "hostname",
         "interfaces",
@@ -22,7 +24,7 @@ class FactsArgs:  # pylint: disable=R0903
         "static_routes",
     ]
 
-    argument_spec = {
+    argument_spec: ClassVar[dict] = {
         "gather_subset": {"default": ["min"], "type": "list", "elements": "str"},
         "gather_network_resources": {
             "choices": choices,

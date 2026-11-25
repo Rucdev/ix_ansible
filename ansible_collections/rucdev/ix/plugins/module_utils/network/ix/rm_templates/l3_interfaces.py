@@ -11,12 +11,14 @@ the given network resource.
 
 import re
 
+from typing import ClassVar
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.network_template import (
     NetworkTemplate,
 )
 
 
-class L3_interfacesTemplate(NetworkTemplate):
+class L3InterfacesTemplate(NetworkTemplate):
     def __init__(self, lines=None, module=None) -> None:
         super().__init__(
             lines=lines,
@@ -24,7 +26,7 @@ class L3_interfacesTemplate(NetworkTemplate):
             module=module,
         )
 
-    PARSERS = [
+    PARSERS: ClassVar[list] = [
         {
             "name": "name",
             "getval": re.compile(

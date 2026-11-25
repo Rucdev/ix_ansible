@@ -20,11 +20,13 @@
 
 """The arg spec for the ix_ospfv2 module."""
 
+from typing import ClassVar
+
 
 class Ospfv2Args:  # pylint: disable=R0903
     """The arg spec for the ix_ospfv2 module."""
 
-    argument_spec = {
+    argument_spec: ClassVar[dict] = {
         "config": {
             "type": "dict",
             "options": {

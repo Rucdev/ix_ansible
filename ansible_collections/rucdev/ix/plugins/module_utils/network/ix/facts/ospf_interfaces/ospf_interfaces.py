@@ -14,25 +14,25 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common i
 )
 
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.ospf_interfaces.ospf_interfaces import (
-    Ospf_interfacesArgs,
+    OspfInterfacesArgs,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.ospf_interfaces import (
-    Ospf_interfacesTemplate,
+    OspfInterfacesTemplate,
 )
 
 
-class Ospf_interfacesFacts:
+class OspfInterfacesFacts:
     """The ix ospf_interfaces facts class."""
 
     def __init__(self, module) -> None:
         self._module = module
-        self.argument_spec = Ospf_interfacesArgs.argument_spec
+        self.argument_spec = OspfInterfacesArgs.argument_spec
 
     def get_ospf_interfaces_data(self, connection):
         return connection.configure_get("show running-config interface")
 
     def populate_facts(self, connection, ansible_facts, data=None):
-        """Populate the facts for Ospf_interfaces network resource.
+        """Populate the facts for OspfInterfaces network resource.
 
         :param connection: the device connection
         :param ansible_facts: Facts dictionary
@@ -47,8 +47,8 @@ class Ospf_interfacesFacts:
         if not data:
             data = self.get_ospf_interfaces_data(connection)
 
-        # parse native config using the Ospf_interfaces template
-        ospf_interfaces_parser = Ospf_interfacesTemplate(
+        # parse native config using the OspfInterfaces template
+        ospf_interfaces_parser = OspfInterfacesTemplate(
             lines=data.splitlines(),
             module=self._module,
         )

@@ -3,7 +3,7 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-"""The Ospf_interfaces parser templates file. This contains
+"""The OspfInterfaces parser templates file. This contains
 a list of parser definitions and associated functions that
 facilitates both facts gathering and native command generation for
 the given network resource.
@@ -11,12 +11,14 @@ the given network resource.
 
 import re
 
+from typing import ClassVar
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.network_template import (
     NetworkTemplate,
 )
 
 
-class Ospf_interfacesTemplate(NetworkTemplate):
+class OspfInterfacesTemplate(NetworkTemplate):
     def __init__(self, lines=None, module=None) -> None:
         super().__init__(
             lines=lines,
@@ -25,7 +27,7 @@ class Ospf_interfacesTemplate(NetworkTemplate):
         )
 
     # fmt: off
-    PARSERS = [
+    PARSERS: ClassVar[list] = [
         {
             "name": "name",
             "getval": re.compile(

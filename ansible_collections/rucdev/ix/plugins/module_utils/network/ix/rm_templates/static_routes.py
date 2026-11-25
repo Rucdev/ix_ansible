@@ -3,7 +3,7 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-"""The Static_routes parser templates file. This contains
+"""The StaticRoutes parser templates file. This contains
 a list of parser definitions and associated functions that
 facilitates both facts gathering and native command generation for
 the given network resource.
@@ -23,6 +23,8 @@ Re-entering the same route REPLACES its options, and "no ip route <dest>
 """
 
 import re
+
+from typing import ClassVar
 
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.network_template import (
     NetworkTemplate,
@@ -64,7 +66,7 @@ def _tmplt_route_remove(data):
     return _route_head(data)
 
 
-class Static_routesTemplate(NetworkTemplate):
+class StaticRoutesTemplate(NetworkTemplate):
     def __init__(self, lines=None, module=None) -> None:
         super().__init__(
             lines=lines,
@@ -73,7 +75,7 @@ class Static_routesTemplate(NetworkTemplate):
         )
 
     # fmt: off
-    PARSERS = [
+    PARSERS: ClassVar[list] = [
         {
             "name": "ipv4",
             "getval": re.compile(

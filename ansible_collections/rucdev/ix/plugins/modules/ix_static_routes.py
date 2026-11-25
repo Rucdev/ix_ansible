@@ -268,10 +268,10 @@ parsed:
 from ansible.module_utils.basic import AnsibleModule
 
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.static_routes.static_routes import (
-    Static_routesArgs,
+    StaticRoutesArgs,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.config.static_routes.static_routes import (
-    Static_routes,
+    StaticRoutes,
 )
 
 
@@ -281,7 +281,7 @@ def main() -> None:
     :returns: the result form module invocation
     """
     module = AnsibleModule(
-        argument_spec=Static_routesArgs.argument_spec,
+        argument_spec=StaticRoutesArgs.argument_spec,
         mutually_exclusive=[["config", "running_config"]],
         required_if=[
             ["state", "merged", ["config"]],
@@ -293,7 +293,7 @@ def main() -> None:
         supports_check_mode=True,
     )
 
-    result = Static_routes(module).execute_module()
+    result = StaticRoutes(module).execute_module()
     module.exit_json(**result)
 
 

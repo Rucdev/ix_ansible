@@ -42,7 +42,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
 
         self.mock_execute_show_command = patch(
             "ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.ospf_interfaces.ospf_interfaces."
-            "Ospf_interfacesFacts.get_ospf_interfaces_data",
+            "OspfInterfacesFacts.get_ospf_interfaces_data",
         )
         self.execute_show_command = self.mock_execute_show_command.start()
         self.maxDiff = None

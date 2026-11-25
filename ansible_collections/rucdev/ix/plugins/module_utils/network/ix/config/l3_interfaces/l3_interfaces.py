@@ -20,7 +20,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.facts i
     Facts,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.l3_interfaces import (
-    L3_interfacesTemplate,
+    L3InterfacesTemplate,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.utils.utils import (
     validate_ipv4,
@@ -28,7 +28,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.utils.utils i
 )
 
 
-class L3_interfaces(ResourceModule):
+class L3Interfaces(ResourceModule):
     """The ix_l3_interfaces class."""
 
     def __init__(self, module) -> None:
@@ -37,7 +37,7 @@ class L3_interfaces(ResourceModule):
             facts_module=Facts(module),
             module=module,
             resource="l3_interfaces",
-            tmplt=L3_interfacesTemplate(),
+            tmplt=L3InterfacesTemplate(),
         )
         self.parsers = [
             "ipv4.address",
@@ -98,7 +98,8 @@ class L3_interfaces(ResourceModule):
         self._compare_lists(want=want, have=have)
         if len(self.commands) != begin:
             self.commands.insert(
-                begin, self._tmplt.render(want or have, "name", negate=False)
+                begin,
+                self._tmplt.render(want or have, "name", negate=False),
             )
 
     def _compare_lists(self, want, have) -> None:
