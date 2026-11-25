@@ -94,8 +94,9 @@ options:
                 type: int
                 default: 1
               router_id:
-                description: Neighbor router ID
+                description: IP address of the neighbor router (A.B.C.D).
                 type: str
+                required: true
           neighbor_v3:
             description:
               - Register adjacent routers on the NBMA(Non-Broadcast Multiple Access) interface.
@@ -105,8 +106,9 @@ options:
             elements: dict
             suboptions:
               address:
-                description: Neighbor router IP address
+                description: IPv6 address of the neighbor router.
                 type: str
+                required: true
               interval:
                 description: The polling interval when adjacent router is down
                 type: int
@@ -116,11 +118,13 @@ options:
                 type: int
                 default: 1
               process_id:
-                description: Process ID
+                description: OSPFv3 process ID.
                 type: int
+                required: true
               router_id:
-                description: Neighbor router ID
+                description: Router ID of the neighbor router (A.B.C.D).
                 type: str
+                required: true
           interface_type:
             description: Configure type of the interface
             type: str

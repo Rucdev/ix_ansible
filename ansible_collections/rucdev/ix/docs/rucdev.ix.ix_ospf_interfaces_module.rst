@@ -342,12 +342,13 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
-                        <div>Neighbor router ID</div>
+                        <div>IP address of the neighbor router (A.B.C.D).</div>
                 </td>
             </tr>
 
@@ -381,12 +382,13 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
-                        <div>Neighbor router IP address</div>
+                        <div>IPv6 address of the neighbor router.</div>
                 </td>
             </tr>
             <tr>
@@ -437,12 +439,13 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">integer</span>
+                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
-                        <div>Process ID</div>
+                        <div>OSPFv3 process ID.</div>
                 </td>
             </tr>
             <tr>
@@ -455,12 +458,13 @@ Parameters
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">string</span>
+                         / <span style="color: red">required</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
-                        <div>Neighbor router ID</div>
+                        <div>Router ID of the neighbor router (A.B.C.D).</div>
                 </td>
             </tr>
 
