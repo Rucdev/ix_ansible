@@ -137,7 +137,7 @@ class Static_routesFacts(object):
                 self.argument_spec, {"config": objs}, redact=True
             )
         )
-        facts["static_routes"] = params["config"]
+        facts["static_routes"] = params.get("config", [])
         ansible_facts["ansible_network_resources"].update(facts)
 
         return ansible_facts
