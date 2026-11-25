@@ -23,7 +23,7 @@
 from typing import ClassVar
 
 
-class Ospfv3Args:  # pylint: disable=R0903
+class Ospfv3Args:
     """The arg spec for the ix_ospfv3 module."""
 
     argument_spec: ClassVar[dict] = {
@@ -113,4 +113,4 @@ class Ospfv3Args:  # pylint: disable=R0903
             ],
             "default": "merged",
         },
-    }  # pylint: disable=C0301
+    }

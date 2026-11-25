@@ -67,7 +67,6 @@ class Ospfv2Template(NetworkTemplate):
     def __init__(self, lines=None, module=None) -> None:
         super().__init__(lines=lines, tmplt=self, module=module)
 
-    # fmt: off
     PARSERS: ClassVar[list] = [
         {
             "name": "pid",
@@ -75,7 +74,9 @@ class Ospfv2Template(NetworkTemplate):
                 r"""
                 ^ip\srouter\sospf
                 (\s(?P<pid>\d+))
-                $""", re.VERBOSE),
+                $""",
+                re.VERBOSE,
+            ),
             "setval": "ip router ospf {{ process_id }}",
             "result": {
                 "processes": {
@@ -90,7 +91,9 @@ class Ospfv2Template(NetworkTemplate):
                 r"""
                 \s+area
                 (\s(?P<area_id>\S+))
-                $""", re.VERBOSE),
+                $""",
+                re.VERBOSE,
+            ),
             "setval": "area {{ area_id }}",
             "result": {
                 "processes": {
@@ -111,7 +114,9 @@ class Ospfv2Template(NetworkTemplate):
                 \s+area\s(?P<area_id>\S+)
                 \sdefault-cost
                 (\s(?P<default_cost>\S+))?
-                $""", re.VERBOSE),
+                $""",
+                re.VERBOSE,
+            ),
             "setval": "area {{ area_id }} default-cost {{ default_cost }}",
             "result": {
                 "processes": {
@@ -289,7 +294,9 @@ class Ospfv2Template(NetworkTemplate):
             "getval": re.compile(
                 r"""
                 \s+default-metric\s(?P<metric>\S+)
-                $""", re.VERBOSE),
+                $""",
+                re.VERBOSE,
+            ),
             "setval": "default-metric {{ default_metric }}",
             "result": {
                 "processes": {
@@ -308,7 +315,9 @@ class Ospfv2Template(NetworkTemplate):
                 (\sinter-area\s(?P<inter_area>\S+))?
                 (\sintra-area\s(?P<intra_area>\S+))?
                 (\snssa-external\s(?P<nssa_external>\S+))?
-                $""", re.VERBOSE),
+                $""",
+                re.VERBOSE,
+            ),
             "setval": "distance"
             "{{ ' external ' + distance.external|string if distance.external is defined }}"
             "{{ ' inter-area ' + distance.inter_area|string if distance.inter_area is defined }}"
@@ -511,4 +520,3 @@ class Ospfv2Template(NetworkTemplate):
             },
         },
     ]
-    # fmt: on

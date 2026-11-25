@@ -7,7 +7,7 @@
 from typing import ClassVar
 
 
-class FactsArgs:  # pylint: disable=R0903
+class FactsArgs:
     """The arg spec for the ix facts module."""
 
     def __init__(self, **kwargs) -> None:

@@ -22,18 +22,18 @@ class HostnameTemplate(NetworkTemplate):
     def __init__(self, lines=None, module=None) -> None:
         super().__init__(lines=lines, tmplt=self, module=module)
 
-    # fmt: off
     PARSERS: ClassVar[list] = [
         {
             "name": "hostname",
             "getval": re.compile(
                 r"""
                 ^hostname\s(?P<hostname>\S+)
-                \s*$""", re.VERBOSE),
+                \s*$""",
+                re.VERBOSE,
+            ),
             "setval": "hostname {{ hostname }}",
             "result": {
                 "hostname": "{{ hostname }}",
             },
         },
     ]
-    # fmt: on

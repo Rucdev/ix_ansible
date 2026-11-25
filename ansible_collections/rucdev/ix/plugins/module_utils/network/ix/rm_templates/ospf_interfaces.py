@@ -26,14 +26,15 @@ class OspfInterfacesTemplate(NetworkTemplate):
             module=module,
         )
 
-    # fmt: off
     PARSERS: ClassVar[list] = [
         {
             "name": "name",
             "getval": re.compile(
                 r"""
                 ^interface\s(?P<name>\S+)
-                $""", re.VERBOSE),
+                $""",
+                re.VERBOSE,
+            ),
             "setval": "interface {{ name }}",
             "result": {
                 "{{ name }}": {
@@ -49,7 +50,9 @@ class OspfInterfacesTemplate(NetworkTemplate):
                 r"""
                 \s+ip\sospf\sauthentication
                 (\s(?P<message_digest>message-digest))?
-                $""", re.VERBOSE),
+                $""",
+                re.VERBOSE,
+            ),
             "setval": "ip ospf authentication"
             "{{ ' message-digest' if authentication_type == 'message-digest' else '' }}",
             "result": {
@@ -69,7 +72,9 @@ class OspfInterfacesTemplate(NetworkTemplate):
                 r"""
                 \s+ip\sospf\sauthentication-key
                 \s(?P<authentication_key>\S+)
-                $""", re.VERBOSE),
+                $""",
+                re.VERBOSE,
+            ),
             "setval": "ip ospf authentication-key {{ authentication_key }}",
             "result": {
                 "{{ name }}": {
@@ -341,4 +346,3 @@ class OspfInterfacesTemplate(NetworkTemplate):
             },
         },
     ]
-    # fmt: on

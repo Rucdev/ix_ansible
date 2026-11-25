@@ -23,7 +23,7 @@
 from typing import ClassVar
 
 
-class StaticRoutesArgs:  # pylint: disable=R0903
+class StaticRoutesArgs:
     """The arg spec for the ix_static_routes module."""
 
     argument_spec: ClassVar[dict] = {
@@ -80,4 +80,4 @@ class StaticRoutesArgs:  # pylint: disable=R0903
             "default": "merged",
             "type": "str",
         },
-    }  # pylint: disable=C0301
+    }

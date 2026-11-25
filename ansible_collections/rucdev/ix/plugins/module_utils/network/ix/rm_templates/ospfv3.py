@@ -41,14 +41,15 @@ class Ospfv3Template(NetworkTemplate):
     def __init__(self, lines=None, module=None) -> None:
         super().__init__(lines=lines, tmplt=self, module=module)
 
-    # fmt: off
     PARSERS: ClassVar[list] = [
         {
             "name": "pid",
             "getval": re.compile(
                 r"""
                 ^ipv6\srouter\sospf\s(?P<pid>\d+)
-                $""", re.VERBOSE),
+                $""",
+                re.VERBOSE,
+            ),
             "setval": "ipv6 router ospf {{ process_id }}",
             "result": {
                 "processes": {
@@ -63,7 +64,9 @@ class Ospfv3Template(NetworkTemplate):
                 r"""
                 \s+area
                 (\s(?P<area_id>\S+))
-                $""", re.VERBOSE),
+                $""",
+                re.VERBOSE,
+            ),
             "setval": "area {{ area_id }}",
             "result": {
                 "processes": {
@@ -84,7 +87,9 @@ class Ospfv3Template(NetworkTemplate):
                 \s+area\s(?P<area_id>\S+)
                 \sdefault-cost
                 (\s(?P<default_cost>\S+))?
-                $""", re.VERBOSE),
+                $""",
+                re.VERBOSE,
+            ),
             "setval": "area {{ area_id }} default-cost {{ default_cost }}",
             "result": {
                 "processes": {
@@ -167,7 +172,9 @@ class Ospfv3Template(NetworkTemplate):
                 (\sexternal\s(?P<external>\S+))?
                 (\sinter-area\s(?P<inter_area>\S+))?
                 (\sintra-area\s(?P<intra_area>\S+))?
-                $""", re.VERBOSE),
+                $""",
+                re.VERBOSE,
+            ),
             "setval": "distance"
             "{{ ' external ' + distance.external|string if distance.external is defined }}"
             "{{ ' inter-area ' + distance.inter_area|string if distance.inter_area is defined }}"
@@ -297,4 +304,3 @@ class Ospfv3Template(NetworkTemplate):
             },
         },
     ]
-    # fmt: on

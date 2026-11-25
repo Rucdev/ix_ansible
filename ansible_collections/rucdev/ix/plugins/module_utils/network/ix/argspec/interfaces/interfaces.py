@@ -26,7 +26,7 @@
 from typing import ClassVar
 
 
-class InterfacesArgs:  # pylint: disable=R0903
+class InterfacesArgs:
     """The arg spec for the ix_interfaces module."""
 
     def __init__(self, **kwargs) -> None:
@@ -57,4 +57,4 @@ class InterfacesArgs:  # pylint: disable=R0903
             "default": "merged",
             "type": "str",
         },
-    }  # pylint: disable=C0301
+    }

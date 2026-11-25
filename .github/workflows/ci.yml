@@ -25,6 +25,31 @@ jobs:
       - name: "ruff"
         run: "uvx ruff@0.17.6 check --ignore-noqa ."
 
+      # Exceptions belong in the configuration files with a reason, so the code
+      # must not carry inline suppression comments for any tool.
+      - name: "No inline suppression comments"
+        run: |
+          # Case is ignored, as pycodestyle does for noqa and nopep8. Separators are
+          # [^[:alnum:]], not [[:space:]]: yamllint matches Python's \s and black turns
+          # a leading no-break space into a space, so both accept one.
+          s='[^[:alnum:]]'
+          pattern="#${s}*(noqa|nopep8|type:${s}*ignore|yamllint${s}+disable|zizmor:${s}*ignore|nosec)"
+          # A shellcheck directive can hold several key=value pairs, ruff reads an
+          # isort action anywhere in a comment, and pylint reads every keyword after
+          # its prefix. "[e]" keeps this line from matching itself.
+          pattern="${pattern}|#${s}*shellcheck${s}.*disable"
+          pattern="${pattern}|#.*isort:${s}*(skip|off|split)"
+          pattern="${pattern}|#.*pylint:.*(disabl[e]|skip-fil[e])"
+          # black also reads a directive that follows a ";" in a comment.
+          pattern="${pattern}|[#;]${s}*(fmt:${s}*(off|on|skip)|yapf:${s}*disable)"
+          # git grep exits 1 when nothing matches, 0 on a match and 128 on an
+          # error such as an invalid pattern; only "nothing matches" passes.
+          status=0
+          git grep -niE "${pattern}" || status=$?
+          if [ "${status}" -ne 1 ]; then
+            exit 1
+          fi
+
       - name: "yamllint"
         run: "uvx yamllint@1.38.0 --strict ."
 

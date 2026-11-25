@@ -74,7 +74,6 @@ class StaticRoutesTemplate(NetworkTemplate):
             module=module,
         )
 
-    # fmt: off
     PARSERS: ClassVar[list] = [
         {
             "name": "ipv4",
@@ -84,13 +83,16 @@ class StaticRoutesTemplate(NetworkTemplate):
                 (\svrf\s(?P<vrf>\S+))?
                 \s(?P<dest>\S+)
                 (\s(?P<forward_router_address>\d+\.\d+\.\d+\.\d+))?
-                (\s(?P<interface>""" + INTERFACE_RE + r"""))?
+                (\s(?P<interface>"""
+                + INTERFACE_RE
+                + r"""))?
                 (\s(?P<connected>connected))?
                 (\s(?P<dhcp>dhcp))?
                 (\sdistance\s(?P<distance>\d+))?
                 (\smetric\s(?P<metric>\d+))?
                 (\stag\s(?P<tag>\d+))?
-                \s*$""", re.VERBOSE,
+                \s*$""",
+                re.VERBOSE,
             ),
             "setval": _tmplt_route,
             "remval": _tmplt_route_remove,
@@ -118,13 +120,16 @@ class StaticRoutesTemplate(NetworkTemplate):
                 ^ipv6\sroute
                 \s(?P<dest>\S+)
                 (\s(?P<forward_router_address>[0-9A-Fa-f]*:[0-9A-Fa-f:.]*(%\S+)?))?
-                (\s(?P<interface>""" + INTERFACE_RE + r"""))?
+                (\s(?P<interface>"""
+                + INTERFACE_RE
+                + r"""))?
                 (\s(?P<dhcp>dhcp))?
                 (\s(?P<ra>ra))?
                 (\sdistance\s(?P<distance>\d+))?
                 (\smetric\s(?P<metric>\d+))?
                 (\stag\s(?P<tag>\d+))?
-                \s*$""", re.VERBOSE,
+                \s*$""",
+                re.VERBOSE,
             ),
             "setval": _tmplt_route,
             "remval": _tmplt_route_remove,
@@ -146,4 +151,3 @@ class StaticRoutesTemplate(NetworkTemplate):
             },
         },
     ]
-    # fmt: on

@@ -26,7 +26,7 @@
 from typing import ClassVar
 
 
-class L3InterfacesArgs:  # pylint: disable=R0903
+class L3InterfacesArgs:
     """The arg spec for the ix_l3_interfaces module."""
 
     def __init__(self, **kwargs) -> None:
@@ -83,4 +83,4 @@ class L3InterfacesArgs:  # pylint: disable=R0903
             "default": "merged",
             "type": "str",
         },
-    }  # pylint: disable=C0301
+    }

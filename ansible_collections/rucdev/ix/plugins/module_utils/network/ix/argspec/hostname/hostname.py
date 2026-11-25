@@ -8,7 +8,7 @@
 from typing import ClassVar
 
 
-class HostnameArgs:  # pylint: disable=R0903
+class HostnameArgs:
     """The arg spec for the ix_hostname module."""
 
     argument_spec: ClassVar[dict] = {
@@ -32,4 +32,4 @@ class HostnameArgs:  # pylint: disable=R0903
             ],
             "default": "merged",
         },
-    }  # pylint: disable=C0301
+    }
