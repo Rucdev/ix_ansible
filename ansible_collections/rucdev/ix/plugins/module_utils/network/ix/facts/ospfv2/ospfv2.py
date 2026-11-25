@@ -1,32 +1,27 @@
-# -*- coding: utf-8 -*-
 # Copyright 2024 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
-
-"""
-The ix ospfv2 fact class
+"""The ix ospfv2 fact class
 It is in this file the configuration is collected from the device
 for a given resource, parsed, and the facts tree is populated
 based on the configuration.
 """
 
-
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common import (
     utils,
+)
+
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.ospfv2.ospfv2 import (
+    Ospfv2Args,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.ospfv2 import (
     Ospfv2Template,
 )
-from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.ospfv2.ospfv2 import (
-    Ospfv2Args,
-)
 
 
-class Ospfv2Facts(object):
+class Ospfv2Facts:
     """The ix ospfv2 facts class"""
 
     def __init__(self, module, subspec="config", options="options"):
@@ -42,7 +37,6 @@ class Ospfv2Facts(object):
         :rtype: dictionary
         :returns: facts_output
         """
-
         facts_output = {"processes": []}
 
         for process in ospf_data.get("processes", []):
@@ -88,7 +82,8 @@ class Ospfv2Facts(object):
 
         # parse native config using the Ospfv2 template
         ospfv2_parser = Ospfv2Template(
-            lines=self.preprocess_lines(data.splitlines()), module=self._module
+            lines=self.preprocess_lines(data.splitlines()),
+            module=self._module,
         )
         ospfv2_parsed = ospfv2_parser.parse()
 
@@ -104,8 +99,10 @@ class Ospfv2Facts(object):
 
         params = utils.remove_empties(
             ospfv2_parser.validate_config(
-                self.argument_spec, {"config": facts_output}, redact=True
-            )
+                self.argument_spec,
+                {"config": facts_output},
+                redact=True,
+            ),
         )
 
         facts["ospfv2"] = params.get("config")

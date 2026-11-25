@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 #
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
 
 DOCUMENTATION = """
 module: ix_config
@@ -228,10 +226,11 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.c
     NetworkConfig,
     dumps,
 )
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.ix import (
-    run_commands,
     get_config,
     get_connection,
+    run_commands,
 )
 
 
@@ -263,14 +262,12 @@ def save_config(module: AnsibleModule, result):
         run_commands(module, "copy running-config startup-config\r", configure=True)
     else:
         module.warn(
-            "Skipping command `copy running-config start-config` due to check_mode. Configuration not copied to non-volatile storage"
+            "Skipping command `copy running-config start-config` due to check_mode. Configuration not copied to non-volatile storage",
         )
 
 
 def main():
-    """
-    main entry point for module execution
-    """
+    """Main entry point for module execution"""
     backup_spec = dict(filename=dict(), dir_path=dict(type="path"))
     argument_spec = dict(
         src=dict(type="str"),
@@ -286,7 +283,8 @@ def main():
         backup=dict(type="bool", default=False),
         backup_options=dict(type="dict", options=backup_spec),
         save_when=dict(
-            choices=["always", "never", "modified", "changed"], default="never"
+            choices=["always", "never", "modified", "changed"],
+            default="never",
         ),
         diff_against=dict(choices=["startup", "intended", "running"]),
         diff_ignore_lines=dict(type="list", elements="str"),
@@ -316,10 +314,8 @@ def main():
     config = None
     contents = None
     connection = get_connection(module)
-    if (
-        module.params["backup"]
-        or module._diff
-        and module.params["diff_against"] == "running"
+    if module.params["backup"] or (
+        module._diff and module.params["diff_against"] == "running"
     ):
         contents = get_config(module, flags)
         config = NetworkConfig(indent=1, contents=contents)
@@ -367,13 +363,19 @@ def main():
         save_config(module, result)
     elif module.params["save_when"] == "modified":
         output = run_commands(
-            module, ["show running-config", "show startup-config"], configure=True
+            module,
+            ["show running-config", "show startup-config"],
+            configure=True,
         )
         running_config = NetworkConfig(
-            indent=1, contents=output[0], ignore_lines=diff_ignore_lines
+            indent=1,
+            contents=output[0],
+            ignore_lines=diff_ignore_lines,
         )
         startup_config = NetworkConfig(
-            indent=1, contents=output[1], ignore_lines=diff_ignore_lines
+            indent=1,
+            contents=output[1],
+            ignore_lines=diff_ignore_lines,
         )
         if running_config.sha1 != startup_config.sha1:
             save_config(module, result)
@@ -389,12 +391,14 @@ def main():
             contents = running_config
 
         running_config = NetworkConfig(
-            indent=1, contents=contents, ignore_lines=diff_ignore_lines
+            indent=1,
+            contents=contents,
+            ignore_lines=diff_ignore_lines,
         )
         if module.params["diff_against"] == "running":
             if module.check_mode:
                 module.warn(
-                    "unable to perform diff against running-config due to check mode"
+                    "unable to perform diff against running-config due to check mode",
                 )
                 contents = None
             else:
@@ -410,7 +414,9 @@ def main():
 
         if contents is not None:
             base_config = NetworkConfig(
-                indent=1, contents=contents, ignore_lines=diff_ignore_lines
+                indent=1,
+                contents=contents,
+                ignore_lines=diff_ignore_lines,
             )
 
             if running_config.sha1 != base_config.sha1:
@@ -422,7 +428,7 @@ def main():
                     after = running_config
 
                 result.update(
-                    dict(changed=True, diff=dict(before=str(before), after=str(after)))
+                    dict(changed=True, diff=dict(before=str(before), after=str(after))),
                 )
 
     module.exit_json(**result)

@@ -1,16 +1,11 @@
 #
-# -*- coding: utf-8 -*-
 # Copyright 2024 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
-
-"""
-The ix_static_routes config file.
+"""The ix_static_routes config file.
 It is in this file where the current configuration (as dict)
 is compared to the provided configuration (as dict) and the command set
 necessary to bring the current configuration to its desired end-state is
@@ -29,6 +24,7 @@ Device behaviour this relies on (verified on IX2215 10.10.29):
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module import (
     ResourceModule,
 )
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.facts import (
     Facts,
 )
@@ -56,12 +52,10 @@ DEFAULT_OPTIONS = {"distance": 1, "metric": 1}
 
 
 class Static_routes(ResourceModule):
-    """
-    The ix_static_routes config class
-    """
+    """The ix_static_routes config class"""
 
     def __init__(self, module):
-        super(Static_routes, self).__init__(
+        super().__init__(
             empty_fact_val=[],
             facts_module=Facts(module),
             module=module,
@@ -131,8 +125,9 @@ class Static_routes(ResourceModule):
             self.addcmd(have, have["afi"], negate=True)
 
     def _matches_delete_filter(self, have):
-        """deleted with config: a vrf / afi / dest without next_hops selects
-        every route below it; a next_hop selects that route only."""
+        """Deleted with config: a vrf / afi / dest without next_hops selects
+        every route below it; a next_hop selects that route only.
+        """
         for entry in self.want:
             if (entry.get("vrf") or None) != have.get("vrf"):
                 continue
@@ -152,7 +147,10 @@ class Static_routes(ResourceModule):
                         return True
                     for nh in route["next_hops"]:
                         wanted = self._route(
-                            entry.get("vrf"), af["afi"], route["dest"], nh
+                            entry.get("vrf"),
+                            af["afi"],
+                            route["dest"],
+                            nh,
                         )
                         if self._key(wanted) == self._key(have):
                             return True
@@ -202,7 +200,8 @@ class Static_routes(ResourceModule):
 
     def _flatten(self, config, validate=False):
         """[{vrf, address_families: [{afi, routes: [{dest, next_hops}]}]}]
-        -> {identity key: flat route dict}"""
+        -> {identity key: flat route dict}
+        """
         routes = {}
         for entry in config or []:
             vrf = entry.get("vrf")
@@ -222,7 +221,7 @@ class Static_routes(ResourceModule):
         if not route.get("forward_router_address") and not route.get("interface"):
             self._module.fail_json(
                 msg="%s: next_hops needs forward_router_address and/or interface"
-                % where
+                % where,
             )
         if afi == "ipv4" and route.get("ra"):
             self._module.fail_json(msg="%s: ra is only valid for ipv6" % where)

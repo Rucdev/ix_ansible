@@ -26,23 +26,25 @@ version_added: 0.1.0
 """
 
 
-import re
 import json
+import re
+
 from functools import wraps
-from ansible.module_utils._text import to_text
-from ansible_collections.ansible.netcommon.plugins.plugin_utils.cliconf_base import (
-    CliconfBase,
-)
-from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
-    to_list,
-)
-from ansible.module_utils.common._collections_compat import Mapping
+
 from ansible.errors import AnsibleConnectionFailure
+from ansible.module_utils._text import to_text
+from ansible.module_utils.common._collections_compat import Mapping
+from ansible.utils.display import Display
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.config import (
     NetworkConfig,
     dumps,
 )
-from ansible.utils.display import Display
+from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
+    to_list,
+)
+from ansible_collections.ansible.netcommon.plugins.plugin_utils.cliconf_base import (
+    CliconfBase,
+)
 
 display = Display()
 
@@ -70,7 +72,7 @@ class Cliconf(CliconfBase):
     def __init__(self, *args, **kwargs):
         self._device_info = {}
         display.vvvvv("cliconf init")
-        super(Cliconf, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _current_prompt(self):
         prompt = self._connection.get_prompt()
@@ -97,7 +99,8 @@ class Cliconf(CliconfBase):
             return
         if CONFIG_PROMPT_RE.search(self._current_prompt()):
             self._connection.queue_message(
-                "vvvv", "config mode at task start, returning to exec mode"
+                "vvvv",
+                "config mode at task start, returning to exec mode",
             )
             self.send_command("configure")
             self.send_command("exit")
@@ -107,7 +110,7 @@ class Cliconf(CliconfBase):
         if source not in ("running", "startup"):
             raise ValueError(
                 # running, startup以外はエラーとする
-                f"fetching configuration for {source} is not supported"
+                f"fetching configuration for {source} is not supported",
             )
 
         if format:
@@ -140,12 +143,12 @@ class Cliconf(CliconfBase):
 
         if diff_match not in option_values["diff_match"]:
             raise ValueError(
-                f"'match' value {diff_match} in invalid, valid values are {', '.join(option_values['diff_match'])}"
+                f"'match' value {diff_match} in invalid, valid values are {', '.join(option_values['diff_match'])}",
             )
 
         if diff_replace not in option_values["diff_replace"]:
             raise ValueError(
-                f"'replace' value {diff_replace} in invalid, valid values are {', '.join(option_values['diff_replace'])}"
+                f"'replace' value {diff_replace} in invalid, valid values are {', '.join(option_values['diff_replace'])}",
             )
 
         candidate_obj = NetworkConfig(indent=1)
@@ -156,10 +159,15 @@ class Cliconf(CliconfBase):
         if running and diff_match != "none":
             # have_src, have_banners = self._extract_banners(running)
             running_obj = NetworkConfig(
-                indent=1, contents=running, ignore_lines=diff_ignore_lines
+                indent=1,
+                contents=running,
+                ignore_lines=diff_ignore_lines,
             )
             configdiffobjs = candidate_obj.difference(
-                running_obj, path=path, match=diff_match, replace=diff_replace
+                running_obj,
+                path=path,
+                match=diff_match,
+                replace=diff_replace,
             )
         else:
             configdiffobjs = candidate_obj.items
@@ -182,12 +190,12 @@ class Cliconf(CliconfBase):
             data = to_text(reply, errors="surrogate_or_strict")
             version_pattern = r"IX Series (\S+).*Software, Version (\S+),"
 
-            match = re.search(version_pattern, data, re.M)
+            match = re.search(version_pattern, data, re.MULTILINE)
             if match:
                 device_info["network_os_model"] = match.group(1)
                 device_info["network_os_version"] = match.group(2)
 
-            match = re.search(r"System image file is \"(\S*)\"", data, re.M)
+            match = re.search(r"System image file is \"(\S*)\"", data, re.MULTILINE)
             if match:
                 device_info["network_os_image"] = match.group(1)
 
@@ -196,7 +204,7 @@ class Cliconf(CliconfBase):
             self.send_command("terminal length 0")
             reply = self.get(command="show running-config")
             data = to_text(reply, errors="surrogate_or_strict")
-            match = re.search(r"hostname (.+)", data, re.M)
+            match = re.search(r"hostname (.+)", data, re.MULTILINE)
             if match:
                 device_info["network_os_hostname"] = match.group(1)
 
@@ -255,7 +263,7 @@ class Cliconf(CliconfBase):
         )
 
     def get_capabilities(self) -> str:
-        result = super(Cliconf, self).get_capabilities()
+        result = super().get_capabilities()
         result["rpc"] += ["get_diff", "run_commands"]
         result["device_operations"] = self.get_device_operations()
         result.update(self.get_option_values())
@@ -294,7 +302,7 @@ class Cliconf(CliconfBase):
             output = cmd.pop("output", None)
             if output:
                 raise ValueError(
-                    f"'output' value {output} is not supported for run_commands"
+                    f"'output' value {output} is not supported for run_commands",
                 )
 
             if CONFIG_ONLY_COMMANDS_RE.match(to_text(cmd["command"])):
@@ -317,12 +325,21 @@ class Cliconf(CliconfBase):
 
     @configure_mode
     def edit_config(
-        self, candidate=None, commit=True, replace=None, diff=False, comment=None
+        self,
+        candidate=None,
+        commit=True,
+        replace=None,
+        diff=False,
+        comment=None,
     ):
         resp = {}
         operations = self.get_device_operations()
         self.check_edit_config_capability(
-            operations, candidate, commit, replace, comment
+            operations,
+            candidate,
+            commit,
+            replace,
+            comment,
         )
 
         results = []
@@ -359,5 +376,4 @@ class Cliconf(CliconfBase):
                 commands.add(line.strip().split()[0])
         if "all" in commands:
             return "all"
-        else:
-            return "full"
+        return "full"

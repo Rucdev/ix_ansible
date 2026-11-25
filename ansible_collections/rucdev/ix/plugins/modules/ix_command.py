@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 #
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
 
 DOCUMENTATION = """
 module: ix_command
@@ -108,12 +106,13 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.parsing import (
     Conditional,
 )
+from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
+    to_lines,
+    transform_commands,
+)
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.ix import (
     run_commands,
-)
-from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
-    transform_commands,
-    to_lines,
 )
 
 
@@ -124,7 +123,7 @@ def parse_commands(module: AnsibleModule, warnings: list):
         for item in list(commands):
             if not item["command"].startswith("show"):
                 warnings.append(
-                    f"Only show commands are supported when using check mode, not executing {item['command']}"
+                    f"Only show commands are supported when using check mode, not executing {item['command']}",
                 )
                 commands.remove(item)
     return commands

@@ -1,14 +1,9 @@
-# -*- coding: utf-8 -*-
 # Copyright 2022 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
-
-"""
-The Interfaces parser templates file. This contains
+"""The Interfaces parser templates file. This contains
 a list of parser definitions and associated functions that
 facilitates both facts gathering and native command generation for
 the given network resource.
@@ -23,8 +18,10 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.r
 
 class Device_interfacesTemplate(NetworkTemplate):
     def __init__(self, lines=None, tmplt=None, prefix=None, module=None):
-        super(Device_interfacesTemplate, self).__init__(
-            lines, tmplt=self, module=module
+        super().__init__(
+            lines,
+            tmplt=self,
+            module=module,
         )
 
     PARSERS = [
@@ -71,7 +68,7 @@ class Device_interfacesTemplate(NetworkTemplate):
                         {
                             "down_notification_time": "{{ down_notification_time }}",
                             "down_notification_count": "{{ down_notification_count }}",
-                        }
+                        },
                     ],
                 },
             },
@@ -101,7 +98,7 @@ class Device_interfacesTemplate(NetworkTemplate):
             "result": {
                 "{{ name }}": {
                     "output_buffer": "{{ output_buffer }}",
-                }
+                },
             },
         },
         {
@@ -149,7 +146,7 @@ class Device_interfacesTemplate(NetworkTemplate):
                     "sflow": {
                         "sampling_rate": {
                             "in": "{{ sampling_rate_in }}",
-                        }
+                        },
                     },
                 },
             },
@@ -167,7 +164,7 @@ class Device_interfacesTemplate(NetworkTemplate):
                     "sflow": {
                         "sampling_rate": {
                             "out": "{{ sampling_rate_out }}",
-                        }
+                        },
                     },
                 },
             },

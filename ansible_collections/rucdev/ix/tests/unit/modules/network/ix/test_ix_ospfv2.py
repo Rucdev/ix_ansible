@@ -1,12 +1,8 @@
 #
-# -*- coding: utf-8 -*-
 # Copyright 2025 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
 
 from textwrap import dedent
 from unittest.mock import patch
@@ -21,11 +17,11 @@ class TestIxOspfv2Module(TestIxModule):
     module = ix_ospfv2
 
     def setUp(self):
-        super(TestIxOspfv2Module, self).setUp()
+        super().setUp()
 
         self.mock_get_resource_connection_facts = patch(
             "ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module_base."
-            "get_resource_connection"
+            "get_resource_connection",
         )
         self.get_resource_connection_facts = (
             self.mock_get_resource_connection_facts.start()
@@ -33,13 +29,13 @@ class TestIxOspfv2Module(TestIxModule):
 
         self.mock_execute_show_command = patch(
             "ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.ospfv2.ospfv2."
-            "Ospfv2Facts.get_ospfv2_data"
+            "Ospfv2Facts.get_ospfv2_data",
         )
         self.execute_show_command = self.mock_execute_show_command.start()
         self.maxDiff = 10000
 
     def tearDown(self):
-        super(TestIxOspfv2Module, self).tearDown()
+        super().tearDown()
         self.mock_get_resource_connection_facts.stop()
         self.mock_execute_show_command.stop()
 
@@ -85,11 +81,11 @@ class TestIxOspfv2Module(TestIxModule):
                                 ),
                             ],
                             passive_interfaces=["GigaEthernet0.0", "GigaEthernet0.1"],
-                        )
-                    ]
+                        ),
+                    ],
                 ),
                 state="merged",
-            )
+            ),
         )
         commands = [
             "ip router ospf 200",
@@ -138,11 +134,11 @@ class TestIxOspfv2Module(TestIxModule):
                                 ),
                             ],
                             passive_interfaces=["GigaEthernet0.0"],
-                        )
-                    ]
+                        ),
+                    ],
                 ),
                 state="merged",
-            )
+            ),
         )
         self.execute_module(changed=False, commands=[])
 
@@ -177,11 +173,11 @@ class TestIxOspfv2Module(TestIxModule):
                                     default_cost=20,
                                 ),
                             ],
-                        )
-                    ]
+                        ),
+                    ],
                 ),
                 state="replaced",
-            )
+            ),
         )
         commands = [
             "ip router ospf 200",
@@ -254,11 +250,11 @@ class TestIxOspfv2Module(TestIxModule):
                                 metric_type=1,
                                 route_map="default_map",
                             ),
-                        )
-                    ]
+                        ),
+                    ],
                 ),
                 state="overridden",
-            )
+            ),
         )
         commands = [
             "no ip router ospf 200",
@@ -291,7 +287,7 @@ class TestIxOspfv2Module(TestIxModule):
             dict(
                 config=dict(processes=[dict(process_id=200)]),
                 state="deleted",
-            )
+            ),
         )
         commands = ["no ip router ospf 200"]
         self.execute_module(changed=True, commands=commands)
@@ -310,7 +306,7 @@ class TestIxOspfv2Module(TestIxModule):
             dict(
                 running_config="ip router ospf 1\n area 5 nssa no-summary stability-interval 10 translate default-metric 20 default-metric-type 1\n",
                 state="parsed",
-            )
+            ),
         )
         result = self.execute_module(changed=False)
         parsed_list = {
@@ -327,10 +323,10 @@ class TestIxOspfv2Module(TestIxModule):
                                 "default_metric": 20,
                                 "default_metric_type": 1,
                             },
-                        }
+                        },
                     ],
-                }
-            ]
+                },
+            ],
         }
         self.assertEqual(parsed_list, result["parsed"])
 
@@ -426,11 +422,11 @@ class TestIxOspfv2Module(TestIxModule):
                                     ),
                                 ),
                             ],
-                        )
-                    ]
+                        ),
+                    ],
                 ),
                 state="rendered",
-            )
+            ),
         )
         commands = [
             "ip router ospf 100",
@@ -500,11 +496,11 @@ class TestIxOspfv2Module(TestIxModule):
                         dict(
                             process_id=1,
                             nssa_ranges=[dict(range="10.0.0.0/8", tag="200")],
-                        )
-                    ]
+                        ),
+                    ],
                 ),
                 state="merged",
-            )
+            ),
         )
         self.execute_module(
             changed=True,
@@ -524,11 +520,11 @@ class TestIxOspfv2Module(TestIxModule):
                                 dict(range="192.168.2.0/24", not_advertise=True),
                             ],
                             areas=[dict(area_id="1")],
-                        )
-                    ]
+                        ),
+                    ],
                 ),
                 state="merged",
-            )
+            ),
         )
         self.execute_module(changed=False, commands=[])
 
@@ -542,11 +538,11 @@ class TestIxOspfv2Module(TestIxModule):
                             process_id=1,
                             nssa_ranges=[dict(range="192.168.1.0/24", tag="300")],
                             areas=[dict(area_id="1")],
-                        )
-                    ]
+                        ),
+                    ],
                 ),
                 state="replaced",
-            )
+            ),
         )
         # IX rejects re-registering an existing prefix, so the old entry
         # must be removed before the new one is added (order is checked).
@@ -570,11 +566,11 @@ class TestIxOspfv2Module(TestIxModule):
                         dict(
                             process_id=1,
                             nssa_ranges=[dict(range="192.168.1.0/24", tag="300")],
-                        )
-                    ]
+                        ),
+                    ],
                 ),
                 state="merged",
-            )
+            ),
         )
         self.execute_module(
             changed=True,

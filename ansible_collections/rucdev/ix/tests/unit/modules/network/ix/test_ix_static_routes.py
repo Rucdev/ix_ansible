@@ -1,12 +1,8 @@
 #
-# -*- coding: utf-8 -*-
 # Copyright 2026 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
 
 from textwrap import dedent
 from unittest.mock import patch
@@ -76,13 +72,13 @@ PARSED = [
                                 "forward_router_address": "192.168.37.26",
                                 "interface": "GigaEthernet0.0",
                                 "distance": 5,
-                            }
+                            },
                         ],
                     },
                     {
                         "dest": "203.0.113.0/24",
                         "next_hops": [
-                            {"interface": "GigaEthernet2.0", "dhcp": True, "metric": 3}
+                            {"interface": "GigaEthernet2.0", "dhcp": True, "metric": 3},
                         ],
                     },
                     {
@@ -94,7 +90,7 @@ PARSED = [
                                 "distance": 10,
                                 "metric": 5,
                                 "tag": 7,
-                            }
+                            },
                         ],
                     },
                 ],
@@ -105,13 +101,13 @@ PARSED = [
                     {
                         "dest": "2001:db8::/32",
                         "next_hops": [
-                            {"interface": "GigaEthernet2.0", "dhcp": True, "tag": 4}
+                            {"interface": "GigaEthernet2.0", "dhcp": True, "tag": 4},
                         ],
                     },
                     {
                         "dest": "2001:db8:1::/48",
                         "next_hops": [
-                            {"interface": "GigaEthernet2.0", "ra": True, "distance": 9}
+                            {"interface": "GigaEthernet2.0", "ra": True, "distance": 9},
                         ],
                     },
                     {
@@ -120,12 +116,12 @@ PARSED = [
                             {
                                 "forward_router_address": "fe80::1%GigaEthernet0.0",
                                 "metric": 2,
-                            }
+                            },
                         ],
                     },
                 ],
             },
-        ]
+        ],
     },
     {
         "vrf": "blue",
@@ -133,23 +129,26 @@ PARSED = [
             {
                 "afi": "ipv4",
                 "routes": [
-                    {"dest": "198.51.100.0/24", "next_hops": [{"interface": "Null0.0"}]}
+                    {
+                        "dest": "198.51.100.0/24",
+                        "next_hops": [{"interface": "Null0.0"}],
+                    },
                 ],
-            }
+            },
         ],
     },
 ]
 
 
 def v4(*routes, **kw):
-    """config helper: v4(("dest", [next_hops...]), ..., vrf=None)"""
+    """Config helper: v4(("dest", [next_hops...]), ..., vrf=None)"""
     entry = {
         "address_families": [
             {
                 "afi": "ipv4",
                 "routes": [{"dest": d, "next_hops": nh} for d, nh in routes],
-            }
-        ]
+            },
+        ],
     }
     if kw.get("vrf"):
         entry["vrf"] = kw["vrf"]
@@ -160,22 +159,22 @@ class TestIxStaticRoutesModule(TestIxModule):
     module = ix_static_routes
 
     def setUp(self):
-        super(TestIxStaticRoutesModule, self).setUp()
+        super().setUp()
         self.mock_get_resource_connection = patch(
             "ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module_base."
-            "get_resource_connection"
+            "get_resource_connection",
         )
         self.mock_get_resource_connection.start()
         self.mock_get_data = patch(
             "ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.static_routes.static_routes."
-            "Static_routesFacts.get_static_route_data"
+            "Static_routesFacts.get_static_route_data",
         )
         self.get_data = self.mock_get_data.start()
         self.get_data.return_value = RUNNING_CONFIG
         self.maxDiff = None
 
     def tearDown(self):
-        super(TestIxStaticRoutesModule, self).tearDown()
+        super().tearDown()
         self.mock_get_resource_connection.stop()
         self.mock_get_data.stop()
 
@@ -235,16 +234,16 @@ class TestIxStaticRoutesModule(TestIxModule):
                                                 interface="GigaEthernet0.0",
                                                 ra=True,
                                                 tag=3,
-                                            )
+                                            ),
                                         ],
-                                    }
+                                    },
                                 ],
-                            }
-                        ]
+                            },
+                        ],
                     },
                 ],
                 state="rendered",
-            )
+            ),
         )
         result = self.execute_module(changed=False)
         self.assertEqual(
@@ -265,14 +264,15 @@ class TestIxStaticRoutesModule(TestIxModule):
                         (
                             "192.0.2.128/25",
                             [dict(forward_router_address="192.168.37.26", distance=20)],
-                        )
-                    )
+                        ),
+                    ),
                 ],
                 state="merged",
-            )
+            ),
         )
         self.execute_module(
-            changed=True, commands=["ip route 192.0.2.128/25 192.168.37.26 distance 20"]
+            changed=True,
+            commands=["ip route 192.0.2.128/25 192.168.37.26 distance 20"],
         )
 
     def test_merged_first_route(self):
@@ -280,10 +280,10 @@ class TestIxStaticRoutesModule(TestIxModule):
         set_module_args(
             dict(
                 config=[
-                    v4(("default", [dict(forward_router_address="192.168.37.26")]))
+                    v4(("default", [dict(forward_router_address="192.168.37.26")])),
                 ],
                 state="merged",
-            )
+            ),
         )
         self.execute_module(changed=True, commands=["ip route default 192.168.37.26"])
 
@@ -300,13 +300,13 @@ class TestIxStaticRoutesModule(TestIxModule):
                                     forward_router_address="192.168.37.26",
                                     distance=10,
                                     tag=7,
-                                )
+                                ),
                             ],
                         ),
-                    )
+                    ),
                 ],
                 state="merged",
-            )
+            ),
         )
         self.execute_module(changed=False, commands=[])
 
@@ -323,13 +323,13 @@ class TestIxStaticRoutesModule(TestIxModule):
                                     forward_router_address="192.168.37.26",
                                     distance=1,
                                     metric=1,
-                                )
+                                ),
                             ],
-                        )
-                    )
+                        ),
+                    ),
                 ],
                 state="merged",
-            )
+            ),
         )
         self.execute_module(changed=False, commands=[])
 
@@ -343,16 +343,16 @@ class TestIxStaticRoutesModule(TestIxModule):
                         (
                             "198.51.100.0/24",
                             [dict(forward_router_address="192.168.37.26", metric=5)],
-                        )
-                    )
+                        ),
+                    ),
                 ],
                 state="merged",
-            )
+            ),
         )
         self.execute_module(
             changed=True,
             commands=[
-                "ip route 198.51.100.0/24 192.168.37.26 distance 10 metric 5 tag 7"
+                "ip route 198.51.100.0/24 192.168.37.26 distance 10 metric 5 tag 7",
             ],
         )
 
@@ -364,11 +364,11 @@ class TestIxStaticRoutesModule(TestIxModule):
                         (
                             "198.51.100.0/24",
                             [dict(forward_router_address="192.168.37.26")],
-                        )
-                    )
+                        ),
+                    ),
                 ],
                 state="merged",
-            )
+            ),
         )
         self.execute_module(changed=False, commands=[])
 
@@ -387,16 +387,16 @@ class TestIxStaticRoutesModule(TestIxModule):
                                             dict(
                                                 forward_router_address="FE80::1%GigaEthernet0.0",
                                                 metric=2,
-                                            )
+                                            ),
                                         ],
-                                    }
+                                    },
                                 ],
-                            }
-                        ]
-                    }
+                            },
+                        ],
+                    },
                 ],
                 state="merged",
-            )
+            ),
         )
         self.execute_module(changed=False, commands=[])
 
@@ -409,11 +409,11 @@ class TestIxStaticRoutesModule(TestIxModule):
                         (
                             "198.51.100.0/24",
                             [dict(forward_router_address="192.168.37.26", metric=5)],
-                        )
-                    )
+                        ),
+                    ),
                 ],
                 state="replaced",
-            )
+            ),
         )
         # option set is replaced as a whole (distance/tag reset to default),
         # the Null0.0 route to the same dest is removed (identity only),
@@ -442,11 +442,11 @@ class TestIxStaticRoutesModule(TestIxModule):
                                 ),
                                 dict(interface="Null0.0", distance=250),
                             ],
-                        )
-                    )
+                        ),
+                    ),
                 ],
                 state="replaced",
-            )
+            ),
         )
         self.execute_module(changed=False, commands=[])
 
@@ -456,7 +456,7 @@ class TestIxStaticRoutesModule(TestIxModule):
             dict(
                 config=[v4(("192.0.2.0/24", [dict(interface="Null0.0")]))],
                 state="replaced",
-            )
+            ),
         )
         self.execute_module(changed=True, commands=["ip route 192.0.2.0/24 Null0.0"])
 
@@ -468,10 +468,10 @@ class TestIxStaticRoutesModule(TestIxModule):
                     v4(
                         ("default", [dict(forward_router_address="192.168.37.26")]),
                         ("192.0.2.0/24", [dict(interface="Null0.0")]),
-                    )
+                    ),
                 ],
                 state="overridden",
-            )
+            ),
         )
         self.execute_module(
             changed=True,
@@ -500,7 +500,7 @@ class TestIxStaticRoutesModule(TestIxModule):
             dict(
                 config=[v4(("192.0.2.0/24", [dict(interface="Null0.0")]))],
                 state="overridden",
-            )
+            ),
         )
         self.execute_module(changed=True, commands=["ip route 192.0.2.0/24 Null0.0"])
 
@@ -529,7 +529,8 @@ class TestIxStaticRoutesModule(TestIxModule):
         ]
         set_module_args(dict(state="deleted"))
         result = self.execute_module(
-            changed=True, commands=["no ip route default 192.168.37.26"]
+            changed=True,
+            commands=["no ip route default 192.168.37.26"],
         )
         self.assertEqual(result["after"], [])
 
@@ -539,12 +540,12 @@ class TestIxStaticRoutesModule(TestIxModule):
                 config=[
                     {
                         "address_families": [
-                            {"afi": "ipv4", "routes": [{"dest": "198.51.100.0/24"}]}
-                        ]
-                    }
+                            {"afi": "ipv4", "routes": [{"dest": "198.51.100.0/24"}]},
+                        ],
+                    },
                 ],
                 state="deleted",
-            )
+            ),
         )
         self.execute_module(
             changed=True,
@@ -559,16 +560,18 @@ class TestIxStaticRoutesModule(TestIxModule):
             dict(
                 config=[v4(("198.51.100.0/24", [dict(interface="Null0.0")]))],
                 state="deleted",
-            )
+            ),
         )
         self.execute_module(
-            changed=True, commands=["no ip route 198.51.100.0/24 Null0.0"]
+            changed=True,
+            commands=["no ip route 198.51.100.0/24 Null0.0"],
         )
 
     def test_deleted_by_vrf(self):
         set_module_args(dict(config=[{"vrf": "blue"}], state="deleted"))
         self.execute_module(
-            changed=True, commands=["no ip route vrf blue 198.51.100.0/24 Null0.0"]
+            changed=True,
+            commands=["no ip route vrf blue 198.51.100.0/24 Null0.0"],
         )
 
     def test_deleted_idempotent(self):
@@ -576,7 +579,7 @@ class TestIxStaticRoutesModule(TestIxModule):
             dict(
                 config=[v4(("192.0.2.128/25", [dict(interface="Null0.0")]))],
                 state="deleted",
-            )
+            ),
         )
         self.execute_module(changed=False, commands=[])
 
@@ -605,8 +608,8 @@ class TestIxStaticRoutesModule(TestIxModule):
                     (
                         "192.0.2.0/24",
                         [dict(forward_router_address="192.0.2.1", dhcp=True)],
-                    )
-                )
+                    ),
+                ),
             ],
             "dhcp requires interface",
         )
@@ -616,21 +619,21 @@ class TestIxFactsStaticRoutes(TestIxModule):
     module = ix_facts
 
     def setUp(self):
-        super(TestIxFactsStaticRoutes, self).setUp()
+        super().setUp()
         self.mock_get_resource_connection = patch(
             "ansible_collections.ansible.netcommon.plugins.module_utils.network.common.facts.facts."
-            "get_resource_connection"
+            "get_resource_connection",
         )
         self.mock_get_resource_connection.start()
         self.mock_get_data = patch(
             "ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.static_routes.static_routes."
-            "Static_routesFacts.get_static_route_data"
+            "Static_routesFacts.get_static_route_data",
         )
         self.get_data = self.mock_get_data.start()
         self.get_data.return_value = NO_ROUTES_CONFIG
 
     def tearDown(self):
-        super(TestIxFactsStaticRoutes, self).tearDown()
+        super().tearDown()
         self.mock_get_resource_connection.stop()
         self.mock_get_data.stop()
 
@@ -638,5 +641,6 @@ class TestIxFactsStaticRoutes(TestIxModule):
         set_module_args(dict(gather_network_resources=["static_routes"]))
         result = self.execute_module(changed=False)
         self.assertEqual(
-            result["ansible_facts"]["ansible_network_resources"]["static_routes"], []
+            result["ansible_facts"]["ansible_network_resources"]["static_routes"],
+            [],
         )

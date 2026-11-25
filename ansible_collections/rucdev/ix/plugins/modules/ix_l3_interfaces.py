@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 # Copyright 2023 AP Communications
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -22,13 +21,7 @@
 #
 #############################################
 
-"""
-The module file for ix_l3_interfaces
-"""
-
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
+"""The module file for ix_l3_interfaces"""
 
 ANSIBLE_METADATA = {
     "metadata_version": "1.1",
@@ -227,6 +220,7 @@ commands:
 
 
 from ansible.module_utils.basic import AnsibleModule
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.l3_interfaces.l3_interfaces import (
     L3_interfacesArgs,
 )
@@ -236,13 +230,13 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.config.l3_int
 
 
 def main():
-    """
-    Main entry point for module execution
+    """Main entry point for module execution
 
     :returns: the result form module invocation
     """
     module = AnsibleModule(
-        argument_spec=L3_interfacesArgs.argument_spec, supports_check_mode=True
+        argument_spec=L3_interfacesArgs.argument_spec,
+        supports_check_mode=True,
     )
 
     result = L3_interfaces(module).execute_module()

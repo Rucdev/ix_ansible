@@ -1,14 +1,9 @@
-# -*- coding: utf-8 -*-
 # Copyright 2026 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
-
-"""
-The ix hostname fact class
+"""The ix hostname fact class
 It is in this file the configuration is collected from the device
 for a given resource, parsed, and the facts tree is populated
 based on the configuration.
@@ -17,6 +12,7 @@ based on the configuration.
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common import (
     utils,
 )
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.hostname.hostname import (
     HostnameArgs,
 )
@@ -25,7 +21,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 )
 
 
-class HostnameFacts(object):
+class HostnameFacts:
     """The ix hostname facts class"""
 
     def __init__(self, module, subspec="config", options="options"):
@@ -59,8 +55,10 @@ class HostnameFacts(object):
 
         params = utils.remove_empties(
             hostname_parser.validate_config(
-                self.argument_spec, {"config": objs}, redact=True
-            )
+                self.argument_spec,
+                {"config": objs},
+                redact=True,
+            ),
         )
 
         facts["hostname"] = params.get("config", {})

@@ -1,14 +1,11 @@
 #
-# -*- coding: utf-8 -*-
 # Copyright 2023 AP Communications
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 # utils
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
 
 from ansible.module_utils.common.network import is_masklen, to_netmask
 
@@ -18,16 +15,12 @@ def validate_ipv4(module, value):
         address = value.split("/")
         if len(address) != 2:
             module.fail_json(
-                msg="address format is <ipv4 address>/<mask>, got invalid format {0}".format(
-                    value
-                ),
+                msg=f"address format is <ipv4 address>/<mask>, got invalid format {value}",
             )
 
         if not is_masklen(address[1]):
             module.fail_json(
-                msg="invalid value for mask: {0}, mask should be in range 0-32".format(
-                    address[1]
-                ),
+                msg=f"invalid value for mask: {address[1]}, mask should be in range 0-32",
             )
 
 
@@ -36,17 +29,12 @@ def validate_ipv6(value, module):
         address = value.split("/")
         if len(address) != 2:
             module.fail_json(
-                msg="address format is <ipv6 address>/<mask>, got invalid format {0}".format(
-                    value
-                ),
+                msg=f"address format is <ipv6 address>/<mask>, got invalid format {value}",
             )
-        else:
-            if not 0 <= int(address[1]) <= 128:
-                module.fail_json(
-                    msg="invalid value for mask: {0}, mask should be in range 0-128".format(
-                        address[1],
-                    ),
-                )
+        elif not 0 <= int(address[1]) <= 128:
+            module.fail_json(
+                msg=f"invalid value for mask: {address[1]}, mask should be in range 0-128",
+            )
 
 
 def validate_n_expand_ipv4(module, want):
@@ -59,6 +47,6 @@ def validate_n_expand_ipv4(module, want):
     validate_ipv4(module, ip_addr_want)
     ip = ip_addr_want.split("/")
     if len(ip) == 2:
-        ip_addr_want = "{0} {1}".format(ip[0], to_netmask(ip[1]))
+        ip_addr_want = f"{ip[0]} {to_netmask(ip[1])}"
 
     return ip_addr_want

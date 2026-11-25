@@ -1,31 +1,25 @@
 #
-# -*- coding: utf-8 -*-
 # Copyright 2024 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
-
-"""
-The ix_ospf_interfaces config file.
+"""The ix_ospf_interfaces config file.
 It is in this file where the current configuration (as dict)
 is compared to the provided configuration (as dict) and the command set
 necessary to bring the current configuration to its desired end-state is
 created.
 """
 
-from copy import deepcopy
-
 from ansible.module_utils.six import iteritems
-from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
-    dict_merge,
-)
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module import (
     ResourceModule,
 )
+from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
+    dict_merge,
+)
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.facts import (
     Facts,
 )
@@ -35,9 +29,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 
 
 class Ospf_interfaces(ResourceModule):
-    """
-    The ix_ospf_interfaces config class
-    """
+    """The ix_ospf_interfaces config class"""
 
     # "ip ospf ..." commands that have no "ipv6 ospf ..." form in the IX
     # command reference (OSPFv3 authentication uses IPsec)
@@ -50,7 +42,7 @@ class Ospf_interfaces(ResourceModule):
     )
 
     def __init__(self, module):
-        super(Ospf_interfaces, self).__init__(
+        super().__init__(
             empty_fact_val={},
             facts_module=Facts(module),
             module=module,
@@ -115,7 +107,7 @@ class Ospf_interfaces(ResourceModule):
                             intf.get("name"),
                             ", ".join(invalid),
                             af.get("afi") or "not set",
-                        )
+                        ),
                     )
 
     def _compare(self, want, have, interface):
@@ -128,7 +120,8 @@ class Ospf_interfaces(ResourceModule):
         self._compare_afi(want=want, have=have)
         if len(self.commands) != begin:
             self.commands.insert(
-                begin, self._tmplt.render({"name": interface}, "name", False)
+                begin,
+                self._tmplt.render({"name": interface}, "name", False),
             )
 
     def _compare_afi(self, want, have):

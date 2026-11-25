@@ -1,32 +1,27 @@
-# -*- coding: utf-8 -*-
 # Copyright 2024 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
-
-"""
-The ix ospf_interfaces fact class
+"""The ix ospf_interfaces fact class
 It is in this file the configuration is collected from the device
 for a given resource, parsed, and the facts tree is populated
 based on the configuration.
 """
 
-
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common import (
     utils,
+)
+
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.ospf_interfaces.ospf_interfaces import (
+    Ospf_interfacesArgs,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.ospf_interfaces import (
     Ospf_interfacesTemplate,
 )
-from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.ospf_interfaces.ospf_interfaces import (
-    Ospf_interfacesArgs,
-)
 
 
-class Ospf_interfacesFacts(object):
+class Ospf_interfacesFacts:
     """The ix ospf_interfaces facts class"""
 
     def __init__(self, module, subspec="config", options="options"):
@@ -54,7 +49,8 @@ class Ospf_interfacesFacts(object):
 
         # parse native config using the Ospf_interfaces template
         ospf_interfaces_parser = Ospf_interfacesTemplate(
-            lines=data.splitlines(), module=self._module
+            lines=data.splitlines(),
+            module=self._module,
         )
 
         objs = ospf_interfaces_parser.parse()

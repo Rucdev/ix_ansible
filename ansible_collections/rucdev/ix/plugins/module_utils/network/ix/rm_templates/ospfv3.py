@@ -1,20 +1,16 @@
-# -*- coding: utf-8 -*-
 # Copyright 2024 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
-
-"""
-The Ospfv3 parser templates file. This contains
+"""The Ospfv3 parser templates file. This contains
 a list of parser definitions and associated functions that
 facilitates both facts gathering and native command generation for
 the given network resource.
 """
 
 import re
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.network_template import (
     NetworkTemplate,
 )
@@ -27,11 +23,11 @@ def _tmplt_ospfv3_originate_default(config_data):
             command += " metric {metric}".format(**config_data["originate_default"])
         if "metric_type" in config_data["originate_default"]:
             command += " metric-type {metric_type}".format(
-                **config_data["originate_default"]
+                **config_data["originate_default"],
             )
         if "route_map" in config_data["originate_default"]:
             command += " route-map {route_map}".format(
-                **config_data["originate_default"]
+                **config_data["originate_default"],
             )
         if "tag" in config_data["originate_default"]:
             command += " tag {tag}".format(**config_data["originate_default"])
@@ -40,7 +36,7 @@ def _tmplt_ospfv3_originate_default(config_data):
 
 class Ospfv3Template(NetworkTemplate):
     def __init__(self, lines=None, module=None):
-        super(Ospfv3Template, self).__init__(lines=lines, tmplt=self, module=module)
+        super().__init__(lines=lines, tmplt=self, module=module)
 
     # fmt: off
     PARSERS = [
@@ -53,10 +49,10 @@ class Ospfv3Template(NetworkTemplate):
             "setval": "ipv6 router ospf {{ process_id }}",
             "result": {
                 "processes": {
-                    "{{ pid }}": {"process_id": "{{ pid | int }}"}
-                }
+                    "{{ pid }}": {"process_id": "{{ pid | int }}"},
+                },
             },
-            "shared": True
+            "shared": True,
         },
         {
             "name": "area_id",
@@ -71,8 +67,8 @@ class Ospfv3Template(NetworkTemplate):
                     "{{ pid }}": {
                         "areas": {
                             "{{ area_id }}": {
-                                "area_id": "{{ area_id }}"
-                            }
+                                "area_id": "{{ area_id }}",
+                            },
                         },
                     },
                 },
@@ -93,8 +89,8 @@ class Ospfv3Template(NetworkTemplate):
                         "areas": {
                             "{{ area_id }}": {
                                 "area_id": "{{ area_id }}",
-                                "default_cost": "{{ default_cost }}"
-                            }
+                                "default_cost": "{{ default_cost }}",
+                            },
                         },
                     },
                 },
@@ -110,7 +106,7 @@ class Ospfv3Template(NetworkTemplate):
                 (\s(?P<address>\S+))
                 (\s(?P<not_advertise>not-advertise))?
                 $""",
-                re.VERBOSE
+                re.VERBOSE,
             ),
             "setval": "area {{ area_id }} range {{ address }} {{ 'advertise' if advertise else 'not-advertise' }}",
             "result": {
@@ -122,14 +118,14 @@ class Ospfv3Template(NetworkTemplate):
                                 "ranges": [
                                     {
                                         "address": "{{ address }}",
-                                        "advertise": "{{ False if not_advertise is defined else True }}"
-                                    }
-                                ]
-                            }
+                                        "advertise": "{{ False if not_advertise is defined else True }}",
+                                    },
+                                ],
+                            },
                         },
                     },
-                }
-            }
+                },
+            },
         },
         {
             "name": "stub",
@@ -152,13 +148,13 @@ class Ospfv3Template(NetworkTemplate):
                                 "area_id": "{{ area_id }}",
                                 "stub": {
                                     "set": "{{ True if stub is defined and no_sum is undefined }}",
-                                    "no_summary": "{{ True if no_sum is defined }}"
-                                }
-                            }
+                                    "no_summary": "{{ True if no_sum is defined }}",
+                                },
+                            },
                         },
                     },
                 },
-            }
+            },
         },
         {
             "name": "distance",
@@ -180,7 +176,7 @@ class Ospfv3Template(NetworkTemplate):
                             "external": "{{ external }}",
                             "inter_area": "{{ inter_area }}",
                             "intra_area": "{{ intra_area }}",
-                        }
+                        },
                     },
                 },
             },
@@ -193,7 +189,7 @@ class Ospfv3Template(NetworkTemplate):
                 \s(?P<interface>\S+)
                 \sarea\s(?P<area>\S+)
                 $""",
-                re.VERBOSE
+                re.VERBOSE,
             ),
             "setval": "network {{ interface }} area {{ area }}",
             "result": {
@@ -202,12 +198,12 @@ class Ospfv3Template(NetworkTemplate):
                         "network": [
                             {
                                 "interface": "{{ interface }}",
-                                "area": "{{ area }}"
-                            }
-                        ]
-                    }
-                }
-            }
+                                "area": "{{ area }}",
+                            },
+                        ],
+                    },
+                },
+            },
         },
         {
             "name": "originate_default",
@@ -219,7 +215,7 @@ class Ospfv3Template(NetworkTemplate):
                 (\sroute-map\s(?P<route_map>\S+))?
                 (\stag\s(?P<tag>\d+))?
                 $""",
-                re.VERBOSE
+                re.VERBOSE,
             ),
             "setval": _tmplt_ospfv3_originate_default,
             "result": {
@@ -229,11 +225,11 @@ class Ospfv3Template(NetworkTemplate):
                             "metric": "{{ metric }}",
                             "metric_type": "{{ metric_type }}",
                             "route_map": "{{ route_map }}",
-                            "tag": "{{ tag }}"
-                        }
-                    }
-                }
-            }
+                            "tag": "{{ tag }}",
+                        },
+                    },
+                },
+            },
         },
         {
             "name": "passive_interfaces",
@@ -242,7 +238,7 @@ class Ospfv3Template(NetworkTemplate):
                 \s+passive-interface
                 (\s(?P<interface>\S+))?
                 $""",
-                re.VERBOSE
+                re.VERBOSE,
             ),
             "setval": "passive-interface {{ interface }}",
             "result": {
@@ -250,10 +246,10 @@ class Ospfv3Template(NetworkTemplate):
                     "{{ pid }}": {
                         "passive_interfaces": [
                             "{{ interface }}",
-                        ]
-                    }
-                }
-            }
+                        ],
+                    },
+                },
+            },
         },
         {
             "name": "router_id",
@@ -262,16 +258,16 @@ class Ospfv3Template(NetworkTemplate):
                 \s+router-id
                 (\s(?P<router_id>\S+))?
                 $""",
-                re.VERBOSE
+                re.VERBOSE,
             ),
             "setval": "router-id {{ router_id }}",
             "result": {
                 "processes": {
                     "{{ pid }}": {
-                        "router_id": "{{ router_id }}"
-                    }
-                }
-            }
+                        "router_id": "{{ router_id }}",
+                    },
+                },
+            },
         },
         {
             "name": "timers",
@@ -281,7 +277,7 @@ class Ospfv3Template(NetworkTemplate):
                 (\sdelay\s(?P<delay>\S+))?
                 (\shold\s(?P<hold>\S+))?
                 $""",
-                re.VERBOSE
+                re.VERBOSE,
             ),
             "setval": "timers"
             "{{ ' delay ' + timers.delay|string if timers.delay is defined else '' }}"
@@ -291,11 +287,11 @@ class Ospfv3Template(NetworkTemplate):
                     "{{ pid }}": {
                         "timers": {
                             "delay": "{{ delay }}",
-                            "hold": "{{ hold }}"
-                        }
-                    }
-                }
-            }
-        }
+                            "hold": "{{ hold }}",
+                        },
+                    },
+                },
+            },
+        },
     ]
     # fmt: on

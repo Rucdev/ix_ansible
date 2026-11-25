@@ -1,12 +1,8 @@
 #
-# -*- coding: utf-8 -*-
 # Copyright 2026 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
 
 from textwrap import dedent
 from unittest.mock import patch
@@ -33,11 +29,11 @@ class TestIxHostnameModule(TestIxModule):
     module = ix_hostname
 
     def setUp(self):
-        super(TestIxHostnameModule, self).setUp()
+        super().setUp()
 
         self.mock_get_resource_connection_facts = patch(
             "ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module_base."
-            "get_resource_connection"
+            "get_resource_connection",
         )
         self.get_resource_connection_facts = (
             self.mock_get_resource_connection_facts.start()
@@ -45,12 +41,12 @@ class TestIxHostnameModule(TestIxModule):
 
         self.mock_execute_show_command = patch(
             "ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.hostname.hostname."
-            "HostnameFacts.get_hostname_data"
+            "HostnameFacts.get_hostname_data",
         )
         self.execute_show_command = self.mock_execute_show_command.start()
 
     def tearDown(self):
-        super(TestIxHostnameModule, self).tearDown()
+        super().tearDown()
         self.mock_get_resource_connection_facts.stop()
         self.mock_execute_show_command.stop()
 

@@ -1,5 +1,4 @@
 #
-# -*- coding: utf-8 -*-
 # Copyright 2019 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -22,12 +21,10 @@
 #
 #############################################
 
-"""
-The arg spec for the ix_device_interfaces module
-"""
+"""The arg spec for the ix_device_interfaces module"""
 
 
-class Device_interfacesArgs(object):  # pylint: disable=R0903
+class Device_interfacesArgs:  # pylint: disable=R0903
     """The arg spec for the ix_device_interfaces module"""
 
     def __init__(self, **kwargs):

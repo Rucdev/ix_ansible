@@ -16,9 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 #
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
 
 
 from ansible.utils.display import Display
@@ -45,7 +42,7 @@ class ActionModule(ActionNetworkModule):
                 % self._play_context.connection,
             }
 
-        result = super(ActionModule, self).run(task_vars=task_vars)
+        result = super().run(task_vars=task_vars)
         if warnings:
             if "warnings" in result:
                 result["warnings"].extend(warnings)

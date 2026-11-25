@@ -26,16 +26,14 @@
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
+import json
 
-from ansible.module_utils.connection import Connection, ConnectionError
 from ansible.module_utils._text import to_text
+from ansible.module_utils.connection import Connection, ConnectionError
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
     to_list,
 )
-import json
 
 _DEVICE_CONFIGS = {}
 
@@ -106,7 +104,6 @@ def run_commands(module, commands, check_rc=True, configure=False):
     try:
         if configure:
             return connection.run_configs(commands=commands, check_rc=check_rc)
-        else:
-            return connection.run_commands(commands=commands, check_rc=check_rc)
+        return connection.run_commands(commands=commands, check_rc=check_rc)
     except ConnectionError as exc:
         module.fail_json(msg=to_text(exc))

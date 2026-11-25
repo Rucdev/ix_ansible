@@ -1,16 +1,9 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 # Copyright 2025 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-"""
-The module file for ix_ospfv3
-"""
-
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
+"""The module file for ix_ospfv3"""
 
 DOCUMENTATION = """
 module: ix_ospfv3
@@ -236,6 +229,7 @@ parsed:
 """
 
 from ansible.module_utils.basic import AnsibleModule
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.ospfv3.ospfv3 import (
     Ospfv3Args,
 )
@@ -245,8 +239,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.config.ospfv3
 
 
 def main():
-    """
-    Main entry point for module execution
+    """Main entry point for module execution
 
     :returns: the result form module invocation
     """

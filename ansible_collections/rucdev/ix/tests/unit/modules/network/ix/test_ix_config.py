@@ -1,12 +1,8 @@
 #
-# -*- coding: utf-8 -*-
 # Copyright 2026 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
 
 from textwrap import dedent
 from unittest.mock import ANY, MagicMock, patch
@@ -34,15 +30,15 @@ class TestIxConfigModule(TestIxModule):
     module = ix_config
 
     def setUp(self):
-        super(TestIxConfigModule, self).setUp()
+        super().setUp()
 
         self.mock_get_config = patch(
-            "ansible_collections.rucdev.ix.plugins.modules.ix_config.get_config"
+            "ansible_collections.rucdev.ix.plugins.modules.ix_config.get_config",
         )
         self.get_config = self.mock_get_config.start()
 
         self.mock_get_connection = patch(
-            "ansible_collections.rucdev.ix.plugins.modules.ix_config.get_connection"
+            "ansible_collections.rucdev.ix.plugins.modules.ix_config.get_connection",
         )
         self.get_connection = self.mock_get_connection.start()
         self.conn = self.get_connection()
@@ -51,12 +47,12 @@ class TestIxConfigModule(TestIxModule):
         self.conn.get_diff.side_effect = self.cliconf_obj.get_diff
 
         self.mock_run_commands = patch(
-            "ansible_collections.rucdev.ix.plugins.modules.ix_config.run_commands"
+            "ansible_collections.rucdev.ix.plugins.modules.ix_config.run_commands",
         )
         self.run_commands = self.mock_run_commands.start()
 
     def tearDown(self):
-        super(TestIxConfigModule, self).tearDown()
+        super().tearDown()
         self.mock_get_config.stop()
         self.mock_get_connection.stop()
         self.mock_run_commands.stop()
@@ -82,7 +78,7 @@ class TestIxConfigModule(TestIxModule):
                 lines=["hostname Router2"],
                 _ansible_diff=True,
                 _ansible_check_mode=True,
-            )
+            ),
         )
         result = self.execute_module(changed=True, commands=["hostname Router2"])
         self.conn.edit_config.assert_not_called()
@@ -98,7 +94,9 @@ class TestIxConfigModule(TestIxModule):
         set_module_args(dict(save_when="always", _ansible_diff=True))
         result = self.execute_module(changed=True)
         self.run_commands.assert_any_call(
-            ANY, "copy running-config startup-config\r", configure=True
+            ANY,
+            "copy running-config startup-config\r",
+            configure=True,
         )
         self.assert_str_warnings(result)
 
@@ -109,7 +107,7 @@ class TestIxConfigModule(TestIxModule):
                 diff_against="intended",
                 intended_config=intended,
                 _ansible_diff=True,
-            )
+            ),
         )
         result = self.execute_module(changed=True)
         self.conn.edit_config.assert_not_called()

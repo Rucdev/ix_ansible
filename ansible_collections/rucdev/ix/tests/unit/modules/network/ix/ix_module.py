@@ -15,9 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
 
 import json
 import os
@@ -52,7 +49,12 @@ def load_fixture(name):
 
 class TestIxModule(ModuleTestCase):
     def execute_module(
-        self, failed=False, changed=False, commands=None, sort=True, defaults=False
+        self,
+        failed=False,
+        changed=False,
+        commands=None,
+        sort=True,
+        defaults=False,
     ):
         self.load_fixtures(commands)
 
@@ -66,7 +68,9 @@ class TestIxModule(ModuleTestCase):
         if commands is not None:
             if sort:
                 self.assertEqual(
-                    sorted(commands), sorted(result["commands"]), result["commands"]
+                    sorted(commands),
+                    sorted(result["commands"]),
+                    result["commands"],
                 )
             else:
                 self.assertEqual(commands, result["commands"], result["commands"])

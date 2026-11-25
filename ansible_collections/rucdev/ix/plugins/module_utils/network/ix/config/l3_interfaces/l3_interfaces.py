@@ -1,29 +1,27 @@
-__metaclass__ = type
 #
-# -*- coding: utf-8 -*-
 # Copyright 2023 AP Communications
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-"""
-The ix_l3_interfaces class
+"""The ix_l3_interfaces class
 It is in this file where the current configuration (as dict)
 is compared to the provided configuration (as dict) and the command set
 necessary to bring the current configuration to it's desired end-state is
 created
 """
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module import (
     ResourceModule,
-)
-from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.facts import (
-    Facts,
 )
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
     dict_merge,
 )
+
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.facts import (
+    Facts,
+)
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.l3_interfaces import (
     L3_interfacesTemplate,
 )
-
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.utils.utils import (
     validate_ipv4,
     validate_ipv6,
@@ -31,12 +29,10 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.utils.utils i
 
 
 class L3_interfaces(ResourceModule):
-    """
-    The ix_l3_interfaces class
-    """
+    """The ix_l3_interfaces class"""
 
     def __init__(self, module):
-        super(L3_interfaces, self).__init__(
+        super().__init__(
             empty_fact_val={},
             facts_module=Facts(module),
             module=module,
@@ -137,8 +133,9 @@ class L3_interfaces(ResourceModule):
                     # generate commands)
                     if list(
                         filter(
-                            lambda w: w.get("secondary", False) is False, wacls.values()
-                        )
+                            lambda w: w.get("secondary", False) is False,
+                            wacls.values(),
+                        ),
                     ):
                         # another primary is in wacls
                         hacl = {}

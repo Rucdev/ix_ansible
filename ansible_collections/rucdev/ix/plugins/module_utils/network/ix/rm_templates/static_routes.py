@@ -1,14 +1,9 @@
-# -*- coding: utf-8 -*-
 # Copyright 2024 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
-
-"""
-The Static_routes parser templates file. This contains
+"""The Static_routes parser templates file. This contains
 a list of parser definitions and associated functions that
 facilitates both facts gathering and native command generation for
 the given network resource.
@@ -60,7 +55,7 @@ def _tmplt_route(data):
     cmd = _route_head(data)
     for opt in ("distance", "metric", "tag"):
         if data.get(opt) is not None:
-            cmd += " {0} {1}".format(opt, data[opt])
+            cmd += f" {opt} {data[opt]}"
     return cmd
 
 
@@ -71,8 +66,10 @@ def _tmplt_route_remove(data):
 
 class Static_routesTemplate(NetworkTemplate):
     def __init__(self, lines=None, module=None):
-        super(Static_routesTemplate, self).__init__(
-            lines=lines, tmplt=self, module=module
+        super().__init__(
+            lines=lines,
+            tmplt=self,
+            module=module,
         )
 
     # fmt: off

@@ -1,12 +1,8 @@
 #
-# -*- coding: utf-8 -*-
 # Copyright 2025 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
 
 from textwrap import dedent
 from unittest.mock import patch
@@ -21,11 +17,11 @@ class TestIxOspfv3Module(TestIxModule):
     module = ix_ospfv3
 
     def setUp(self):
-        super(TestIxOspfv3Module, self).setUp()
+        super().setUp()
 
         self.mock_get_resource_connection_facts = patch(
             "ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module_base."
-            "get_resource_connection"
+            "get_resource_connection",
         )
         self.get_resource_connection_facts = (
             self.mock_get_resource_connection_facts.start()
@@ -33,13 +29,13 @@ class TestIxOspfv3Module(TestIxModule):
 
         self.mock_execute_show_command = patch(
             "ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.ospfv3.ospfv3."
-            "Ospfv3Facts.get_ospfv3_data"
+            "Ospfv3Facts.get_ospfv3_data",
         )
         self.execute_show_command = self.mock_execute_show_command.start()
         self.maxDiff = 10000
 
     def tearDown(self):
-        super(TestIxOspfv3Module, self).tearDown()
+        super().tearDown()
         self.mock_get_resource_connection_facts.stop()
         self.mock_execute_show_command.stop()
 
@@ -82,11 +78,11 @@ class TestIxOspfv3Module(TestIxModule):
                                 ),
                             ],
                             passive_interfaces=["GigaEthernet0.0", "GigaEthernet0.2"],
-                        )
-                    ]
+                        ),
+                    ],
                 ),
                 state="merged",
-            )
+            ),
         )
         commands = [
             "ipv6 router ospf 200",
@@ -126,11 +122,11 @@ class TestIxOspfv3Module(TestIxModule):
                                 ),
                             ],
                             passive_interfaces=["GigaEthernet0.0"],
-                        )
-                    ]
+                        ),
+                    ],
                 ),
                 state="merged",
-            )
+            ),
         )
         self.execute_module(changed=False, commands=[])
 
@@ -160,11 +156,11 @@ class TestIxOspfv3Module(TestIxModule):
                                     area_id="0",
                                 ),
                             ],
-                        )
-                    ]
+                        ),
+                    ],
                 ),
                 state="replaced",
-            )
+            ),
         )
         commands = [
             "ipv6 router ospf 200",
@@ -215,11 +211,11 @@ class TestIxOspfv3Module(TestIxModule):
                                 route_map="default_map",
                                 tag="20",
                             ),
-                        )
-                    ]
+                        ),
+                    ],
                 ),
                 state="overridden",
-            )
+            ),
         )
         commands = [
             "no ipv6 router ospf 200",
@@ -246,7 +242,7 @@ class TestIxOspfv3Module(TestIxModule):
             dict(
                 config=dict(processes=[dict(process_id=200)]),
                 state="deleted",
-            )
+            ),
         )
         commands = ["no ipv6 router ospf 200"]
         self.execute_module(changed=True, commands=commands)
@@ -263,7 +259,7 @@ class TestIxOspfv3Module(TestIxModule):
             dict(
                 running_config="ipv6 router ospf 1\n area 5\n network GigaEhternet0.0 area 5",
                 state="parsed",
-            )
+            ),
         )
         result = self.execute_module(changed=False)
         parsed_list = {
@@ -273,16 +269,16 @@ class TestIxOspfv3Module(TestIxModule):
                     "areas": [
                         {
                             "area_id": "5",
-                        }
+                        },
                     ],
                     "network": [
                         {
                             "interface": "GigaEhternet0.0",
                             "area": "5",
-                        }
+                        },
                     ],
-                }
-            ]
+                },
+            ],
         }
         self.assertEqual(parsed_list, result["parsed"])
 
@@ -339,11 +335,11 @@ class TestIxOspfv3Module(TestIxModule):
                                     ),
                                 ),
                             ],
-                        )
-                    ]
+                        ),
+                    ],
                 ),
                 state="rendered",
-            )
+            ),
         )
         commands = [
             "ipv6 router ospf 100",

@@ -1,18 +1,15 @@
 #
-# -*- coding: utf-8 -*-
 # Copyright 2025 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
 
 from textwrap import dedent
 from unittest.mock import patch
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.parameters import remove_values
+
 from ansible_collections.rucdev.ix.plugins.modules import ix_ospf_interfaces
 from ansible_collections.rucdev.ix.tests.unit.modules.utils import (
     AnsibleExitJson,
@@ -32,11 +29,11 @@ class TestIxOspfInterfacesModule(TestIxModule):
     module = ix_ospf_interfaces
 
     def setUp(self):
-        super(TestIxOspfInterfacesModule, self).setUp()
+        super().setUp()
 
         self.mock_get_resource_connection_facts = patch(
             "ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module_base."
-            "get_resource_connection"
+            "get_resource_connection",
         )
         self.get_resource_connection_facts = (
             self.mock_get_resource_connection_facts.start()
@@ -44,13 +41,13 @@ class TestIxOspfInterfacesModule(TestIxModule):
 
         self.mock_execute_show_command = patch(
             "ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.ospf_interfaces.ospf_interfaces."
-            "Ospf_interfacesFacts.get_ospf_interfaces_data"
+            "Ospf_interfacesFacts.get_ospf_interfaces_data",
         )
         self.execute_show_command = self.mock_execute_show_command.start()
         self.maxDiff = None
 
     def tearDown(self):
-        super(TestIxOspfInterfacesModule, self).tearDown()
+        super().tearDown()
         self.mock_get_resource_connection_facts.stop()
         self.mock_execute_show_command.stop()
 
@@ -82,12 +79,12 @@ class TestIxOspfInterfacesModule(TestIxModule):
                             dict(
                                 afi="ipv6",
                                 priority=80,
-                            )
+                            ),
                         ],
                     ),
                 ],
                 state="merged",
-            )
+            ),
         )
         commands = [
             "interface GigaEthernet0.0",
@@ -126,12 +123,12 @@ class TestIxOspfInterfacesModule(TestIxModule):
                             dict(
                                 afi="ipv6",
                                 priority=60,
-                            )
+                            ),
                         ],
                     ),
                 ],
                 state="merged",
-            )
+            ),
         )
         self.execute_module(changed=False, commands=[])
 
@@ -156,10 +153,10 @@ class TestIxOspfInterfacesModule(TestIxModule):
                                 cost=200,
                             ),
                         ],
-                    )
+                    ),
                 ],
                 state="replaced",
-            )
+            ),
         )
         commands = [
             "interface GigaEthernet0.0",
@@ -187,7 +184,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
                     dict(
                         config=[dict(name="GigaEthernet1.0", address_family=[af])],
                         state="rendered",
-                    )
+                    ),
                 )
                 result = self.execute_module(failed=True)
                 self.assertIn(option, result["msg"])
@@ -209,7 +206,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
                     dict(
                         config=[dict(name="GigaEthernet1.0", address_family=[af])],
                         state="rendered",
-                    )
+                    ),
                 )
                 result = self.execute_module(failed=True)
                 self.assertIn(option, result["msg"])
@@ -232,12 +229,12 @@ class TestIxOspfInterfacesModule(TestIxModule):
                                 mtu_ignore=True,
                                 interface_type="point-to-point",
                                 authentication_key="secret01",
-                            )
+                            ),
                         ],
-                    )
+                    ),
                 ],
                 state="merged",
-            )
+            ),
         )
         result = self.execute_module(failed=True)
         self.assertIn("authentication_key, mtu_ignore, interface_type", result["msg"])
@@ -250,12 +247,12 @@ class TestIxOspfInterfacesModule(TestIxModule):
                     dict(
                         name="GigaEthernet1.0",
                         address_family=[
-                            dict(afi="ipv6", cost=10, hello_interval=5, priority=0)
+                            dict(afi="ipv6", cost=10, hello_interval=5, priority=0),
                         ],
-                    )
+                    ),
                 ],
                 state="rendered",
-            )
+            ),
         )
         result = self.execute_module(changed=False)
         self.assertEqual(
@@ -266,7 +263,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
                     "ipv6 ospf cost 10",
                     "ipv6 ospf hello-interval 5",
                     "ipv6 ospf priority 0",
-                ]
+                ],
             ),
         )
 
@@ -291,10 +288,10 @@ class TestIxOspfInterfacesModule(TestIxModule):
                                 hello_interval=15,
                             ),
                         ],
-                    )
+                    ),
                 ],
                 state="overridden",
-            )
+            ),
         )
         commands = [
             "interface GigaEthernet0.0",
@@ -322,10 +319,10 @@ class TestIxOspfInterfacesModule(TestIxModule):
                 config=[
                     dict(
                         name="GigaEthernet0.0",
-                    )
+                    ),
                 ],
                 state="deleted",
-            )
+            ),
         )
         commands = [
             "interface GigaEthernet0.0",
@@ -345,7 +342,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
             dict(
                 running_config="interface GigaEthernet1.0\n ip ospf priority 30\n ip ospf cost 200\n ipv6 ospf priority 40\n",
                 state="parsed",
-            )
+            ),
         )
         result = self.execute_module(changed=False)
         parsed_list = [
@@ -362,7 +359,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
                         "priority": 40,
                     },
                 ],
-            }
+            },
         ]
         self.assertEqual(parsed_list, result["parsed"])
 
@@ -395,12 +392,12 @@ class TestIxOspfInterfacesModule(TestIxModule):
                                 cost=200,
                                 hello_interval=10,
                                 dead_interval=40,
-                            )
+                            ),
                         ],
                     ),
                 ],
                 state="rendered",
-            )
+            ),
         )
         commands = [
             "interface GigaEthernet0.0",
@@ -442,7 +439,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
                     !
                     """),
                 state="parsed",
-            )
+            ),
         )
         result = self.execute_module(changed=False)
         parsed_list = [
@@ -519,7 +516,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
                     ),
                 ],
                 state="rendered",
-            )
+            ),
         )
         commands = [
             "interface GigaEthernet1.0",
@@ -554,7 +551,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
                     ),
                 ],
                 state="merged",
-            )
+            ),
         )
         commands = [
             "interface GigaEthernet1.0",
@@ -590,7 +587,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
                     ),
                 ],
                 state="merged",
-            )
+            ),
         )
         self.execute_module(changed=False, commands=[])
 
@@ -621,7 +618,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
                     ),
                 ],
                 state="merged",
-            )
+            ),
         )
         commands = [
             "interface GigaEthernet1.0",
@@ -653,7 +650,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
                     ),
                 ],
                 state="replaced",
-            )
+            ),
         )
         commands = [
             "interface GigaEthernet1.0",
@@ -687,7 +684,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
                     ),
                 ],
                 state="replaced",
-            )
+            ),
         )
         commands = [
             "interface GigaEthernet1.0",
@@ -723,7 +720,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
                     ),
                 ],
                 state="replaced",
-            )
+            ),
         )
         commands = [
             "interface GigaEthernet1.0",
@@ -762,7 +759,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
                     ),
                 ],
                 state="overridden",
-            )
+            ),
         )
         commands = [
             "interface GigaEthernet1.0",
@@ -798,7 +795,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
                     ),
                 ],
                 state="deleted",
-            )
+            ),
         )
         commands = [
             "interface GigaEthernet1.0",
@@ -857,7 +854,7 @@ class TestIxOspfInterfacesModule(TestIxModule):
                     ),
                 ],
                 state="deleted",
-            )
+            ),
         )
         commands = [
             "interface GigaEthernet1.0",

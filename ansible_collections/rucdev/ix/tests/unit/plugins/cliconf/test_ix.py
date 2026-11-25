@@ -1,7 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
-
 import json
 
 from os import path
@@ -9,7 +5,7 @@ from os import path
 try:
     from unittest.mock import MagicMock
 except ImportError:
-    from mock import MagicMock
+    from unittest.mock import MagicMock
 
 from unittest import TestCase
 
@@ -34,11 +30,11 @@ def _connection_side_effect(*args, **kwargs):
         )
         with open(fixture_path, "rb") as file_desc:
             return file_desc.read()
-    except (OSError, IOError):
+    except OSError:
         if args:
             value = args[0]
             return value
-        elif kwargs.get("command"):
+        if kwargs.get("command"):
             value = kwargs.get("command")
             return value
 
@@ -118,7 +114,8 @@ class TestPluginCLIConfIOS(TestCase):
 
 class TestCliconfModeHandling(TestCase):
     """Session mode handling (#24): every task starts in exec mode, and the
-    config-only show commands enter config mode on their own."""
+    config-only show commands enter config mode on their own.
+    """
 
     def setUp(self):
         self._conn = MagicMock()
@@ -187,7 +184,8 @@ class TestCliconfModeHandling(TestCase):
 
     def test_edit_config_then_task_start_is_exec(self):
         """edit_config leaves exec mode (like cisco.ios 'end'); the next
-        task's show running-config still works."""
+        task's show running-config still works.
+        """
         self._cliconf.edit_config(candidate=["hostname lab"])
         self.assertEqual(self._prompt, b"ix2215# ")
         self._sent.clear()

@@ -1,22 +1,21 @@
-__metaclass__ = type
 #
-# -*- coding: utf-8 -*-
 # Copyright 2023 AP Communications
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-"""
-The ix_interfaces class
+"""The ix_interfaces class
 It is in this file where the current configuration (as dict)
 is compared to the provided configuration (as dict) and the command set
 necessary to bring the current configuration to it's desired end-state is
 created
 """
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module import (
     ResourceModule,
 )
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
     dict_merge,
 )
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.facts import (
     Facts,
 )
@@ -26,12 +25,10 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 
 
 class Interfaces(ResourceModule):
-    """
-    The ix_interfaces class
-    """
+    """The ix_interfaces class"""
 
     def __init__(self, module):
-        super(Interfaces, self).__init__(
+        super().__init__(
             empty_fact_val={},
             facts_module=Facts(module),
             module=module,
@@ -94,25 +91,24 @@ class Interfaces(ResourceModule):
         if want.get("enabled") != have.get("enabled"):
             if want.get("enabled"):
                 self.addcmd(want, "enabled", True)
-            else:
-                if want:
-                    self.addcmd(want, "enabled", False)
-                elif have.get("enabled"):
-                    # handles deleted as want be blank and only
-                    # negates if no shutdown
-                    self.addcmd(have, "enabled", False)
+            elif want:
+                self.addcmd(want, "enabled", False)
+            elif have.get("enabled"):
+                # handles deleted as want be blank and only
+                # negates if no shutdown
+                self.addcmd(have, "enabled", False)
         if want.get("mode") != have.get("mode"):
             if want.get("mode") == "layer3":
                 self.addcmd(want, "mode", True)
-            else:
-                if want:
-                    self.addcmd(want, "mode", False)
-                elif have.get("mode"):  # can oly have layer2 as switchport no show cli
-                    # handles deleted as want be blank and only
-                    self.addcmd(have, "mode", False)
+            elif want:
+                self.addcmd(want, "mode", False)
+            elif have.get("mode"):  # can oly have layer2 as switchport no show cli
+                # handles deleted as want be blank and only
+                self.addcmd(have, "mode", False)
         if len(self.commands) != begin:
             self.commands.insert(
-                begin, self._tmplt.render(want or have, "interface", False)
+                begin,
+                self._tmplt.render(want or have, "interface", False),
             )
 
     def purge(self, have):

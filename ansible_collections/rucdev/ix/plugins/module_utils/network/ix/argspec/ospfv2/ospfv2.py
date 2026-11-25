@@ -1,11 +1,7 @@
-# -*- coding: utf-8 -*-
 # Copyright 2025 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
 
 #############################################
 #                WARNING                    #
@@ -22,12 +18,10 @@ __metaclass__ = type
 #
 #############################################
 
-"""
-The arg spec for the ix_ospfv2 module
-"""
+"""The arg spec for the ix_ospfv2 module"""
 
 
-class Ospfv2Args(object):  # pylint: disable=R0903
+class Ospfv2Args:  # pylint: disable=R0903
     """The arg spec for the ix_ospfv2 module"""
 
     argument_spec = {
@@ -98,7 +92,7 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                                                     "no_log": False,
                                                 },
                                                 "message_digest_key_id": {
-                                                    "type": "int"
+                                                    "type": "int",
                                                 },
                                                 "message_digest_password": {
                                                     "type": "str",
@@ -190,7 +184,7 @@ class Ospfv2Args(object):  # pylint: disable=R0903
                             },
                         },
                     },
-                }
+                },
             },
         },
         "running_config": {"type": "str"},

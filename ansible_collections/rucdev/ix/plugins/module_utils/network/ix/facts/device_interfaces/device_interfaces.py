@@ -1,10 +1,8 @@
 #
-# -*- coding: utf-8 -*-
 # Copyright 2019 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-"""
-The ix device_interfaces fact class
+"""The ix device_interfaces fact class
 It is in this file the configuration is collected from the device
 for a given resource, parsed, and the facts tree is populated
 based on the configuration.
@@ -13,6 +11,7 @@ based on the configuration.
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common import (
     utils,
 )
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.device_interfaces.device_interfaces import (
     Device_interfacesArgs,
 )
@@ -21,7 +20,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 )
 
 
-class Device_interfacesFacts(object):
+class Device_interfacesFacts:
     """The ix device_interfaces fact class"""
 
     def __init__(self, module, subspec="config", options="options"):
@@ -39,7 +38,6 @@ class Device_interfacesFacts(object):
         :rtype: dictionary
         :returns: facts
         """
-
         if not data:
             # typically data is populated from the current device configuration
             # data = connection.get('show running-config | section ^interface')
@@ -47,7 +45,8 @@ class Device_interfacesFacts(object):
             data = self.get_device_interfaces_data(connection)
 
         device_interfaces_parser = Device_interfacesTemplate(
-            lines=data.splitlines(), module=self._module
+            lines=data.splitlines(),
+            module=self._module,
         )
 
         objs = sorted(
@@ -59,8 +58,10 @@ class Device_interfacesFacts(object):
         facts = {"device_interfaces": []}
         params = utils.remove_empties(
             device_interfaces_parser.validate_config(
-                self.argument_spec, {"config": objs}, redact=True
-            )
+                self.argument_spec,
+                {"config": objs},
+                redact=True,
+            ),
         )
         facts["device_interfaces"] = params["config"]
         ansible_facts["ansible_network_resources"].update(facts)

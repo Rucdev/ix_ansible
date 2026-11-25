@@ -1,7 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
-
 import json
 import re
 
@@ -19,7 +15,7 @@ class TerminalModule(TerminalBase):
     terminal_stdout_re = [
         re.compile(
             rb"[\r\n]?[\w\+\-\.:\/\[\]]+(?:\([^\)]+\)){0,3}(?:[%$#]) ?$",
-        )
+        ),
     ]
 
     # TODO: エラーメッセージのパターンをある程度収集する
@@ -47,12 +43,13 @@ class TerminalModule(TerminalBase):
         cmd = {"command": "configure"}
         if passwd:
             cmd["prompt"] = to_text(
-                r"[\r\n]?Password: ?$", errors="surrogate_or_strict"
+                r"[\r\n]?Password: ?$",
+                errors="surrogate_or_strict",
             )
             cmd["answer"] = passwd
         try:
             self._exec_cli_command(
-                to_bytes(json.dumps(cmd), errors="surrogate_or_strict")
+                to_bytes(json.dumps(cmd), errors="surrogate_or_strict"),
             )
         except AnsibleConnectionFailure:
             raise AnsibleConnectionFailure("unable to switch configure mode")
@@ -61,6 +58,6 @@ class TerminalModule(TerminalBase):
         prompt = self._get_prompt()
         if prompt is None:
             return
-        elif b"(config" in prompt:
+        if b"(config" in prompt:
             self._exec_cli_command(b"configure")
             self._exec_cli_command(b"exit")
