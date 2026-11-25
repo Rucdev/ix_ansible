@@ -44,8 +44,7 @@ class TestIxOspfv2Module(TestIxModule):
         self.mock_execute_show_command.stop()
 
     def test_ix_ospfv2_merged(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+        self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
              compatible rfc1583
@@ -53,8 +52,7 @@ class TestIxOspfv2Module(TestIxModule):
              network 192.168.0.0/24 area 0
              area 0
              passive-interface GigaEthernet0.0
-            """
-        )
+            """)
         set_module_args(
             dict(
                 config=dict(
@@ -105,8 +103,7 @@ class TestIxOspfv2Module(TestIxModule):
         self.assertEqual(sorted(result["commands"]), sorted(commands))
 
     def test_ix_ospfv2_merged_idempotent(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+        self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
              compatible rfc1583
@@ -115,8 +112,7 @@ class TestIxOspfv2Module(TestIxModule):
              area 0
              area 0 default-cost 10
              passive-interface GigaEthernet0.0
-            """
-        )
+            """)
         set_module_args(
             dict(
                 config=dict(
@@ -151,8 +147,7 @@ class TestIxOspfv2Module(TestIxModule):
         self.execute_module(changed=False, commands=[])
 
     def test_ix_ospfv2_replaced(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+        self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
              compatible rfc1583
@@ -161,8 +156,7 @@ class TestIxOspfv2Module(TestIxModule):
              area 0
              area 0 default-cost 10
              passive-interface GigaEthernet0.0
-            """
-        )
+            """)
         set_module_args(
             dict(
                 config=dict(
@@ -202,8 +196,7 @@ class TestIxOspfv2Module(TestIxModule):
         self.assertEqual(sorted(result["commands"]), sorted(commands))
 
     def test_ix_ospfv2_overridden(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+        self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
              compatible rfc1583
@@ -212,8 +205,7 @@ class TestIxOspfv2Module(TestIxModule):
              area 0
              area 0 default-cost 10
              passive-interface GigaEthernet0.0
-            """
-        )
+            """)
         set_module_args(
             dict(
                 config=dict(
@@ -286,8 +278,7 @@ class TestIxOspfv2Module(TestIxModule):
         self.assertEqual(sorted(result["commands"]), sorted(commands))
 
     def test_ix_ospfv2_deleted(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+        self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
              compatible rfc1583
@@ -295,8 +286,7 @@ class TestIxOspfv2Module(TestIxModule):
              network 192.168.0.0/24 area 0
              area 0 default-cost 10
              passive-interface GigaEthernet0.0
-            """
-        )
+            """)
         set_module_args(
             dict(
                 config=dict(processes=[dict(process_id=200)]),
@@ -307,8 +297,7 @@ class TestIxOspfv2Module(TestIxModule):
         self.execute_module(changed=True, commands=commands)
 
     def test_ix_ospfv2_parsed(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+        self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
              compatible rfc1583
@@ -316,8 +305,7 @@ class TestIxOspfv2Module(TestIxModule):
              network 192.168.0.0/24 area 0
              area 0 default-cost 10
              passive-interface GigaEthernet0.0
-            """
-        )
+            """)
         set_module_args(
             dict(
                 running_config="ip router ospf 1\n area 5 nssa no-summary stability-interval 10 translate default-metric 20 default-metric-type 1\n",

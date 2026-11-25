@@ -55,16 +55,14 @@ class TestIxOspfInterfacesModule(TestIxModule):
         self.mock_execute_show_command.stop()
 
     def test_ix_ospf_interfaces_merged(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+        self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
              ip ospf cost 100
              ip ospf network point-to-point
             interface GigaEthernet1.0
              ipv6 ospf priority 60
-            """
-        )
+            """)
         set_module_args(
             dict(
                 config=[
@@ -102,15 +100,13 @@ class TestIxOspfInterfacesModule(TestIxModule):
         self.assertEqual(sorted(result["commands"]), sorted(commands))
 
     def test_ix_ospf_interfaces_merged_idempotent(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+        self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
              ip ospf mtu-ignore
             interface GigaEthernet1.0
              ipv6 ospf priority 60
-            """
-        )
+            """)
         set_module_args(
             dict(
                 config=[
@@ -140,16 +136,14 @@ class TestIxOspfInterfacesModule(TestIxModule):
         self.execute_module(changed=False, commands=[])
 
     def test_ix_ospf_interfaces_replaced(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+        self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
              ip ospf network point-to-point
              ip ospf cost 100
             interface GigaEthernet1.0
              ipv6 ospf priority 60
-            """
-        )
+            """)
         set_module_args(
             dict(
                 config=[
@@ -277,16 +271,14 @@ class TestIxOspfInterfacesModule(TestIxModule):
         )
 
     def test_ix_ospf_interfaces_overridden(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+        self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
              ip ospf network point-to-point
             interface GigaEthernet1.0
              ipv6 ospf priority 60
              ipv6 ospf cost 150
-            """
-        )
+            """)
         set_module_args(
             dict(
                 config=[
@@ -317,16 +309,14 @@ class TestIxOspfInterfacesModule(TestIxModule):
         self.assertEqual(sorted(result["commands"]), sorted(commands))
 
     def test_ix_ospf_interfaces_deleted(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+        self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
              ip ospf network point-to-point
              ip ospf cost 100
             interface GigaEthernet1.0
              ipv6 ospf priority 60
-            """
-        )
+            """)
         set_module_args(
             dict(
                 config=[
@@ -346,13 +336,11 @@ class TestIxOspfInterfacesModule(TestIxModule):
         self.execute_module(changed=True, commands=commands)
 
     def test_ix_ospf_interfaces_parsed(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+        self.execute_show_command.return_value = dedent("""\
             interface GigaEthernet0.0
              ip ospf priority 20
              ip ospf network point-to-point
-            """
-        )
+            """)
         set_module_args(
             dict(
                 running_config="interface GigaEthernet1.0\n ip ospf priority 30\n ip ospf cost 200\n ipv6 ospf priority 40\n",
