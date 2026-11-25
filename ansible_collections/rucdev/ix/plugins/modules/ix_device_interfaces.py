@@ -81,6 +81,7 @@ options:
         choices:
         - mdi
         - mdix
+        default: mdix
       output_buffer:
         description:
         - The number of output buffers.

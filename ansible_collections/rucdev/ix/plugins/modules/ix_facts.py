@@ -26,52 +26,40 @@ author: Yushi Takeda (@Rucdev)
 options:
   gather_subset:
     description:
-      - When supplied, this argument will restrict the facts collected
-        to a given subset. Possible values for this argument include
-        all, min, hardware, config, legacy, and interfaces. Can specify a
-        list of values to include a larger subset. Values can also be used
-        with an initial C(M(!)) to specify that a specific subset should
-        not be collected.
+      - Accepted for compatibility with other network collections, but not used.
+        This collection does not gather legacy facts, so only the resources in
+        C(gather_network_resources) are collected.
     type: list
     elements: str
     required: false
-    default: 'all'
+    default: [min]
   gather_network_resources:
     description:
-      - When supplied, this argument will restrict the facts collected
-        to a given subset. Possible values for this argument include
-        all and the resources like interfaces, vlans etc.
-        Can specify a list of values to include a larger subset. Values
-        can also be used with an initial C(M(!)) to specify that a
-        specific subset should not be collected.
+      - The resources to collect facts for, or C(all) for every resource.
+      - Values with an initial C(!), which exclude a resource, are not accepted.
     type: list
     elements: str
+    choices:
+      - all
+      - hostname
+      - interfaces
+      - l3_interfaces
+      - ospf_interfaces
+      - ospfv2
+      - ospfv3
+      - static_routes
     required: false
 """
 
 EXAMPLES = """
-# Gather all facts
-- ix_facts:
-    gather_subset: all
+# Collect the facts of every resource
+- rucdev.ix.ix_facts:
     gather_network_resources: all
 
 # Collect only the interfaces facts
-- ix_facts:
-    gather_subset:
-      - "!all"
-      - "!min"
+- rucdev.ix.ix_facts:
     gather_network_resources:
       - interfaces
-
-# Do not collect interfaces facts
-- ix_facts:
-    gather_network_resources:
-      - "!interfaces"
-
-# Collect interfaces and minimal default facts
-- ix_facts:
-    gather_subset: min
-    gather_network_resources: interfaces
 """
 
 RETURN = """"""

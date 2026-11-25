@@ -135,7 +135,7 @@ Parameters
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
                                     <li>mdi</li>
-                                    <li>mdix</li>
+                                    <li><div style="color: blue"><b>mdix</b>&nbsp;&larr;</div></li>
                         </ul>
                 </td>
                 <td>

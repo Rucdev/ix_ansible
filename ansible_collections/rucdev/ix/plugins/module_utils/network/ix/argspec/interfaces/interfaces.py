@@ -35,7 +35,6 @@ class InterfacesArgs:  # pylint: disable=R0903
             "type": "list",
             "elements": "dict",
             "options": {
-                "bandwidth": {"type": "number"},
                 "description": {"type": "str"},
                 "enabled": {"default": True, "type": "bool"},
                 "mtu": {"type": "int"},

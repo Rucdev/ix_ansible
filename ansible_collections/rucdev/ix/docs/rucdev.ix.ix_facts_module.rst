@@ -44,9 +44,20 @@ Parameters
                     </div>
                 </td>
                 <td>
+                        <ul style="margin: 0; padding: 0"><b>Choices:</b>
+                                    <li>all</li>
+                                    <li>hostname</li>
+                                    <li>interfaces</li>
+                                    <li>l3_interfaces</li>
+                                    <li>ospf_interfaces</li>
+                                    <li>ospfv2</li>
+                                    <li>ospfv3</li>
+                                    <li>static_routes</li>
+                        </ul>
                 </td>
                 <td>
-                        <div>When supplied, this argument will restrict the facts collected to a given subset. Possible values for this argument include all and the resources like interfaces, vlans etc. Can specify a list of values to include a larger subset. Values can also be used with an initial <code><span class='module'>!</span></code> to specify that a specific subset should not be collected.</div>
+                        <div>The resources to collect facts for, or <code>all</code> for every resource.</div>
+                        <div>Values with an initial <code>!</code>, which exclude a resource, are not accepted.</div>
                 </td>
             </tr>
             <tr>
@@ -60,10 +71,10 @@ Parameters
                     </div>
                 </td>
                 <td>
-                        <b>Default:</b><br/><div style="color: blue">"all"</div>
+                        <b>Default:</b><br/><div style="color: blue">["min"]</div>
                 </td>
                 <td>
-                        <div>When supplied, this argument will restrict the facts collected to a given subset. Possible values for this argument include all, min, hardware, config, legacy, and interfaces. Can specify a list of values to include a larger subset. Values can also be used with an initial <code><span class='module'>!</span></code> to specify that a specific subset should not be collected.</div>
+                        <div>Accepted for compatibility with other network collections, but not used. This collection does not gather legacy facts, so only the resources in <code>gather_network_resources</code> are collected.</div>
                 </td>
             </tr>
     </table>
@@ -77,28 +88,14 @@ Examples
 
 .. code-block:: yaml
 
-    # Gather all facts
-    - ix_facts:
-        gather_subset: all
+    # Collect the facts of every resource
+    - rucdev.ix.ix_facts:
         gather_network_resources: all
 
     # Collect only the interfaces facts
-    - ix_facts:
-        gather_subset:
-          - "!all"
-          - "!min"
+    - rucdev.ix.ix_facts:
         gather_network_resources:
           - interfaces
-
-    # Do not collect interfaces facts
-    - ix_facts:
-        gather_network_resources:
-          - "!interfaces"
-
-    # Collect interfaces and minimal default facts
-    - ix_facts:
-        gather_subset: min
-        gather_network_resources: interfaces
 
 
 

@@ -61,12 +61,6 @@ options:
           to disable it.
         type: bool
         default: true
-      bandwidth:
-        description:
-        - This command doesn't limit bandwidth on interface.
-        - The bandwidth is used calculate for MIB or cost.
-        type: number
-        required: false
       mtu:
         description:
         - MTU for a specific interface. Applicable for Ethernet interfaces only.
