@@ -165,6 +165,84 @@ class TestIxOspfInterfacesModule(TestIxModule):
         result = self.execute_module(changed=True)
         self.assertEqual(sorted(result["commands"]), sorted(commands))
 
+    def test_ix_ospf_interfaces_ipv4_only_options_under_ipv6(self):
+        # IX has no "ipv6 ospf" form of these; they used to render "ip ospf ..."
+        for option, value in (
+            ("authentication_type", "message-digest"),
+            ("authentication_key", "secret01"),
+            ("message_digest_key", dict(key_id=1, password="secret01")),
+            ("mtu_ignore", True),
+            ("mtu_ignore", False),
+            ("interface_type", "point-to-point"),
+        ):
+            with self.subTest(option=option, value=value):
+                af = dict(afi="ipv6", cost=10)
+                af[option] = value
+                set_module_args(
+                    dict(
+                        config=[dict(name="GigaEthernet1.0", address_family=[af])],
+                        state="rendered",
+                    )
+                )
+                result = self.execute_module(failed=True)
+                self.assertIn(option, result["msg"])
+                self.assertIn("GigaEthernet1.0", result["msg"])
+
+    def test_ix_ospf_interfaces_ipv4_only_options_under_ipv6_merged(self):
+        self.execute_show_command.return_value = dedent("""\
+            interface GigaEthernet1.0
+              ipv6 ospf cost 20
+            !
+            """)
+        set_module_args(
+            dict(
+                config=[
+                    dict(
+                        name="GigaEthernet1.0",
+                        address_family=[
+                            dict(
+                                afi="ipv6",
+                                mtu_ignore=True,
+                                interface_type="point-to-point",
+                                authentication_key="secret01",
+                            )
+                        ],
+                    )
+                ],
+                state="merged",
+            )
+        )
+        result = self.execute_module(failed=True)
+        self.assertIn("authentication_key, mtu_ignore, interface_type", result["msg"])
+
+    def test_ix_ospf_interfaces_ipv6_common_options(self):
+        # options with an "ipv6 ospf" form are still accepted under ipv6
+        set_module_args(
+            dict(
+                config=[
+                    dict(
+                        name="GigaEthernet1.0",
+                        address_family=[
+                            dict(afi="ipv6", cost=10, hello_interval=5, priority=0)
+                        ],
+                    )
+                ],
+                state="rendered",
+            )
+        )
+        result = self.execute_module(changed=False)
+        self.assertEqual(
+            sorted(result["rendered"]),
+            sorted(
+                [
+                    "interface GigaEthernet1.0",
+                    "ipv6 ospf cost 10",
+                    "ipv6 ospf hello-interval 5",
+                    "ipv6 ospf priority 0",
+                ]
+            ),
+        )
+
     def test_ix_ospf_interfaces_overridden(self):
         self.execute_show_command.return_value = dedent(
             """\

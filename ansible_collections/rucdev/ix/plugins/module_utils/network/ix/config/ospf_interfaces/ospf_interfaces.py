@@ -39,6 +39,16 @@ class Ospf_interfaces(ResourceModule):
     The ix_ospf_interfaces config class
     """
 
+    # "ip ospf ..." commands that have no "ipv6 ospf ..." form in the IX
+    # command reference (OSPFv3 authentication uses IPsec)
+    IPV4_ONLY_OPTIONS = (
+        "authentication_type",
+        "authentication_key",
+        "message_digest_key",
+        "mtu_ignore",
+        "interface_type",
+    )
+
     def __init__(self, module):
         super(Ospf_interfaces, self).__init__(
             empty_fact_val={},
@@ -64,6 +74,7 @@ class Ospf_interfaces(ResourceModule):
         """Generate configuration commands to send based on
         want, have and desired state.
         """
+        self._validate_want()
         wantd = self._list_to_dict(self.want, "want")
         haved = self._list_to_dict(self.have)
 
@@ -84,6 +95,23 @@ class Ospf_interfaces(ResourceModule):
 
         for k, want in iteritems(wantd):
             self._compare(want=want, have=haved.pop(k, {}), interface=k)
+
+    def _validate_want(self):
+        """Reject IPv4-only options under afi ipv6. Their setvals always
+        render "ip ospf ...", so they would change the OSPFv2 settings.
+        """
+        for intf in self.want or []:
+            for af in intf.get("address_family") or []:
+                if af.get("afi") != "ipv6":
+                    continue
+                invalid = [
+                    opt for opt in self.IPV4_ONLY_OPTIONS if af.get(opt) is not None
+                ]
+                if invalid:
+                    self._module.fail_json(
+                        msg="{0}: {1} can be used only with afi ipv4; IX has no "
+                        "OSPFv3 equivalent".format(intf.get("name"), ", ".join(invalid))
+                    )
 
     def _compare(self, want, have, interface):
         """Leverages the base class `compare()` method and
