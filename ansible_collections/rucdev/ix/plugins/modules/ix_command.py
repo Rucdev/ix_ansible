@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# Copyright: Contributors to the Ansible project
 #
 # This file is part of Ansible
 #
