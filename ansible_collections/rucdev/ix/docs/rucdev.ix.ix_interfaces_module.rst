@@ -202,8 +202,6 @@ Examples
           - name: GigaEthernet0.0
         state: deleted
 
-
-
     # Using overridden
 
     - name: Overrides all device configuration with provided configuration

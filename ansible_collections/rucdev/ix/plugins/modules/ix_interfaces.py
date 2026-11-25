@@ -123,8 +123,6 @@ EXAMPLES = """
       - name: GigaEthernet0.0
     state: deleted
 
-
-
 # Using overridden
 
 - name: Overrides all device configuration with provided configuration
@@ -147,8 +145,6 @@ EXAMPLES = """
         enabled: false
         mtu: 1200
     state: replaced
-
-
 """
 RETURN = """
 before:

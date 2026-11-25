@@ -214,7 +214,6 @@ EXAMPLES = """
     lines: ip address 192.168.1.1/24
     parents:
       - interface GigaEthernet0.0
-
 """
 
 RETURN = """"""

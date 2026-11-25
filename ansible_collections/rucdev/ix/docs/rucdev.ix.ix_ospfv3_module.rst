@@ -640,6 +640,34 @@ Notes
 
 
 
+Examples
+--------
+
+.. code-block:: yaml
+
+    # Using merged
+
+    - name: Configure OSPFv3 process 1
+      rucdev.ix.ix_ospfv3:
+        config:
+          processes:
+            - process_id: 1
+              router_id: 10.0.0.1
+              network:
+                - interface: GigaEthernet1.0
+                  area: "0"
+              passive_interfaces:
+                - GigaEthernet0.0
+        state: merged
+
+    # Using deleted
+
+    - name: Remove OSPFv3 process 1
+      rucdev.ix.ix_ospfv3:
+        config:
+          processes:
+            - process_id: 1
+        state: deleted
 
 
 

@@ -167,8 +167,6 @@ EXAMPLES = """
       - name: GigaEthernet0.0
     state: deleted
 
-
-
 # Using overridden
 
 - name: Overrides all device configuration with provided configuration
@@ -193,8 +191,6 @@ EXAMPLES = """
         ipv4:
           address: 192.168.1.1/24
     state: replaced
-
-
 """
 RETURN = """
 before:

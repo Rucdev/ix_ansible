@@ -179,7 +179,28 @@ options:
 """
 
 EXAMPLES = """
+# Using merged
 
+- name: Set OSPF interface parameters on GigaEthernet1.0
+  rucdev.ix.ix_ospf_interfaces:
+    config:
+      - name: GigaEthernet1.0
+        address_family:
+          - afi: ipv4
+            cost: 10
+            hello_interval: 5
+            dead_interval: 20
+          - afi: ipv6
+            cost: 20
+    state: merged
+
+# Using deleted
+
+- name: Remove the OSPF interface parameters of GigaEthernet1.0
+  rucdev.ix.ix_ospf_interfaces:
+    config:
+      - name: GigaEthernet1.0
+    state: deleted
 """
 
 RETURN = """

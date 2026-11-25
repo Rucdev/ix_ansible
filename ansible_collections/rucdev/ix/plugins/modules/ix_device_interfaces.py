@@ -153,7 +153,6 @@ EXAMPLES = """
       name: GigaEthernet0
       duplex: full
       speed: auto
-
 """
 RETURN = """
 before:
