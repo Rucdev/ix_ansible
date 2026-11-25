@@ -1,0 +1,10 @@
+# Commits that only reformat or apply automatic fixes. GitHub's blame view
+# skips them; for git blame on the command line, run
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Format with black 26.10.1
+74d25f6cfe92e1c0aaf7d3045f1ccd7607d9e005
+# Apply ruff safe fixes
+0d386a4138feca8ea054fb3eca1c53eee3eb7d4d
+# Apply ruff unsafe fixes
+056e88c46c285f74e115f65a4600f010d2899cf2
