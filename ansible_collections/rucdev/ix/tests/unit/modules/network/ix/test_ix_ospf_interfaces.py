@@ -234,6 +234,79 @@ class TestIxOspfInterfacesModule(TestIxModule):
         ]
         self.execute_module(changed=True, commands=commands)
 
+    # An interface whose only OSPF line is "ip ospf network" (e.g. a tunnel).
+    NETWORK_TYPE_ONLY = dedent("""\
+        interface GigaEthernet1.0
+          ip address 10.0.91.2/24
+          ip ospf network point-to-point
+          no shutdown
+        !
+        """)
+
+    def test_ix_ospf_interfaces_parsed_network_type_only(self):
+        set_module_args(dict(running_config=self.NETWORK_TYPE_ONLY, state="parsed"))
+        result = self.execute_module(changed=False)
+        self.assertEqual(
+            result["parsed"],
+            [
+                dict(
+                    name="GigaEthernet1.0",
+                    address_family=[dict(afi="ipv4", interface_type="point-to-point")],
+                )
+            ],
+        )
+
+    def test_ix_ospf_interfaces_merged_network_type_only_idempotent(self):
+        self.execute_show_command.return_value = self.NETWORK_TYPE_ONLY
+        set_module_args(
+            dict(
+                config=[
+                    dict(
+                        name="GigaEthernet1.0",
+                        address_family=[
+                            dict(afi="ipv4", interface_type="point-to-point")
+                        ],
+                    )
+                ],
+                state="merged",
+            )
+        )
+        self.execute_module(changed=False, commands=[])
+
+    def test_ix_ospf_interfaces_replaced_network_type_only(self):
+        self.execute_show_command.return_value = self.NETWORK_TYPE_ONLY
+        set_module_args(
+            dict(
+                config=[
+                    dict(
+                        name="GigaEthernet1.0",
+                        address_family=[dict(afi="ipv4", cost=10)],
+                    )
+                ],
+                state="replaced",
+            )
+        )
+        self.execute_module(
+            changed=True,
+            sort=False,
+            commands=[
+                "interface GigaEthernet1.0",
+                "ip ospf cost 10",
+                "no ip ospf network point-to-point",
+            ],
+        )
+
+    def test_ix_ospf_interfaces_deleted_network_type_only(self):
+        self.execute_show_command.return_value = self.NETWORK_TYPE_ONLY
+        set_module_args(dict(config=[dict(name="GigaEthernet1.0")], state="deleted"))
+        self.execute_module(
+            changed=True,
+            commands=[
+                "interface GigaEthernet1.0",
+                "no ip ospf network point-to-point",
+            ],
+        )
+
     def test_ix_ospf_interfaces_parsed(self):
         self.execute_show_command.return_value = dedent(
             """\

@@ -142,7 +142,7 @@ options:
     description:
       - This option is used only with state I(parsed).
       - The value of this option should be the output received from the ix
-        device by executing the command B(show running-config interfaces <name>).
+        device by executing the command B(show running-config interface).
       - The state I(parsed) reads the configuration from C(running_config)
         option and transforms it into Ansible structured data as per the
         resource module's argspec and the value is then returned in the
@@ -163,7 +163,7 @@ options:
       - The state I(parsed) reads the configuration from C(running_config) option and
         transforms it into JSON format as per the resource module parameters and the
         value is returned in the I(parsed) key within the result. The value of C(running_config)
-        option should be the same format as the output of command I(show running-config ospf)
+        option should be the same format as the output of command I(show running-config interface)
         executed on device. For state I(parsed) active
         connection to remote host is not required.
     type: str
