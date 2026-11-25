@@ -30,7 +30,8 @@
 import json
 
 from ansible.module_utils._text import to_text
-from ansible.module_utils.connection import Connection, ConnectionError
+from ansible.module_utils.connection import Connection
+from ansible.module_utils.connection import ConnectionError as AnsibleConnectionError
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
     to_list,
 )
@@ -58,7 +59,7 @@ def get_capabilities(module):
 
     try:
         capabilities = Connection(module._socket_path).get_capabilities()
-    except ConnectionError as exc:
+    except AnsibleConnectionError as exc:
         module.fail_json(msg=to_text(exc, errors="surrogate_then_replace"))
     module.ix_capabilities = json.loads(capabilities)
     return module.ix_capabilities
@@ -68,7 +69,7 @@ def get_defaults_flag(module):
     connection = get_connection(module)
     try:
         out = connection.get_defaults_flag()
-    except ConnectionError as exc:
+    except AnsibleConnectionError as exc:
         module.fail_json(msg=to_text(exc, errors="surrogate_then_replace"))
 
     return to_text(out, errors="surrogate_then_replace").strip()
@@ -89,7 +90,7 @@ def get_config(module, flags=None):
         connection = get_connection(module)
         try:
             out = connection.get_config(flags=flags)
-        except ConnectionError as exc:
+        except AnsibleConnectionError as exc:
             if section_filter:
                 out = get_config(module, flags=flags[:-1])
             else:
@@ -105,5 +106,5 @@ def run_commands(module, commands, *, check_rc=True, configure=False):
         if configure:
             return connection.run_configs(commands=commands, check_rc=check_rc)
         return connection.run_commands(commands=commands, check_rc=check_rc)
-    except ConnectionError as exc:
+    except AnsibleConnectionError as exc:
         module.fail_json(msg=to_text(exc))

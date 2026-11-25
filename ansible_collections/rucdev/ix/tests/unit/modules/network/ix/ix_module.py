@@ -18,28 +18,28 @@
 
 import contextlib
 import json
-import os
+
+from pathlib import Path
 
 import pytest
 
 from ansible_collections.rucdev.ix.tests.unit.modules.utils import (
-    AnsibleExitJson,
-    AnsibleFailJson,
+    AnsibleExitJsonError,
+    AnsibleFailJsonError,
     ModuleTestCase,
 )
 
-fixture_path = os.path.join(os.path.dirname(__file__), "fixtures")
+fixture_path = Path(__file__).parent / "fixtures"
 fixture_data = {}
 
 
 def load_fixture(name):
-    path = os.path.join(fixture_path, name)
+    path = fixture_path / name
 
     if path in fixture_data:
         return fixture_data[path]
 
-    with open(path) as f:
-        data = f.read()
+    data = path.read_text()
 
     with contextlib.suppress(Exception):
         data = json.loads(data)
@@ -77,7 +77,7 @@ class TestIxModule(ModuleTestCase):
         return result
 
     def failed(self):
-        with pytest.raises(AnsibleFailJson) as exc:
+        with pytest.raises(AnsibleFailJsonError) as exc:
             self.module.main()
 
         result = exc.value.args[0]
@@ -85,7 +85,7 @@ class TestIxModule(ModuleTestCase):
         return result
 
     def changed(self, *, changed=False):
-        with pytest.raises(AnsibleExitJson) as exc:
+        with pytest.raises(AnsibleExitJsonError) as exc:
             self.module.main()
 
         result = exc.value.args[0]

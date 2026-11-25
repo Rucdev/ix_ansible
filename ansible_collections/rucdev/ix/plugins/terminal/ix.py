@@ -21,7 +21,7 @@ class TerminalModule(TerminalBase):
         ),
     ]
 
-    # TODO: エラーメッセージのパターンをある程度収集する
+    # IX error messages that mean a command failed. Add new ones as they are found.
     terminal_stderr_re = [
         re.compile(rb"% .* Invalid command\."),
         re.compile(rb"% .* -- Ambiguous command."),
@@ -54,9 +54,9 @@ class TerminalModule(TerminalBase):
             self._exec_cli_command(
                 to_bytes(json.dumps(cmd), errors="surrogate_or_strict"),
             )
-        except AnsibleConnectionFailure:
+        except AnsibleConnectionFailure as exc:
             msg = "unable to switch configure mode"
-            raise AnsibleConnectionFailure(msg)
+            raise AnsibleConnectionFailure(msg) from exc
 
     def on_unbecome(self) -> None:
         prompt = self._get_prompt()

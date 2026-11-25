@@ -39,9 +39,6 @@ class Device_interfacesFacts:
         :returns: facts.
         """
         if not data:
-            # typically data is populated from the current device configuration
-            # data = connection.get('show running-config | section ^interface')
-            # using mock data instead
             data = self.get_device_interfaces_data(connection)
 
         device_interfaces_parser = Device_interfacesTemplate(

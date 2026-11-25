@@ -12,6 +12,9 @@ from ansible_collections.rucdev.ix.tests.unit.modules.utils import set_module_ar
 
 from .ix_module import TestIxModule
 
+# The module runs the commands once, then once more for each retry.
+RETRIES = 1
+
 SHOW_VERSION = dedent("""\
     NEC Portable Internetwork Core Operating System Software
     IX Series IX2215 (magellan-sec) Software, Version 10.11.18, RELEASE SOFTWARE
@@ -50,7 +53,7 @@ class TestIxCommandModule(TestIxModule):
             {
                 "commands": ["show version"],
                 "wait_for": ["result[0] contains IX3315"],
-                "retries": 1,
+                "retries": RETRIES,
             },
         )
         result = self.execute_module(failed=True)
@@ -59,7 +62,7 @@ class TestIxCommandModule(TestIxModule):
             == "One or more conditional statements have not been satisfied"
         )
         assert result["failed_conditions"] == ["result[0] contains IX3315"]
-        assert self.run_commands.call_count == 2
+        assert self.run_commands.call_count == RETRIES + 1
 
     def test_ix_command_waitfor(self) -> None:
         # waitfor is an alias of wait_for, as in other *_command modules
@@ -75,7 +78,7 @@ class TestIxCommandModule(TestIxModule):
             {
                 "commands": ["show version"],
                 "waitfor": ["result[0] contains IX3315"],
-                "retries": 1,
+                "retries": RETRIES,
             },
         )
         result = self.execute_module(failed=True)
@@ -84,4 +87,4 @@ class TestIxCommandModule(TestIxModule):
             == "One or more conditional statements have not been satisfied"
         )
         assert result["failed_conditions"] == ["result[0] contains IX3315"]
-        assert self.run_commands.call_count == 2
+        assert self.run_commands.call_count == RETRIES + 1

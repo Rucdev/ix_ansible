@@ -9,11 +9,15 @@
 
 from ansible.module_utils.common.network import is_masklen, to_netmask
 
+# An address with a prefix length, "<address>/<length>", splits into two parts.
+ADDRESS_PARTS = 2
+IPV6_MAX_PREFIX_LENGTH = 128
+
 
 def validate_ipv4(module, value) -> None:
     if value:
         address = value.split("/")
-        if len(address) != 2:
+        if len(address) != ADDRESS_PARTS:
             module.fail_json(
                 msg=f"address format is <ipv4 address>/<mask>, got invalid format {value}",
             )
@@ -27,11 +31,11 @@ def validate_ipv4(module, value) -> None:
 def validate_ipv6(value, module) -> None:
     if value:
         address = value.split("/")
-        if len(address) != 2:
+        if len(address) != ADDRESS_PARTS:
             module.fail_json(
                 msg=f"address format is <ipv6 address>/<mask>, got invalid format {value}",
             )
-        elif not 0 <= int(address[1]) <= 128:
+        elif not 0 <= int(address[1]) <= IPV6_MAX_PREFIX_LENGTH:
             module.fail_json(
                 msg=f"invalid value for mask: {address[1]}, mask should be in range 0-128",
             )
@@ -46,7 +50,7 @@ def validate_n_expand_ipv4(module, want):
         return ip_addr_want
     validate_ipv4(module, ip_addr_want)
     ip = ip_addr_want.split("/")
-    if len(ip) == 2:
+    if len(ip) == ADDRESS_PARTS:
         ip_addr_want = f"{ip[0]} {to_netmask(ip[1])}"
 
     return ip_addr_want

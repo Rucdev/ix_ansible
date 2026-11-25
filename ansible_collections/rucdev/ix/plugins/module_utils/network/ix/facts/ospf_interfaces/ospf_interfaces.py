@@ -65,8 +65,7 @@ class Ospf_interfacesFacts:
             if temp_af:
                 value["address_family"] = temp_af
             if value:
-                value = utils.remove_empties(value)
-                final_objs.append(value)
+                final_objs.append(utils.remove_empties(value))
 
         ansible_facts["ansible_network_resources"].pop("ospf_interfaces", None)
 

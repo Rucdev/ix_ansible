@@ -107,12 +107,10 @@ class Cliconf(CliconfBase):
 
     @configure_mode
     def get_config(self, source="running", flags=None, format=None):
+        # running, startup以外はエラーとする
         if source not in ("running", "startup"):
             msg = f"fetching configuration for {source} is not supported"
-            raise ValueError(
-                # running, startup以外はエラーとする
-                msg,
-            )
+            raise ValueError(msg)
 
         if format:
             msg = f"'format' value {format} is not supported for get_config"
@@ -156,13 +154,11 @@ class Cliconf(CliconfBase):
                 msg,
             )
 
+        # Banners are not compared; only the configuration lines are.
         candidate_obj = NetworkConfig(indent=1)
-        # TODO: バナーに対応させる
-        # want_src, want_banners = self._extract_banners(candi)
         candidate_obj.load(candidate)
 
         if running and diff_match != "none":
-            # have_src, have_banners = self._extract_banners(running)
             running_obj = NetworkConfig(
                 indent=1,
                 contents=running,
@@ -180,8 +176,6 @@ class Cliconf(CliconfBase):
         diff["config_diff"] = (
             dumps(configdiffobjs, "commands") if configdiffobjs else ""
         )
-        # banners = self.__diff_banners(want_banners, have_banners)
-        # diff["banner_diff"] = banners if banners else {}
 
         return diff
 
@@ -303,9 +297,8 @@ class Cliconf(CliconfBase):
             raise ValueError(msg)
 
         responses = []
-        for cmd in to_list(commands):
-            if not isinstance(cmd, Mapping):
-                cmd = {"command": cmd}
+        for item in to_list(commands):
+            cmd = item if isinstance(item, Mapping) else {"command": item}
             output = cmd.pop("output", None)
             if output:
                 msg = f"'output' value {output} is not supported for run_commands"
@@ -354,10 +347,8 @@ class Cliconf(CliconfBase):
         requests = []
         if commit:
             self.send_command("configure")
-            for line in to_list(candidate):
-                if not isinstance(line, Mapping):
-                    line = {"command": line}
-
+            for item in to_list(candidate):
+                line = item if isinstance(item, Mapping) else {"command": item}
                 cmd = line["command"]
                 if cmd != "exit":
                     results.append(self.send_command(**line))

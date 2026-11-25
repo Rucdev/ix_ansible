@@ -129,18 +129,17 @@ class L3_interfaces(ResourceModule):
                     continue
                 # entry is set as secondary
                 hacl = hacls.get(key, {})
-                if hacl.get("secondary", False) is False:
-                    # hacl is set as primary, if wacls has no other primary entry we must keep
-                    # this entry as primary (so we'll compare entry to hacl and not
-                    # generate commands)
-                    if list(
-                        filter(
-                            lambda w: w.get("secondary", False) is False,
-                            wacls.values(),
-                        ),
-                    ):
-                        # another primary is in wacls
-                        hacl = {}
+                # hacl is set as primary, if wacls has no other primary entry we must keep
+                # this entry as primary (so we'll compare entry to hacl and not
+                # generate commands)
+                if hacl.get("secondary", False) is False and list(
+                    filter(
+                        lambda w: w.get("secondary", False) is False,
+                        wacls.values(),
+                    ),
+                ):
+                    # another primary is in wacls
+                    hacl = {}
                 self.validate_ips(afi, want=entry, have=hacl)
 
                 if hacl:
@@ -156,7 +155,7 @@ class L3_interfaces(ResourceModule):
             # these can be subnets that are no longer used
             # or secondaries that have moved to primary
             # or primary that has moved to secondary
-            for key, entry in hacls.items():
+            for entry in hacls.values():
                 self.validate_ips(afi, have=entry)
                 self.compare(parsers=self.parsers, want={}, have={afi: entry})
 
@@ -165,9 +164,6 @@ class L3_interfaces(ResourceModule):
         self.commands.append(self._tmplt.render(have, "interface", negate=True))
 
     def normalize_interface_names(self, param):
-        # if param:
-        #     for _k, val in iteritems(param):
-        #         val["name"] = normalize_interface(val["name"])
         return param
 
     def validate_ips(self, afi, want=None, have=None) -> None:

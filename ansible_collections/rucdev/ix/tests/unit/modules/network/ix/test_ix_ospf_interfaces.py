@@ -13,7 +13,7 @@ from ansible.module_utils.common.parameters import remove_values
 
 from ansible_collections.rucdev.ix.plugins.modules import ix_ospf_interfaces
 from ansible_collections.rucdev.ix.tests.unit.modules.utils import (
-    AnsibleExitJson,
+    AnsibleExitJsonError,
     set_module_args,
 )
 
@@ -23,7 +23,7 @@ from .ix_module import TestIxModule
 def exit_json_no_log(module, **kwargs) -> NoReturn:
     # Hide the no_log values like the real AnsibleModule.exit_json does.
     kwargs.setdefault("changed", False)
-    raise AnsibleExitJson(remove_values(kwargs, module.no_log_values))
+    raise AnsibleExitJsonError(remove_values(kwargs, module.no_log_values))
 
 
 class TestIxOspfInterfacesModule(TestIxModule):

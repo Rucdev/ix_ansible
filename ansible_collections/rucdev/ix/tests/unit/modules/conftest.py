@@ -27,6 +27,6 @@ def patch_ansible_module(request, mocker) -> None:
         args = json.dumps(request.param)
     else:
         msg = "Malformed data to the patch_ansible_module pytest fixture"
-        raise Exception(msg)
+        raise TypeError(msg)
 
     mocker.patch("ansible.module_utils.basic._ANSIBLE_ARGS", to_bytes(args))

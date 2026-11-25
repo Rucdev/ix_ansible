@@ -48,9 +48,7 @@ class L3_interfacesFacts:
         objs = l3_interfaces_parser.parse()
 
         objs = utils.remove_empties(objs)
-        temp = []
-        for v in objs.values():
-            temp.append(v)
+        temp = list(objs.values())
         # sorting the dict by interface name
         temp = sorted(temp, key=lambda k, sk="name": k[sk])
 

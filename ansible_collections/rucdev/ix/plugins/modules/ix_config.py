@@ -221,7 +221,7 @@ RETURN = """"""
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.connection import ConnectionError
+from ansible.module_utils.connection import ConnectionError as AnsibleConnectionError
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.config import (
     NetworkConfig,
     dumps,
@@ -338,7 +338,7 @@ def main() -> None:
                 path=path,
                 diff_replace=replace,
             )
-        except ConnectionError as exc:
+        except AnsibleConnectionError as exc:
             module.fail_json(msg=to_text(exc, errors="surrogate_then_replace"))
 
         config_diff = response["config_diff"]

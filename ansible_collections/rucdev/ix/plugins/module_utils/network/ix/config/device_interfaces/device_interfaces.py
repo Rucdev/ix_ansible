@@ -65,9 +65,6 @@ class Device_interfaces(ResourceModule):
         wantd = {entry["name"]: entry for entry in self.want}
         haved = {entry["name"]: entry for entry in self.have}
 
-        # for each in wantd, haved:
-        #     self.normalize_interface_names(each)
-
         # if state is merged, merge want onto have and then compare
         if self.state == "merged":
             wantd = dict_merge(haved, wantd)
@@ -84,7 +81,7 @@ class Device_interfaces(ResourceModule):
                     self._compare(want={}, have=have)
 
         if self.state == "purged":
-            for k, have in haved.items():
+            for have in haved.values():
                 self.purge(have)
         else:
             for k, want in wantd.items():
@@ -99,17 +96,6 @@ class Device_interfaces(ResourceModule):
         begin = len(self.commands)
         self.compare(parsers=self.parsers, want=want, have=have)
 
-        # if want.get("enabled") != have.get("enabled"):
-        #     if want.get("enabled"):
-        #         self.addcmd(want, "enabled", negate=True)
-        #     else:
-        #         if want:
-        #             self.addcmd(want, "enabled", negate=False)
-        #         elif have.get("enabled"):
-        #             # handles deleted as want be blank and only
-        #             # negates if no shutdown
-        #             self.addcmd(have, "enabled", negate=False)
-
         if len(self.commands) != begin:
             self.commands.insert(
                 begin,
@@ -121,7 +107,4 @@ class Device_interfaces(ResourceModule):
         self.commands.append(self._tmplt.render(have, "device", negate=True))
 
     def normalize_interface_names(self, param):
-        # if param:
-        #     for _k, val in param.items():
-        #         val["name"] = normalize_interface(val["name"])
         return param

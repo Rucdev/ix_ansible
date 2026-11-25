@@ -68,8 +68,9 @@ notice-rgx = '(?i)(?:copyright\b|\(c\)\s+\d{4})'
 # pytest checks results with assert statements.
 "ansible_collections/rucdev/ix/tests/**" = ["S101"]
 # These methods keep the signatures of CliconfBase in ansible.netcommon,
-# which calls them with keyword arguments.
+# which calls them with keyword arguments (including "format").
 "ansible_collections/rucdev/ix/plugins/cliconf/ix.py" = [
+    "A002",
     "ARG002",
     "FBT002",
     "PLR0913",

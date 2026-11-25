@@ -119,7 +119,6 @@ class Static_routesFacts:
             module=self._module,
         )
         objs = static_routes_parser.parse()
-        # raise Exception(objs)
 
         strout = self.process_static_routes(objs)
         objs = self.structure_static_routes(strout)

@@ -116,7 +116,7 @@ class Ospfv3(ResourceModule):
                     if haveing and self.state in ["overridden", "replaced"]:
                         self.addcmd(haveing, _parser, negate=True)
                     self.addcmd(wanting, _parser, negate=False)
-            for key, haveing in hdist.items():
+            for haveing in hdist.values():
                 self.addcmd(haveing, _parser, negate=True)
 
     def _areas_compare(self, want, have) -> None:
@@ -124,7 +124,7 @@ class Ospfv3(ResourceModule):
         hareas = have.get("areas", {})
         for name, entry in wareas.items():
             self._area_compare(want=entry, have=hareas.pop(name, {}))
-        for name, entry in hareas.items():
+        for entry in hareas.values():
             self._area_compare(want={}, have=entry)
 
     def _area_compare(self, want, have) -> None:
@@ -149,7 +149,7 @@ class Ospfv3(ResourceModule):
                     if haveing and self.state in ["overridden", "replaced"]:
                         self.addcmd(haveing, _parser, negate=True)
                     self.addcmd(wanting, _parser, negate=False)
-            for key, haveing in haver.items():
+            for haveing in haver.values():
                 haveing["area_id"] = area_id
                 self.addcmd(haveing, _parser, negate=True)
 

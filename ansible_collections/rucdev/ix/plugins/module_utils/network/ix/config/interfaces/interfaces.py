@@ -74,7 +74,7 @@ class Interfaces(ResourceModule):
                     self._compare(want={}, have=have)
 
         if self.state == "purged":
-            for k, have in haved.items():
+            for have in haved.values():
                 self.purge(have)
         else:
             for k, want in wantd.items():
@@ -116,7 +116,4 @@ class Interfaces(ResourceModule):
         self.commands.append(self._tmplt.render(have, "interface", negate=True))
 
     def normalize_interface_names(self, param):
-        # if param:
-        #     for _k, val in param.items():
-        #         val["name"] = normalize_interface(val["name"])
         return param

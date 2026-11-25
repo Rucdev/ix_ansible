@@ -25,23 +25,23 @@ def set_module_args(args) -> None:
     basic._ANSIBLE_PROFILE = "legacy"
 
 
-class AnsibleExitJson(Exception):
+class AnsibleExitJsonError(Exception):
     pass
 
 
-class AnsibleFailJson(Exception):
+class AnsibleFailJsonError(Exception):
     pass
 
 
 def exit_json(*_args, **kwargs) -> NoReturn:
     if "changed" not in kwargs:
         kwargs["changed"] = False
-    raise AnsibleExitJson(kwargs)
+    raise AnsibleExitJsonError(kwargs)
 
 
 def fail_json(*_args, **kwargs) -> NoReturn:
     kwargs["failed"] = True
-    raise AnsibleFailJson(kwargs)
+    raise AnsibleFailJsonError(kwargs)
 
 
 class ModuleTestCase(TestCase):
