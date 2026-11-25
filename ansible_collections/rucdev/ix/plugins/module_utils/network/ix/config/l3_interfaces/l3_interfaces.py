@@ -61,18 +61,8 @@ class L3Interfaces(ResourceModule):
         """Generate configuration commands to send based on
         want, have and desired state.
         """
-        if self.want:
-            wantd = {}
-            for each in self.want:
-                wantd.update({each["name"]: each})
-        else:
-            wantd = {}
-        if self.have:
-            haved = {}
-            for each in self.have:
-                haved.update({each["name"]: each})
-        else:
-            haved = {}
+        wantd = {each["name"]: each for each in self.want or []}
+        haved = {each["name"]: each for each in self.have or []}
 
         for each in wantd, haved:
             self.list_to_dict(each)
@@ -106,52 +96,8 @@ class L3Interfaces(ResourceModule):
         for afi in ("ipv4", "ipv6"):
             wacls = want.pop(afi, {})
             hacls = have.pop(afi, {})
-
-            for key, entry in wacls.items():
-                if entry.get("secondary", False) is True:
-                    continue
-                # entry is set as primary
-                hacl = hacls.get(key, {})
-                if hacl.get("secondary", False) is True:
-                    hacl = {}
-                self.validate_ips(afi, want=entry, have=hacl)
-
-                if hacl:
-                    hacls.pop(key, {})
-
-                self.compare(
-                    parsers=self.parsers,
-                    want={afi: entry},
-                    have={afi: hacl},
-                )
-
-            for key, entry in wacls.items():
-                if entry.get("secondary", False) is False:
-                    continue
-                # entry is set as secondary
-                hacl = hacls.get(key, {})
-                # hacl is set as primary, if wacls has no other primary entry we must keep
-                # this entry as primary (so we'll compare entry to hacl and not
-                # generate commands)
-                if hacl.get("secondary", False) is False and list(
-                    filter(
-                        lambda w: w.get("secondary", False) is False,
-                        wacls.values(),
-                    ),
-                ):
-                    # another primary is in wacls
-                    hacl = {}
-                self.validate_ips(afi, want=entry, have=hacl)
-
-                if hacl:
-                    hacls.pop(key, {})
-
-                self.compare(
-                    parsers=self.parsers,
-                    want={afi: entry},
-                    have={afi: hacl},
-                )
-
+            self._compare_primaries(afi, wacls, hacls)
+            self._compare_secondaries(afi, wacls, hacls)
             # remove remaining items in have for replaced
             # these can be subnets that are no longer used
             # or secondaries that have moved to primary
@@ -159,6 +105,55 @@ class L3Interfaces(ResourceModule):
             for entry in hacls.values():
                 self.validate_ips(afi, have=entry)
                 self.compare(parsers=self.parsers, want={}, have={afi: entry})
+
+    def _compare_primaries(self, afi, wacls, hacls):
+        """Compare the primary addresses; matched ones are removed from hacls."""
+        for key, entry in wacls.items():
+            if entry.get("secondary", False) is True:
+                continue
+            # entry is set as primary
+            hacl = hacls.get(key, {})
+            if hacl.get("secondary", False) is True:
+                hacl = {}
+            self.validate_ips(afi, want=entry, have=hacl)
+
+            if hacl:
+                hacls.pop(key, {})
+
+            self.compare(
+                parsers=self.parsers,
+                want={afi: entry},
+                have={afi: hacl},
+            )
+
+    def _compare_secondaries(self, afi, wacls, hacls):
+        """Compare the secondary addresses; matched ones are removed from hacls."""
+        for key, entry in wacls.items():
+            if entry.get("secondary", False) is False:
+                continue
+            # entry is set as secondary
+            hacl = hacls.get(key, {})
+            # hacl is set as primary, if wacls has no other primary entry we must keep
+            # this entry as primary (so we'll compare entry to hacl and not
+            # generate commands)
+            if hacl.get("secondary", False) is False and list(
+                filter(
+                    lambda w: w.get("secondary", False) is False,
+                    wacls.values(),
+                ),
+            ):
+                # another primary is in wacls
+                hacl = {}
+            self.validate_ips(afi, want=entry, have=hacl)
+
+            if hacl:
+                hacls.pop(key, {})
+
+            self.compare(
+                parsers=self.parsers,
+                want={afi: entry},
+                have={afi: hacl},
+            )
 
     def purge(self, have) -> None:
         """Handle operation for purged state."""
@@ -194,31 +189,41 @@ class L3Interfaces(ResourceModule):
         if param:
             for val in param.values():
                 if "ipv4" in val:
-                    temp = {}
-                    for each in val["ipv4"]:
-                        if each.get("address") and each.get("address") != "dhcp":
-                            temp.update({each["address"]: each})
-                        elif each.get("address") == "dhcp":
-                            # deprecated attribute
-                            temp.update(
-                                {
-                                    "dhcp": {
-                                        "dhcp": {
-                                            "client_id": each.get("dhcp_client"),
-                                            "hostname": each.get("dhcp_hostname"),
-                                        },
-                                    },
-                                },
-                            )
-                        if not each.get("address"):
-                            temp.update({next(iter(each.keys())): each})
-                    val["ipv4"] = temp
+                    val["ipv4"] = self._ipv4_to_dict(val["ipv4"])
                 if "ipv6" in val:
-                    temp = {}
-                    for each in val["ipv6"]:
-                        if each.get("address"):
-                            each["address"] = each["address"].lower()
-                            temp.update({each["address"]: each})
-                        if not each.get("address"):
-                            temp.update({next(iter(each.keys())): each})
-                    val["ipv6"] = temp
+                    val["ipv6"] = self._ipv6_to_dict(val["ipv6"])
+
+    @staticmethod
+    def _ipv4_to_dict(entries):
+        """Key the IPv4 address entries by address."""
+        temp = {}
+        for each in entries:
+            if each.get("address") and each.get("address") != "dhcp":
+                temp.update({each["address"]: each})
+            elif each.get("address") == "dhcp":
+                # deprecated attribute
+                temp.update(
+                    {
+                        "dhcp": {
+                            "dhcp": {
+                                "client_id": each.get("dhcp_client"),
+                                "hostname": each.get("dhcp_hostname"),
+                            },
+                        },
+                    },
+                )
+            if not each.get("address"):
+                temp.update({next(iter(each.keys())): each})
+        return temp
+
+    @staticmethod
+    def _ipv6_to_dict(entries):
+        """Key the IPv6 address entries by lower-case address."""
+        temp = {}
+        for each in entries:
+            if each.get("address"):
+                each["address"] = each["address"].lower()
+                temp.update({each["address"]: each})
+            if not each.get("address"):
+                temp.update({next(iter(each.keys())): each})
+        return temp

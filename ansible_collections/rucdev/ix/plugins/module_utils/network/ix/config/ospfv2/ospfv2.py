@@ -64,21 +64,9 @@ class Ospfv2(ResourceModule):
         """Generate configuration commands to send based on
         want, have and desired state.
         """
-        wantd = {}
-        haved = {}
+        wantd = self._processes_by_id(self.want)
+        haved = self._processes_by_id(self.have)
 
-        if self.want:
-            for entry in self.want.get("processes", []):
-                wantd.update({(entry["process_id"]): entry})
-
-        if self.have:
-            for entry in self.have.get("processes", []):
-                haved.update({(entry["process_id"]): entry})
-
-        # turn all lists of dicts into dicts prior to merge
-        for each in wantd, haved:
-            if each:
-                self._list_to_dict(each)
         # if state is merged, merge want onto have and then compare
         if self.state == "merged":
             wantd = dict_merge(haved, wantd)
@@ -96,6 +84,17 @@ class Ospfv2(ResourceModule):
 
         for k, want in wantd.items():
             self._compare(want=want, have=haved.pop(k, {}))
+
+    def _processes_by_id(self, config):
+        """Return the processes of config keyed by process ID, with lists as dicts."""
+        processes = {}
+        if config:
+            for entry in config.get("processes", []):
+                processes.update({(entry["process_id"]): entry})
+        # turn all lists of dicts into dicts prior to merge
+        if processes:
+            self._list_to_dict(processes)
+        return processes
 
     def _compare(self, want, have) -> None:
         """Leverages the base class `compare()` method and

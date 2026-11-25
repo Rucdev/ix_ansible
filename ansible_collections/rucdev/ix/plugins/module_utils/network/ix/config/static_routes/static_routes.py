@@ -134,25 +134,29 @@ class StaticRoutes(ResourceModule):
             if not afs:
                 return True
             for af in afs:
-                if af["afi"] != have["afi"]:
-                    continue
-                routes = af.get("routes")
-                if not routes:
+                if af["afi"] == have["afi"] and self._af_matches(entry, af, have):
                     return True
-                for route in routes:
-                    if route["dest"] != have["dest"]:
-                        continue
-                    if not route.get("next_hops"):
-                        return True
-                    for nh in route["next_hops"]:
-                        wanted = self._route(
-                            entry.get("vrf"),
-                            af["afi"],
-                            route["dest"],
-                            nh,
-                        )
-                        if self._key(wanted) == self._key(have):
-                            return True
+        return False
+
+    def _af_matches(self, entry, af, have):
+        """Whether an address family of the deleted config selects the route."""
+        routes = af.get("routes")
+        if not routes:
+            return True
+        for route in routes:
+            if route["dest"] != have["dest"]:
+                continue
+            if not route.get("next_hops"):
+                return True
+            for nh in route["next_hops"]:
+                wanted = self._route(
+                    entry.get("vrf"),
+                    af["afi"],
+                    route["dest"],
+                    nh,
+                )
+                if self._key(wanted) == self._key(have):
+                    return True
         return False
 
     @staticmethod
