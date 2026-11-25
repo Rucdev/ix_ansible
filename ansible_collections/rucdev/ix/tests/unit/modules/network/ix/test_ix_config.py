@@ -1,0 +1,119 @@
+#
+# -*- coding: utf-8 -*-
+# Copyright 2026 Red Hat
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+from __future__ import absolute_import, division, print_function
+
+__metaclass__ = type
+
+from textwrap import dedent
+from unittest.mock import ANY, MagicMock, patch
+
+from ansible_collections.rucdev.ix.plugins.cliconf.ix import Cliconf
+from ansible_collections.rucdev.ix.plugins.modules import ix_config
+from ansible_collections.rucdev.ix.tests.unit.modules.utils import set_module_args
+
+from .ix_module import TestIxModule
+
+RUNNING_CONFIG = dedent("""\
+    ! NEC Portable Internetwork Core Operating System Software
+    !
+    hostname Router1
+    timezone +09 00
+    !
+    interface GigaEthernet0.0
+      no ip address
+      shutdown
+    !
+    """)
+
+
+class TestIxConfigModule(TestIxModule):
+    module = ix_config
+
+    def setUp(self):
+        super(TestIxConfigModule, self).setUp()
+
+        self.mock_get_config = patch(
+            "ansible_collections.rucdev.ix.plugins.modules.ix_config.get_config"
+        )
+        self.get_config = self.mock_get_config.start()
+
+        self.mock_get_connection = patch(
+            "ansible_collections.rucdev.ix.plugins.modules.ix_config.get_connection"
+        )
+        self.get_connection = self.mock_get_connection.start()
+        self.conn = self.get_connection()
+        # Use the real cliconf diff so commands are computed as on a device.
+        self.cliconf_obj = Cliconf(MagicMock())
+        self.conn.get_diff.side_effect = self.cliconf_obj.get_diff
+
+        self.mock_run_commands = patch(
+            "ansible_collections.rucdev.ix.plugins.modules.ix_config.run_commands"
+        )
+        self.run_commands = self.mock_run_commands.start()
+
+    def tearDown(self):
+        super(TestIxConfigModule, self).tearDown()
+        self.mock_get_config.stop()
+        self.mock_get_connection.stop()
+        self.mock_run_commands.stop()
+
+    def load_fixtures(self, commands=None):
+        self.get_config.return_value = RUNNING_CONFIG
+        self.run_commands.return_value = [RUNNING_CONFIG]
+
+    def assert_str_warnings(self, result):
+        # ansible-core rejects any warning that is not a str.
+        for warning in result.get("warnings", []):
+            self.assertIsInstance(warning, str, result["warnings"])
+
+    def test_ix_config_lines_diff(self):
+        set_module_args(dict(lines=["hostname Router2"], _ansible_diff=True))
+        result = self.execute_module(changed=True, commands=["hostname Router2"])
+        self.conn.edit_config.assert_called_once_with(candidate=["hostname Router2"])
+        self.assert_str_warnings(result)
+
+    def test_ix_config_lines_diff_check_mode(self):
+        set_module_args(
+            dict(
+                lines=["hostname Router2"],
+                _ansible_diff=True,
+                _ansible_check_mode=True,
+            )
+        )
+        result = self.execute_module(changed=True, commands=["hostname Router2"])
+        self.conn.edit_config.assert_not_called()
+        self.assert_str_warnings(result)
+
+    def test_ix_config_src_diff(self):
+        set_module_args(dict(src="hostname Router2\n", _ansible_diff=True))
+        result = self.execute_module(changed=True, commands=["hostname Router2"])
+        self.conn.edit_config.assert_called_once_with(candidate=["hostname Router2"])
+        self.assert_str_warnings(result)
+
+    def test_ix_config_save_when_always_diff(self):
+        set_module_args(dict(save_when="always", _ansible_diff=True))
+        result = self.execute_module(changed=True)
+        self.run_commands.assert_any_call(
+            ANY, "copy running-config startup-config\r", configure=True
+        )
+        self.assert_str_warnings(result)
+
+    def test_ix_config_diff_against_intended(self):
+        intended = RUNNING_CONFIG.replace("hostname Router1", "hostname Router9")
+        set_module_args(
+            dict(
+                diff_against="intended",
+                intended_config=intended,
+                _ansible_diff=True,
+            )
+        )
+        result = self.execute_module(changed=True)
+        self.conn.edit_config.assert_not_called()
+        self.assertIn("hostname Router1", result["diff"]["before"])
+        self.assertNotIn("hostname Router9", result["diff"]["before"])
+        self.assertIn("hostname Router9", result["diff"]["after"])
+        self.assert_str_warnings(result)

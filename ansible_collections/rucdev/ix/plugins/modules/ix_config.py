@@ -425,15 +425,6 @@ def main():
                     dict(changed=True, diff=dict(before=str(before), after=str(after)))
                 )
 
-        if result.get("changed") and any(module.params["src"], module.params["lines"]):
-            msg = ()
-            if module.params["src"]:
-                msg += ""
-            if "warnings" in result:
-                result["warnings"].append(msg)
-            else:
-                result["warnings"] = msg
-
     module.exit_json(**result)
 
 
