@@ -60,18 +60,18 @@ class OspfInterfacesArgs:
                             "options": {
                                 "interval": {"type": "int", "default": 120},
                                 "priority": {"type": "int", "default": 1},
-                                "router_id": {"type": "str"},
+                                "router_id": {"type": "str", "required": True},
                             },
                         },
                         "neighbor_v3": {
                             "type": "list",
                             "elements": "dict",
                             "options": {
-                                "address": {"type": "str"},
+                                "address": {"type": "str", "required": True},
                                 "interval": {"type": "int", "default": 120},
                                 "priority": {"type": "int", "default": 1},
-                                "process_id": {"type": "int"},
-                                "router_id": {"type": "str"},
+                                "process_id": {"type": "int", "required": True},
+                                "router_id": {"type": "str", "required": True},
                             },
                         },
                         "interface_type": {

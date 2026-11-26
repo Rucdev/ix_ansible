@@ -92,8 +92,9 @@ options:
                 type: int
                 default: 1
               router_id:
-                description: Neighbor router ID
+                description: IP address of the neighbor router (A.B.C.D).
                 type: str
+                required: true
           neighbor_v3:
             description:
               - Register adjacent routers on the NBMA(Non-Broadcast Multiple Access) interface.
@@ -103,8 +104,9 @@ options:
             elements: dict
             suboptions:
               address:
-                description: Neighbor router IP address
+                description: IPv6 address of the neighbor router.
                 type: str
+                required: true
               interval:
                 description: The polling interval when adjacent router is down
                 type: int
@@ -114,11 +116,13 @@ options:
                 type: int
                 default: 1
               process_id:
-                description: Process ID
+                description: OSPFv3 process ID.
                 type: int
+                required: true
               router_id:
-                description: Neighbor router ID
+                description: Router ID of the neighbor router (A.B.C.D).
                 type: str
+                required: true
           interface_type:
             description:
               - Configure type of the interface
@@ -142,7 +146,7 @@ options:
     description:
       - This option is used only with state I(parsed).
       - The value of this option should be the output received from the ix
-        device by executing the command B(show running-config interfaces <name>).
+        device by executing the command B(show running-config interface).
       - The state I(parsed) reads the configuration from C(running_config)
         option and transforms it into Ansible structured data as per the
         resource module's argspec and the value is then returned in the
@@ -163,7 +167,7 @@ options:
       - The state I(parsed) reads the configuration from C(running_config) option and
         transforms it into JSON format as per the resource module parameters and the
         value is returned in the I(parsed) key within the result. The value of C(running_config)
-        option should be the same format as the output of command I(show running-config ospf)
+        option should be the same format as the output of command I(show running-config interface)
         executed on device. For state I(parsed) active
         connection to remote host is not required.
     type: str

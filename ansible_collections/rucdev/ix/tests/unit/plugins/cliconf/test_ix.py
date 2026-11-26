@@ -11,6 +11,7 @@ from pathlib import Path
 from unittest import TestCase
 from unittest.mock import MagicMock
 
+from ansible.errors import AnsibleConnectionFailure
 from ansible.module_utils._text import to_text
 
 from ansible_collections.rucdev.ix.plugins.cliconf import ix
@@ -112,6 +113,14 @@ class TestCliconfModeHandling(TestCase):
     config mode on their own.
     """
 
+    # show commands that IX rejects in exec mode (IX2215 10.11.18)
+    CONFIG_ONLY_SHOW = (
+        "show running-config",
+        "show startup-config",
+        "show ip ospf neighbor",
+        "show logging",
+    )
+
     def setUp(self) -> None:
         """Create the plugin on a mocked connection that records the commands sent."""
         self._conn = MagicMock()
@@ -133,6 +142,16 @@ class TestCliconfModeHandling(TestCase):
                     self._prompt = b"ix2215# "
             elif cmd.startswith("ip router ospf"):
                 self._prompt = b"ix2215(config-ospfv2-1)# "
+            exec_mode = not self._prompt.endswith(b")# ")
+            if (cmd in self.CONFIG_ONLY_SHOW and exec_mode) or "bogus" in cmd:
+                # what network_cli raises for "% ...  -- Invalid command."
+                raise AnsibleConnectionFailure(
+                    repr(
+                        "{0}\r\n% {1}  -- Invalid command.\r\n{2}".format(
+                            cmd, cmd.split()[-1], self._prompt.decode()
+                        ).encode()
+                    )
+                )
             return b""
 
         self._conn.send.side_effect = send
@@ -185,6 +204,62 @@ class TestCliconfModeHandling(TestCase):
         self._cliconf.run_commands(["show version", "show ip route"])
         assert self._sent == ["show version", "show ip route"]
         assert self._prompt == b"ix2215# "
+
+    def test_run_commands_config_only_show_retried_in_config(self):
+        self._cliconf.run_commands(["show ip ospf neighbor", "show logging"])
+        self.assertEqual(
+            self._sent,
+            [
+                "show ip ospf neighbor",
+                "configure",
+                "show ip ospf neighbor",
+                "show logging",
+            ],
+        )
+
+    def test_run_commands_exec_show_not_retried(self):
+        self._cliconf.run_commands(["show ip route", "show ip ospf neighbor"])
+        self.assertEqual(
+            self._sent,
+            [
+                "show ip route",
+                "show ip ospf neighbor",
+                "configure",
+                "show ip ospf neighbor",
+            ],
+        )
+
+    def test_run_commands_invalid_show_still_fails(self):
+        with self.assertRaises(AnsibleConnectionFailure):
+            self._cliconf.run_commands(["show bogus"])
+        self.assertEqual(self._sent, ["show bogus", "configure", "show bogus"])
+
+    def test_run_commands_invalid_show_check_rc_false(self):
+        out = self._cliconf.run_commands(["show bogus"], check_rc=False)
+        self.assertIn("Invalid command", out[0])
+
+    def test_run_commands_non_show_not_retried(self):
+        with self.assertRaises(AnsibleConnectionFailure):
+            self._cliconf.run_commands(["clear bogus"])
+        self.assertEqual(self._sent, ["clear bogus"])
+
+    def test_run_commands_invalid_in_config_not_retried(self):
+        self._prompt = b"ix2215(config)# "
+        with self.assertRaises(AnsibleConnectionFailure):
+            self._cliconf.run_commands(["show bogus"])
+        self.assertEqual(self._sent, ["show bogus"])
+
+    def test_get_config_only_show_retried_in_config(self):
+        """get() is what ansible.netcommon.cli_command uses."""
+        self._cliconf.get(command="show ip ospf neighbor")
+        self.assertEqual(
+            self._sent,
+            ["show ip ospf neighbor", "configure", "show ip ospf neighbor"],
+        )
+
+    def test_get_show_running_config_from_exec(self):
+        self._cliconf.get(command="show running-config")
+        self.assertEqual(self._sent, ["configure", "show running-config"])
 
     def test_edit_config_then_task_start_is_exec(self) -> None:
         """After edit_config the session is back in exec mode.

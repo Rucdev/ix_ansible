@@ -15,6 +15,8 @@ created.
 
 from __future__ import annotations
 
+import ipaddress
+
 from typing import TYPE_CHECKING
 
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module import (
@@ -33,6 +35,12 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
 
 if TYPE_CHECKING:
     from ansible.module_utils.basic import AnsibleModule
+
+# fields that identify a neighbor entry; the other fields are its options
+NEIGHBOR_KEYS = {
+    "neighbor_v2": ("router_id",),
+    "neighbor_v3": ("process_id", "router_id", "address"),
+}
 
 
 class OspfInterfaces(ResourceModule):
@@ -138,8 +146,6 @@ class OspfInterfaces(ResourceModule):
             "interface_type",
             "message_digest_key",
             "mtu_ignore",
-            "neighbor_v2",
-            "neighbor_v3",
             "priority",
             "retransmit_interval",
             "transmit_delay",
@@ -149,6 +155,22 @@ class OspfInterfaces(ResourceModule):
             hafis = have.pop(afi, {})
 
             self.compare(parsers=parsers, want=wafis, have=hafis)
+            self._compare_neighbors(want=wafis, have=hafis)
+
+    def _compare_neighbors(self, want, have):
+        """Neighbors are lists keyed by NEIGHBOR_KEYS (see process_list_attr).
+        Re-entering a neighbor replaces all of its options on IX, so a
+        changed entry is simply sent again; removal needs only the key.
+        """
+        for attr in NEIGHBOR_KEYS:
+            wnbrs = want.get(attr, {})
+            hnbrs = have.get(attr, {})
+            for key, entry in wnbrs.items():
+                if entry != hnbrs.get(key):
+                    self.addcmd(entry, attr, False)
+            for key, entry in hnbrs.items():
+                if key not in wnbrs:
+                    self.addcmd(entry, attr, True)
 
     def _list_to_dict(self, entry: list, attr_type: str | None = None) -> dict:
         if self.state == "deleted" and attr_type == "want":
@@ -167,5 +189,23 @@ class OspfInterfaces(ResourceModule):
         """Return the address families of an interface keyed by AFI."""
         item = {}
         for ag in add_fam.get("address_family", []):
+            ag = dict(ag)
+            for attr, keys in NEIGHBOR_KEYS.items():
+                if ag.get(attr):
+                    nbrs = [self._normalize_neighbor(nbr) for nbr in ag[attr]]
+                    ag[attr] = dict(
+                        (tuple(nbr.get(k) for k in keys), nbr) for nbr in nbrs
+                    )
             item[ag.get("afi")] = ag
         return item
+
+    @staticmethod
+    def _normalize_neighbor(nbr):
+        """IX shows IPv6 addresses in lower case, compressed form."""
+        nbr = dict(nbr)
+        if nbr.get("address"):
+            try:
+                nbr["address"] = ipaddress.ip_address(str(nbr["address"])).compressed
+            except ValueError:
+                nbr["address"] = nbr["address"].lower()
+        return nbr

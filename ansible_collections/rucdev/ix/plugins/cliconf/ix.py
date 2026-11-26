@@ -66,6 +66,14 @@ CONFIG_PROMPT_RE = re.compile(r"\(config[^)]*\)#$")
 # in exec mode they fail with "% running-config  -- Invalid command."
 CONFIG_ONLY_COMMANDS_RE = re.compile(r"^\s*show\s+(running-config|startup-config)\b")
 
+# Many other "show" commands also exist only in config mode, e.g. show logging,
+# show config, show ip ospf ..., show ike sa (IX2215 10.11.18). The command
+# reference's "execution mode" does not match the device exactly (show clock
+# also works in exec mode), so instead of listing them, a "show" command that
+# exec mode rejects as invalid is retried once in config mode.
+SHOW_COMMAND_RE = re.compile(r"^\s*show\s")
+INVALID_COMMAND_RE = re.compile(r"%\s*\S+\s+--\s+Invalid command\.")
+
 
 def configure_mode(func: Callable[..., object]) -> Callable[..., object]:
     """Decorate a Cliconf method so that it runs in config mode."""
@@ -99,6 +107,21 @@ class Cliconf(CliconfBase):
         """
         if not self._current_prompt().endswith("(config)#"):
             self.send_command("configure")
+
+    def _send_show_aware(self, **kwargs):
+        """send_command, retrying a "show" command in config mode when exec
+        mode rejects it as an invalid command (see SHOW_COMMAND_RE)."""
+        try:
+            return self.send_command(**kwargs)
+        except AnsibleConnectionFailure as exc:
+            if not (
+                SHOW_COMMAND_RE.match(to_text(kwargs.get("command")))
+                and INVALID_COMMAND_RE.search(to_text(exc))
+                and not CONFIG_PROMPT_RE.search(self._current_prompt())
+            ):
+                raise
+        self._enter_config_mode()
+        return self.send_command(**kwargs)
 
     def set_cli_prompt_context(self) -> None:
         """Make sure every task starts in exec mode, like cisco.ios.
@@ -259,7 +282,10 @@ class Cliconf(CliconfBase):
             msg = f"'output' value {output} is not supported for get"
             raise ValueError(msg)
 
-        return self.send_command(
+        if CONFIG_ONLY_COMMANDS_RE.match(to_text(command)):
+            self._enter_config_mode()
+
+        return self._send_show_aware(
             command=command,
             prompt=prompt,
             answer=answer,
@@ -342,7 +368,7 @@ class Cliconf(CliconfBase):
                 self._enter_config_mode()
 
             try:
-                out = self.send_command(**cmd)
+                out = self._send_show_aware(**cmd)
             except AnsibleConnectionFailure as e:
                 if check_rc:
                     raise
