@@ -19,6 +19,7 @@ class FactsArgs(object):  # pylint: disable=R0903
         "all",
         "hostname",
         "interfaces",
+        "l2_interfaces",
         "l3_interfaces",
         "ospf_interfaces",
         "ospfv2",

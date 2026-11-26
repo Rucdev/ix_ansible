@@ -34,6 +34,7 @@ class TerminalModule(TerminalBase):
         re.compile(rb"% Area is a stub area or nssa, so virtual links are not allowed"),
         re.compile(rb"% Area contains some interfaces or virtual-links."),
         re.compile(rb"% Same instance ID is already used."),
+        re.compile(rb"% Multiple VLAN not supported"),
     ]
 
     terminal_config_prompt = re.compile(r"^.+\(config\)#$")
