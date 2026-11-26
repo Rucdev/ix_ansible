@@ -69,11 +69,11 @@ options:
 
 EXAMPLES = """
 - name: Get show running config
-  ix.ix.ix_config:
+  rucdev.ix.ix_command:
     commands: show running-config
 
 - name: Run multiple commands
-  ix.ix.ix_command:
+  rucdev.ix.ix_command:
     commands:
       - show clock
       - show vlans

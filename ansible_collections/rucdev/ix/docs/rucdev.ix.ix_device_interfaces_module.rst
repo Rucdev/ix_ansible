@@ -379,11 +379,11 @@ Examples
 .. code-block:: yaml
 
     - name: Example device_interface module
-      rucdev.ix.device_interface:
+      rucdev.ix.ix_device_interfaces:
         config:
-          name: GigaEthernet0
-          duplex: full
-          speed: auto
+          - name: GigaEthernet0
+            duplex: full
+            speed: auto
 
 
 

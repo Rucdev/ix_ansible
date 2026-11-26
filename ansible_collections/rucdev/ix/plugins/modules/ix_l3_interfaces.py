@@ -154,7 +154,7 @@ EXAMPLES = """
     config:
       - name: GigaEthernet0.0
         ipv4:
-          address: 192.168.1.1/24
+          - address: 192.168.1.1/24
     state: merged
 
 
@@ -174,11 +174,11 @@ EXAMPLES = """
     config:
       - name: GigaEthernet0.0
         ipv4:
-          address: 192.168.1.1/24
+          - address: 192.168.1.1/24
       - name: GigaEthernet1.0
         ipv6:
-          autoconfig:
-            enable: true
+          - autoconfig:
+              enable: true
     state: overridden
 
 
@@ -189,7 +189,7 @@ EXAMPLES = """
     config:
       - name: GigaEthernet0.0
         ipv4:
-          address: 192.168.1.1/24
+          - address: 192.168.1.1/24
     state: replaced
 """
 RETURN = """
