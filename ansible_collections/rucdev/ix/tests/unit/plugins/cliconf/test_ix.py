@@ -11,6 +11,8 @@ from pathlib import Path
 from unittest import TestCase
 from unittest.mock import MagicMock
 
+import pytest
+
 from ansible.errors import AnsibleConnectionFailure
 from ansible.module_utils._text import to_text
 
@@ -147,10 +149,8 @@ class TestCliconfModeHandling(TestCase):
                 # what network_cli raises for "% ...  -- Invalid command."
                 raise AnsibleConnectionFailure(
                     repr(
-                        "{0}\r\n% {1}  -- Invalid command.\r\n{2}".format(
-                            cmd, cmd.split()[-1], self._prompt.decode()
-                        ).encode()
-                    )
+                        f"{cmd}\r\n% {cmd.split()[-1]}  -- Invalid command.\r\n{self._prompt.decode()}".encode(),
+                    ),
                 )
             return b""
 
@@ -205,61 +205,63 @@ class TestCliconfModeHandling(TestCase):
         assert self._sent == ["show version", "show ip route"]
         assert self._prompt == b"ix2215# "
 
-    def test_run_commands_config_only_show_retried_in_config(self):
+    def test_run_commands_config_only_show_retried_in_config(self) -> None:
+        """A show command that exec mode rejects is sent again in config mode."""
         self._cliconf.run_commands(["show ip ospf neighbor", "show logging"])
-        self.assertEqual(
-            self._sent,
-            [
-                "show ip ospf neighbor",
-                "configure",
-                "show ip ospf neighbor",
-                "show logging",
-            ],
-        )
+        assert self._sent == [
+            "show ip ospf neighbor",
+            "configure",
+            "show ip ospf neighbor",
+            "show logging",
+        ]
 
-    def test_run_commands_exec_show_not_retried(self):
+    def test_run_commands_exec_show_not_retried(self) -> None:
+        """A show command that exec mode accepts is sent only once."""
         self._cliconf.run_commands(["show ip route", "show ip ospf neighbor"])
-        self.assertEqual(
-            self._sent,
-            [
-                "show ip route",
-                "show ip ospf neighbor",
-                "configure",
-                "show ip ospf neighbor",
-            ],
-        )
+        assert self._sent == [
+            "show ip route",
+            "show ip ospf neighbor",
+            "configure",
+            "show ip ospf neighbor",
+        ]
 
-    def test_run_commands_invalid_show_still_fails(self):
-        with self.assertRaises(AnsibleConnectionFailure):
+    def test_run_commands_invalid_show_still_fails(self) -> None:
+        """A show command that config mode rejects too still fails."""
+        with pytest.raises(AnsibleConnectionFailure):
             self._cliconf.run_commands(["show bogus"])
-        self.assertEqual(self._sent, ["show bogus", "configure", "show bogus"])
+        assert self._sent == ["show bogus", "configure", "show bogus"]
 
-    def test_run_commands_invalid_show_check_rc_false(self):
+    def test_run_commands_invalid_show_check_rc_false(self) -> None:
+        """With check_rc=False, the output of a rejected show command is returned."""
         out = self._cliconf.run_commands(["show bogus"], check_rc=False)
-        self.assertIn("Invalid command", out[0])
+        assert "Invalid command" in out[0]
 
-    def test_run_commands_non_show_not_retried(self):
-        with self.assertRaises(AnsibleConnectionFailure):
+    def test_run_commands_non_show_not_retried(self) -> None:
+        """A command other than show is not sent again."""
+        with pytest.raises(AnsibleConnectionFailure):
             self._cliconf.run_commands(["clear bogus"])
-        self.assertEqual(self._sent, ["clear bogus"])
+        assert self._sent == ["clear bogus"]
 
-    def test_run_commands_invalid_in_config_not_retried(self):
+    def test_run_commands_invalid_in_config_not_retried(self) -> None:
+        """A show command rejected in config mode is not sent again."""
         self._prompt = b"ix2215(config)# "
-        with self.assertRaises(AnsibleConnectionFailure):
+        with pytest.raises(AnsibleConnectionFailure):
             self._cliconf.run_commands(["show bogus"])
-        self.assertEqual(self._sent, ["show bogus"])
+        assert self._sent == ["show bogus"]
 
-    def test_get_config_only_show_retried_in_config(self):
+    def test_get_config_only_show_retried_in_config(self) -> None:
         """get() is what ansible.netcommon.cli_command uses."""
         self._cliconf.get(command="show ip ospf neighbor")
-        self.assertEqual(
-            self._sent,
-            ["show ip ospf neighbor", "configure", "show ip ospf neighbor"],
-        )
+        assert self._sent == [
+            "show ip ospf neighbor",
+            "configure",
+            "show ip ospf neighbor",
+        ]
 
-    def test_get_show_running_config_from_exec(self):
+    def test_get_show_running_config_from_exec(self) -> None:
+        """get() enters config mode before show running-config."""
         self._cliconf.get(command="show running-config")
-        self.assertEqual(self._sent, ["configure", "show running-config"])
+        assert self._sent == ["configure", "show running-config"]
 
     def test_edit_config_then_task_start_is_exec(self) -> None:
         """After edit_config the session is back in exec mode.

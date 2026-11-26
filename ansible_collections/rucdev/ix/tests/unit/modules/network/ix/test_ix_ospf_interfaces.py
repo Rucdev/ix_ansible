@@ -6,8 +6,10 @@
 
 """Unit tests of the ix_ospf_interfaces module."""
 
+from __future__ import annotations
+
 from textwrap import dedent
-from typing import NoReturn
+from typing import ClassVar, NoReturn
 from unittest.mock import patch
 
 from ansible.module_utils.basic import AnsibleModule
@@ -360,48 +362,48 @@ class TestIxOspfInterfacesModule(TestIxModule):
         !
         """)
 
-    def test_ix_ospf_interfaces_parsed_network_type_only(self):
-        set_module_args(dict(running_config=self.NETWORK_TYPE_ONLY, state="parsed"))
+    def test_ix_ospf_interfaces_parsed_network_type_only(self) -> None:
+        """Parsed gives an afi to an interface whose only OSPF line is ip ospf network."""
+        set_module_args({"running_config": self.NETWORK_TYPE_ONLY, "state": "parsed"})
         result = self.execute_module(changed=False)
-        self.assertEqual(
-            result["parsed"],
-            [
-                dict(
-                    name="GigaEthernet1.0",
-                    address_family=[dict(afi="ipv4", interface_type="point-to-point")],
-                )
-            ],
-        )
+        assert result["parsed"] == [
+            {
+                "name": "GigaEthernet1.0",
+                "address_family": [{"afi": "ipv4", "interface_type": "point-to-point"}],
+            },
+        ]
 
-    def test_ix_ospf_interfaces_merged_network_type_only_idempotent(self):
+    def test_ix_ospf_interfaces_merged_network_type_only_idempotent(self) -> None:
+        """Merged sends nothing when ip ospf network is already the only OSPF line."""
         self.execute_show_command.return_value = self.NETWORK_TYPE_ONLY
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet1.0",
-                        address_family=[
-                            dict(afi="ipv4", interface_type="point-to-point")
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet1.0",
+                        "address_family": [
+                            {"afi": "ipv4", "interface_type": "point-to-point"},
                         ],
-                    )
+                    },
                 ],
-                state="merged",
-            )
+                "state": "merged",
+            },
         )
         self.execute_module(changed=False, commands=[])
 
-    def test_ix_ospf_interfaces_replaced_network_type_only(self):
+    def test_ix_ospf_interfaces_replaced_network_type_only(self) -> None:
+        """Replaced removes ip ospf network when the config leaves it out."""
         self.execute_show_command.return_value = self.NETWORK_TYPE_ONLY
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet1.0",
-                        address_family=[dict(afi="ipv4", cost=10)],
-                    )
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet1.0",
+                        "address_family": [{"afi": "ipv4", "cost": 10}],
+                    },
                 ],
-                state="replaced",
-            )
+                "state": "replaced",
+            },
         )
         self.execute_module(
             changed=True,
@@ -413,9 +415,10 @@ class TestIxOspfInterfacesModule(TestIxModule):
             ],
         )
 
-    def test_ix_ospf_interfaces_deleted_network_type_only(self):
+    def test_ix_ospf_interfaces_deleted_network_type_only(self) -> None:
+        """Deleted removes ip ospf network when it is the only OSPF line."""
         self.execute_show_command.return_value = self.NETWORK_TYPE_ONLY
-        set_module_args(dict(config=[dict(name="GigaEthernet1.0")], state="deleted"))
+        set_module_args({"config": [{"name": "GigaEthernet1.0"}], "state": "deleted"})
         self.execute_module(
             changed=True,
             commands=[
@@ -470,77 +473,83 @@ class TestIxOspfInterfacesModule(TestIxModule):
         """)
 
     @staticmethod
-    def _neighbors(v2=None, v3=None):
-        afs = [dict(afi="ipv4", interface_type="non-broadcast", neighbor_v2=v2 or [])]
+    def _neighbors(v2: list | None = None, v3: list | None = None) -> list:
+        """Return the config of GigaEthernet1.0 with the given neighbors."""
+        afs = [
+            {"afi": "ipv4", "interface_type": "non-broadcast", "neighbor_v2": v2 or []},
+        ]
         if v3:
-            afs.append(dict(afi="ipv6", neighbor_v3=v3))
-        return [dict(name="GigaEthernet1.0", address_family=afs)]
+            afs.append({"afi": "ipv6", "neighbor_v3": v3})
+        return [{"name": "GigaEthernet1.0", "address_family": afs}]
 
-    V2_3 = dict(router_id="10.0.91.3", interval=180, priority=10)
-    V2_4 = dict(router_id="10.0.91.4")
-    V3_3 = dict(
-        process_id=1,
-        router_id="10.0.91.3",
-        address="2001:db8:91::3",
-        interval=180,
-        priority=10,
-    )
+    V2_3: ClassVar[dict] = {"router_id": "10.0.91.3", "interval": 180, "priority": 10}
+    V2_4: ClassVar[dict] = {"router_id": "10.0.91.4"}
+    V3_3: ClassVar[dict] = {
+        "process_id": 1,
+        "router_id": "10.0.91.3",
+        "address": "2001:db8:91::3",
+        "interval": 180,
+        "priority": 10,
+    }
 
-    def test_ix_ospf_interfaces_parsed_neighbors(self):
-        set_module_args(dict(running_config=self.NEIGHBORS, state="parsed"))
+    def test_ix_ospf_interfaces_parsed_neighbors(self) -> None:
+        """Parsed reads the neighbors and fills in the defaults that IX hides."""
+        set_module_args({"running_config": self.NEIGHBORS, "state": "parsed"})
         result = self.execute_module(changed=False)
-        self.assertEqual(
-            result["parsed"],
-            [
-                dict(
-                    name="GigaEthernet1.0",
-                    address_family=[
-                        dict(
-                            afi="ipv4",
-                            interface_type="non-broadcast",
-                            neighbor_v2=[
-                                self.V2_3,
-                                dict(router_id="10.0.91.4", interval=120, priority=1),
-                            ],
-                        ),
-                        dict(afi="ipv6", neighbor_v3=[self.V3_3]),
+        assert result["parsed"] == [
+            {
+                "name": "GigaEthernet1.0",
+                "address_family": [
+                    {
+                        "afi": "ipv4",
+                        "interface_type": "non-broadcast",
+                        "neighbor_v2": [
+                            self.V2_3,
+                            {"router_id": "10.0.91.4", "interval": 120, "priority": 1},
+                        ],
+                    },
+                    {"afi": "ipv6", "neighbor_v3": [self.V3_3]},
+                ],
+            },
+        ]
+
+    def test_ix_ospf_interfaces_rendered_neighbors(self) -> None:
+        """Rendered gives one command per neighbor, without default or missing options."""
+        set_module_args(
+            {
+                "config": self._neighbors(
+                    v2=[
+                        self.V2_3,
+                        self.V2_4,
+                        {"router_id": "10.0.91.5", "priority": 20},
                     ],
-                )
+                    v3=[self.V3_3],
+                ),
+                "state": "rendered",
+            },
+        )
+        result = self.execute_module(changed=False)
+        assert sorted(result["rendered"]) == sorted(
+            [
+                "interface GigaEthernet1.0",
+                "ip ospf network non-broadcast",
+                "ip ospf neighbor 10.0.91.3 poll-interval 180 priority 10",
+                "ip ospf neighbor 10.0.91.4",
+                "ip ospf neighbor 10.0.91.5 priority 20",
+                "ipv6 ospf neighbor 1 10.0.91.3 2001:db8:91::3 poll-interval 180 priority 10",
             ],
         )
 
-    def test_ix_ospf_interfaces_rendered_neighbors(self):
-        set_module_args(
-            dict(
-                config=self._neighbors(
-                    v2=[self.V2_3, self.V2_4, dict(router_id="10.0.91.5", priority=20)],
-                    v3=[self.V3_3],
-                ),
-                state="rendered",
-            )
-        )
-        result = self.execute_module(changed=False)
-        self.assertEqual(
-            sorted(result["rendered"]),
-            sorted(
-                [
-                    "interface GigaEthernet1.0",
-                    "ip ospf network non-broadcast",
-                    "ip ospf neighbor 10.0.91.3 poll-interval 180 priority 10",
-                    "ip ospf neighbor 10.0.91.4",
-                    "ip ospf neighbor 10.0.91.5 priority 20",
-                    "ipv6 ospf neighbor 1 10.0.91.3 2001:db8:91::3 poll-interval 180 priority 10",
-                ]
-            ),
-        )
-
-    def test_ix_ospf_interfaces_merged_neighbor_add(self):
+    def test_ix_ospf_interfaces_merged_neighbor_add(self) -> None:
+        """Merged adds a new neighbor."""
         self.execute_show_command.return_value = self.NEIGHBORS
         set_module_args(
-            dict(
-                config=self._neighbors(v2=[dict(router_id="10.0.91.1", priority=20)]),
-                state="merged",
-            )
+            {
+                "config": self._neighbors(
+                    v2=[{"router_id": "10.0.91.1", "priority": 20}],
+                ),
+                "state": "merged",
+            },
         )
         self.execute_module(
             changed=True,
@@ -550,29 +559,31 @@ class TestIxOspfInterfacesModule(TestIxModule):
             ],
         )
 
-    def test_ix_ospf_interfaces_merged_neighbor_idempotent(self):
+    def test_ix_ospf_interfaces_merged_neighbor_idempotent(self) -> None:
+        """Merged sends nothing for neighbors that are already configured."""
         # includes a neighbor with default options and an upper-case v3 address
         self.execute_show_command.return_value = self.NEIGHBORS
         v3 = dict(self.V3_3, address="2001:DB8:91::3")
         set_module_args(
-            dict(
-                config=self._neighbors(v2=[self.V2_3, self.V2_4], v3=[v3]),
-                state="merged",
-            )
+            {
+                "config": self._neighbors(v2=[self.V2_3, self.V2_4], v3=[v3]),
+                "state": "merged",
+            },
         )
         self.execute_module(changed=False, commands=[])
 
-    def test_ix_ospf_interfaces_merged_neighbor_change_options(self):
+    def test_ix_ospf_interfaces_merged_neighbor_change_options(self) -> None:
+        """Merged sends a neighbor again when its options change."""
         # re-entering a neighbor replaces all of its options on IX
         self.execute_show_command.return_value = self.NEIGHBORS
         set_module_args(
-            dict(
-                config=self._neighbors(
-                    v2=[dict(router_id="10.0.91.3", priority=20)],
+            {
+                "config": self._neighbors(
+                    v2=[{"router_id": "10.0.91.3", "priority": 20}],
                     v3=[dict(self.V3_3, interval=120)],
                 ),
-                state="merged",
-            )
+                "state": "merged",
+            },
         )
         self.execute_module(
             changed=True,
@@ -583,13 +594,14 @@ class TestIxOspfInterfacesModule(TestIxModule):
             ],
         )
 
-    def test_ix_ospf_interfaces_replaced_neighbors(self):
+    def test_ix_ospf_interfaces_replaced_neighbors(self) -> None:
+        """Replaced adds the missing neighbors and removes the others."""
         self.execute_show_command.return_value = self.NEIGHBORS
         set_module_args(
-            dict(
-                config=self._neighbors(v2=[self.V2_3, dict(router_id="10.0.91.5")]),
-                state="replaced",
-            )
+            {
+                "config": self._neighbors(v2=[self.V2_3, {"router_id": "10.0.91.5"}]),
+                "state": "replaced",
+            },
         )
         self.execute_module(
             changed=True,
@@ -602,18 +614,19 @@ class TestIxOspfInterfacesModule(TestIxModule):
             ],
         )
 
-    def test_ix_ospf_interfaces_overridden_neighbors(self):
+    def test_ix_ospf_interfaces_overridden_neighbors(self) -> None:
+        """Overridden removes the neighbors and settings that the config leaves out."""
         self.execute_show_command.return_value = self.NEIGHBORS
         set_module_args(
-            dict(
-                config=[
-                    dict(
-                        name="GigaEthernet1.0",
-                        address_family=[dict(afi="ipv4", neighbor_v2=[self.V2_4])],
-                    )
+            {
+                "config": [
+                    {
+                        "name": "GigaEthernet1.0",
+                        "address_family": [{"afi": "ipv4", "neighbor_v2": [self.V2_4]}],
+                    },
                 ],
-                state="overridden",
-            )
+                "state": "overridden",
+            },
         )
         self.execute_module(
             changed=True,
@@ -626,9 +639,10 @@ class TestIxOspfInterfacesModule(TestIxModule):
             ],
         )
 
-    def test_ix_ospf_interfaces_deleted_neighbors(self):
+    def test_ix_ospf_interfaces_deleted_neighbors(self) -> None:
+        """Deleted removes every neighbor of the interface."""
         self.execute_show_command.return_value = self.NEIGHBORS
-        set_module_args(dict(config=[dict(name="GigaEthernet1.0")], state="deleted"))
+        set_module_args({"config": [{"name": "GigaEthernet1.0"}], "state": "deleted"})
         self.execute_module(
             changed=True,
             sort=False,
@@ -641,15 +655,16 @@ class TestIxOspfInterfacesModule(TestIxModule):
             ],
         )
 
-    def test_ix_ospf_interfaces_neighbor_requires_router_id(self):
+    def test_ix_ospf_interfaces_neighbor_requires_router_id(self) -> None:
+        """A neighbor without router_id is rejected."""
         set_module_args(
-            dict(
-                config=self._neighbors(v2=[dict(priority=20)]),
-                state="rendered",
-            )
+            {
+                "config": self._neighbors(v2=[{"priority": 20}]),
+                "state": "rendered",
+            },
         )
         result = self.execute_module(failed=True)
-        self.assertIn("router_id", result["msg"])
+        assert "router_id" in result["msg"]
 
     def test_ix_ospf_interfaces_rendered(self) -> None:
         """Rendered returns the OSPF interface commands."""

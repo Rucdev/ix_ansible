@@ -108,9 +108,12 @@ class Cliconf(CliconfBase):
         if not self._current_prompt().endswith("(config)#"):
             self.send_command("configure")
 
-    def _send_show_aware(self, **kwargs):
-        """send_command, retrying a "show" command in config mode when exec
-        mode rejects it as an invalid command (see SHOW_COMMAND_RE)."""
+    def _send_show_aware(self, **kwargs: object) -> str:
+        """Send a command, retrying a "show" command once in config mode.
+
+        Exec mode rejects many "show" commands as invalid (see SHOW_COMMAND_RE).
+        Such a command is sent again in config mode; any other failure is raised.
+        """
         try:
             return self.send_command(**kwargs)
         except AnsibleConnectionFailure as exc:

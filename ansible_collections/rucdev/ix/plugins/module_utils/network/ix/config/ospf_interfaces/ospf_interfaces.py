@@ -157,20 +157,22 @@ class OspfInterfaces(ResourceModule):
             self.compare(parsers=parsers, want=wafis, have=hafis)
             self._compare_neighbors(want=wafis, have=hafis)
 
-    def _compare_neighbors(self, want, have):
-        """Neighbors are lists keyed by NEIGHBOR_KEYS (see process_list_attr).
-        Re-entering a neighbor replaces all of its options on IX, so a
-        changed entry is simply sent again; removal needs only the key.
+    def _compare_neighbors(self, want: dict, have: dict) -> None:
+        """Add the commands that turn the neighbors of have into those of want.
+
+        process_list_attr() keys the neighbors by their NEIGHBOR_KEYS fields.
+        Re-entering a neighbor replaces all of its options on IX, so a changed
+        entry is simply sent again; removal needs only the key.
         """
         for attr in NEIGHBOR_KEYS:
             wnbrs = want.get(attr, {})
             hnbrs = have.get(attr, {})
             for key, entry in wnbrs.items():
                 if entry != hnbrs.get(key):
-                    self.addcmd(entry, attr, False)
+                    self.addcmd(entry, attr, negate=False)
             for key, entry in hnbrs.items():
                 if key not in wnbrs:
-                    self.addcmd(entry, attr, True)
+                    self.addcmd(entry, attr, negate=True)
 
     def _list_to_dict(self, entry: list, attr_type: str | None = None) -> dict:
         if self.state == "deleted" and attr_type == "want":
@@ -188,20 +190,18 @@ class OspfInterfaces(ResourceModule):
     def process_list_attr(self, add_fam: dict) -> dict:
         """Return the address families of an interface keyed by AFI."""
         item = {}
-        for ag in add_fam.get("address_family", []):
-            ag = dict(ag)
+        for entry in add_fam.get("address_family", []):
+            ag = dict(entry)
             for attr, keys in NEIGHBOR_KEYS.items():
                 if ag.get(attr):
                     nbrs = [self._normalize_neighbor(nbr) for nbr in ag[attr]]
-                    ag[attr] = dict(
-                        (tuple(nbr.get(k) for k in keys), nbr) for nbr in nbrs
-                    )
+                    ag[attr] = {tuple(nbr.get(k) for k in keys): nbr for nbr in nbrs}
             item[ag.get("afi")] = ag
         return item
 
     @staticmethod
-    def _normalize_neighbor(nbr):
-        """IX shows IPv6 addresses in lower case, compressed form."""
+    def _normalize_neighbor(nbr: dict) -> dict:
+        """Return nbr with its address in the form IX shows (lower case, compressed)."""
         nbr = dict(nbr)
         if nbr.get("address"):
             try:
