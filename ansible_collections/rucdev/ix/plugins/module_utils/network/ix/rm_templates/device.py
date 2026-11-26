@@ -5,7 +5,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-
 __metaclass__ = type
 
 """
@@ -22,11 +21,9 @@ from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.r
 )
 
 
-class Device_interfacesTemplate(NetworkTemplate):
+class DeviceTemplate(NetworkTemplate):
     def __init__(self, lines=None, tmplt=None, prefix=None, module=None):
-        super(Device_interfacesTemplate, self).__init__(
-            lines, tmplt=self, module=module
-        )
+        super(DeviceTemplate, self).__init__(lines, tmplt=self, module=module)
 
     PARSERS = [
         {
@@ -65,15 +62,13 @@ class Device_interfacesTemplate(NetworkTemplate):
                     ^\s+(port\s\d\s)?keepalive\s(?P<down_notification_time>\d+)\s(?P<down_notification_count>\d+)$""",
                 re.VERBOSE,
             ),
-            "setval": "keepalive {{ down_notification_time }} {{ down_notification_count }}",
+            "setval": "keepalive {{ keepalive.down_notification_time }} {{ keepalive.down_notification_count }}",
             "result": {
                 "{{ name }}": {
-                    "keepalive": [
-                        {
-                            "down_notification_time": "{{ down_notification_time }}",
-                            "down_notification_count": "{{ down_notification_count }}",
-                        }
-                    ],
+                    "keepalive": {
+                        "down_notification_time": "{{ down_notification_time }}",
+                        "down_notification_count": "{{ down_notification_count }}",
+                    },
                 },
             },
         },

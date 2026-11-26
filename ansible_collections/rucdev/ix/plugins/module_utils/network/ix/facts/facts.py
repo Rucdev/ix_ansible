@@ -5,16 +5,15 @@ __metaclass__ = type
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.facts.facts import (
     FactsBase,
 )
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.device.device import (
+    DeviceFacts,
+)
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.hostname.hostname import (
     HostnameFacts,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.interfaces.interfaces import (
     InterfacesFacts,
 )
-from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.device_interfaces.device_interfaces import (
-    Device_interfacesFacts,
-)
-
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.l3_interfaces.l3_interfaces import (
     L3_interfacesFacts,
 )
@@ -33,6 +32,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.static_
 )
 
 FACT_RESOURCE_SUBSETS = dict(
+    device=DeviceFacts,
     hostname=HostnameFacts,
     interfaces=InterfacesFacts,
     l3_interfaces=L3_interfacesFacts,
