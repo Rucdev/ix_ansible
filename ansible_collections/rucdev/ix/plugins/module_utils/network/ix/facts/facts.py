@@ -15,6 +15,9 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.device_
     Device_interfacesFacts,
 )
 
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.l2_interfaces.l2_interfaces import (
+    L2_interfacesFacts,
+)
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.l3_interfaces.l3_interfaces import (
     L3_interfacesFacts,
 )
@@ -35,6 +38,7 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.static_
 FACT_RESOURCE_SUBSETS = dict(
     hostname=HostnameFacts,
     interfaces=InterfacesFacts,
+    l2_interfaces=L2_interfacesFacts,
     l3_interfaces=L3_interfacesFacts,
     ospf_interfaces=Ospf_interfacesFacts,
     ospfv2=Ospfv2Facts,
