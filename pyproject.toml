@@ -48,8 +48,6 @@ lines-between-types = 1
 max-line-length = 160
 
 [tool.ruff.lint.flake8-copyright]
-# Empty files have nothing to license; ansible-test requires some empty __init__.py.
-min-file-size = 1
 # Ansible's notice has no year ("Copyright: Contributors to the Ansible project"),
 # and existing notices such as "(c) 2016 Red Hat Inc." must not be edited without
 # the author's permission. See "Copyright and license" in the Ansible dev guide.
@@ -62,9 +60,10 @@ notice-rgx = '(?i)(?:copyright\b|\(c\)\s+\d{4})'
 # ansible-test requires modules not to be executable.
 "ansible_collections/rucdev/ix/plugins/modules/*.py" = ["E402", "EXE001"]
 "ansible_collections/rucdev/ix/plugins/cliconf/*.py" = ["E402"]
-# The empty-init test of ansible-test requires these __init__.py to be empty.
-"ansible_collections/rucdev/ix/plugins/modules/__init__.py" = ["D104"]
-"ansible_collections/rucdev/ix/tests/unit/**/__init__.py" = ["D104"]
+# Every __init__.py stays empty, without a docstring or a copyright notice. The
+# empty-init test of ansible-test requires that under plugins/modules and
+# tests/unit, and the other packages follow the same rule.
+"ansible_collections/rucdev/ix/**/__init__.py" = ["CPY001", "D104"]
 # pytest checks results with assert statements.
 "ansible_collections/rucdev/ix/tests/**" = ["S101"]
 # These methods keep the signatures of CliconfBase in ansible.netcommon,
