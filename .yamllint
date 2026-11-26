@@ -1,24 +1,24 @@
 ---
-extends: "default"
+extends: default
 # Skip what git ignores, such as the collections that ansible-galaxy installs.
-ignore-from-file: ".gitignore"
+ignore-from-file: .gitignore
 rules:
-  # Enable every rule, including those off by default, as errors.
+  # Enable every rule as an error, including those off by default, except
+  # key-ordering and quoted-strings: keys keep their natural order, and strings
+  # are quoted only where YAML needs it.
   comments:
-    level: "error"
+    level: error
   comments-indentation:
-    level: "error"
-  document-end: "enable"
+    level: error
+  document-end: enable
   document-start:
-    level: "error"
-  empty-values: "enable"
-  float-values: "enable"
-  key-ordering: "enable"
+    level: error
+  empty-values: enable
+  float-values: enable
   line-length:
     # Same limit as ruff (E501).
     max: 160
-  octal-values: "enable"
-  quoted-strings: "enable"
+  octal-values: enable
   truthy:
-    level: "error"
+    level: error
 ...

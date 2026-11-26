@@ -1,18 +1,18 @@
 ---
+namespace: rucdev
+name: ix
+version: 0.2.0
+readme: README.md
 authors:
-  - "Yushi Takeda (@rucdev)"
-  - "Chihiro Nakayama(@nakayumc0278)"
-build_ignore: [".venv", "example"]
+  - Yushi Takeda (@rucdev)
+  - Chihiro Nakayama(@nakayumc0278)
+description: Ansible collection for NEC IX series
+license_file: LICENSE
+tags: [nec, ix, networking]
 dependencies:
   "ansible.netcommon": ">=7.1.0"
-description: "Ansible collection for NEC IX series"
-homepage: "https://github.com/Rucdev/ix_ansible"
-issues: "https://github.com/Rucdev/ix_ansible/issues"
-license_file: "LICENSE"
-name: "ix"
-namespace: "rucdev"
-readme: "README.md"
-repository: "https://github.com/Rucdev/ix_ansible.git"
-tags: ["nec", "ix", "networking"]
-version: "0.2.0"
+repository: https://github.com/Rucdev/ix_ansible.git
+homepage: https://github.com/Rucdev/ix_ansible
+issues: https://github.com/Rucdev/ix_ansible/issues
+build_ignore: [.venv, example]
 ...
