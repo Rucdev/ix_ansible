@@ -451,6 +451,201 @@ class TestIxOspfInterfacesModule(TestIxModule):
         ]
         self.assertEqual(parsed_list, result["parsed"])
 
+    # IX hides the neighbor defaults (poll-interval 120, priority 1).
+    NEIGHBORS = dedent("""\
+        interface GigaEthernet1.0
+          ip address 10.0.91.2/24
+          ipv6 enable
+          ipv6 ospf neighbor 1 10.0.91.3 2001:db8:91::3 poll-interval 180 priority 10
+          ip ospf network non-broadcast
+          ip ospf neighbor 10.0.91.3 poll-interval 180 priority 10
+          ip ospf neighbor 10.0.91.4
+          no shutdown
+        !
+        """)
+
+    @staticmethod
+    def _neighbors(v2=None, v3=None):
+        afs = [dict(afi="ipv4", interface_type="non-broadcast", neighbor_v2=v2 or [])]
+        if v3:
+            afs.append(dict(afi="ipv6", neighbor_v3=v3))
+        return [dict(name="GigaEthernet1.0", address_family=afs)]
+
+    V2_3 = dict(router_id="10.0.91.3", interval=180, priority=10)
+    V2_4 = dict(router_id="10.0.91.4")
+    V3_3 = dict(
+        process_id=1,
+        router_id="10.0.91.3",
+        address="2001:db8:91::3",
+        interval=180,
+        priority=10,
+    )
+
+    def test_ix_ospf_interfaces_parsed_neighbors(self):
+        set_module_args(dict(running_config=self.NEIGHBORS, state="parsed"))
+        result = self.execute_module(changed=False)
+        self.assertEqual(
+            result["parsed"],
+            [
+                dict(
+                    name="GigaEthernet1.0",
+                    address_family=[
+                        dict(
+                            afi="ipv4",
+                            interface_type="non-broadcast",
+                            neighbor_v2=[
+                                self.V2_3,
+                                dict(router_id="10.0.91.4", interval=120, priority=1),
+                            ],
+                        ),
+                        dict(afi="ipv6", neighbor_v3=[self.V3_3]),
+                    ],
+                )
+            ],
+        )
+
+    def test_ix_ospf_interfaces_rendered_neighbors(self):
+        set_module_args(
+            dict(
+                config=self._neighbors(
+                    v2=[self.V2_3, self.V2_4, dict(router_id="10.0.91.5", priority=20)],
+                    v3=[self.V3_3],
+                ),
+                state="rendered",
+            )
+        )
+        result = self.execute_module(changed=False)
+        self.assertEqual(
+            sorted(result["rendered"]),
+            sorted(
+                [
+                    "interface GigaEthernet1.0",
+                    "ip ospf network non-broadcast",
+                    "ip ospf neighbor 10.0.91.3 poll-interval 180 priority 10",
+                    "ip ospf neighbor 10.0.91.4",
+                    "ip ospf neighbor 10.0.91.5 priority 20",
+                    "ipv6 ospf neighbor 1 10.0.91.3 2001:db8:91::3 poll-interval 180 priority 10",
+                ]
+            ),
+        )
+
+    def test_ix_ospf_interfaces_merged_neighbor_add(self):
+        self.execute_show_command.return_value = self.NEIGHBORS
+        set_module_args(
+            dict(
+                config=self._neighbors(v2=[dict(router_id="10.0.91.1", priority=20)]),
+                state="merged",
+            )
+        )
+        self.execute_module(
+            changed=True,
+            commands=[
+                "interface GigaEthernet1.0",
+                "ip ospf neighbor 10.0.91.1 priority 20",
+            ],
+        )
+
+    def test_ix_ospf_interfaces_merged_neighbor_idempotent(self):
+        # includes a neighbor with default options and an upper-case v3 address
+        self.execute_show_command.return_value = self.NEIGHBORS
+        v3 = dict(self.V3_3, address="2001:DB8:91::3")
+        set_module_args(
+            dict(
+                config=self._neighbors(v2=[self.V2_3, self.V2_4], v3=[v3]),
+                state="merged",
+            )
+        )
+        self.execute_module(changed=False, commands=[])
+
+    def test_ix_ospf_interfaces_merged_neighbor_change_options(self):
+        # re-entering a neighbor replaces all of its options on IX
+        self.execute_show_command.return_value = self.NEIGHBORS
+        set_module_args(
+            dict(
+                config=self._neighbors(
+                    v2=[dict(router_id="10.0.91.3", priority=20)],
+                    v3=[dict(self.V3_3, interval=120)],
+                ),
+                state="merged",
+            )
+        )
+        self.execute_module(
+            changed=True,
+            commands=[
+                "interface GigaEthernet1.0",
+                "ip ospf neighbor 10.0.91.3 priority 20",
+                "ipv6 ospf neighbor 1 10.0.91.3 2001:db8:91::3 priority 10",
+            ],
+        )
+
+    def test_ix_ospf_interfaces_replaced_neighbors(self):
+        self.execute_show_command.return_value = self.NEIGHBORS
+        set_module_args(
+            dict(
+                config=self._neighbors(v2=[self.V2_3, dict(router_id="10.0.91.5")]),
+                state="replaced",
+            )
+        )
+        self.execute_module(
+            changed=True,
+            sort=False,
+            commands=[
+                "interface GigaEthernet1.0",
+                "ip ospf neighbor 10.0.91.5",
+                "no ip ospf neighbor 10.0.91.4",
+                "no ipv6 ospf neighbor 1 10.0.91.3 2001:db8:91::3",
+            ],
+        )
+
+    def test_ix_ospf_interfaces_overridden_neighbors(self):
+        self.execute_show_command.return_value = self.NEIGHBORS
+        set_module_args(
+            dict(
+                config=[
+                    dict(
+                        name="GigaEthernet1.0",
+                        address_family=[dict(afi="ipv4", neighbor_v2=[self.V2_4])],
+                    )
+                ],
+                state="overridden",
+            )
+        )
+        self.execute_module(
+            changed=True,
+            sort=False,
+            commands=[
+                "interface GigaEthernet1.0",
+                "no ip ospf network non-broadcast",
+                "no ip ospf neighbor 10.0.91.3",
+                "no ipv6 ospf neighbor 1 10.0.91.3 2001:db8:91::3",
+            ],
+        )
+
+    def test_ix_ospf_interfaces_deleted_neighbors(self):
+        self.execute_show_command.return_value = self.NEIGHBORS
+        set_module_args(dict(config=[dict(name="GigaEthernet1.0")], state="deleted"))
+        self.execute_module(
+            changed=True,
+            sort=False,
+            commands=[
+                "interface GigaEthernet1.0",
+                "no ip ospf network non-broadcast",
+                "no ip ospf neighbor 10.0.91.3",
+                "no ip ospf neighbor 10.0.91.4",
+                "no ipv6 ospf neighbor 1 10.0.91.3 2001:db8:91::3",
+            ],
+        )
+
+    def test_ix_ospf_interfaces_neighbor_requires_router_id(self):
+        set_module_args(
+            dict(
+                config=self._neighbors(v2=[dict(priority=20)]),
+                state="rendered",
+            )
+        )
+        result = self.execute_module(failed=True)
+        self.assertIn("router_id", result["msg"])
+
     def test_ix_ospf_interfaces_rendered(self):
         set_module_args(
             dict(

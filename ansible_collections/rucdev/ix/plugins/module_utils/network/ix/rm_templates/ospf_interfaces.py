@@ -202,9 +202,12 @@ class Ospf_interfacesTemplate(NetworkTemplate):
                 $""",
                 re.VERBOSE
             ),
+            # rendered per neighbor entry; IX hides the defaults
+            # (poll-interval 120, priority 1) in running-config
             "setval": "ip ospf neighbor {{ router_id }}"
-            "{{ (' poll-interval' + interval) if interval is defined else '' }}"
-            "{{ (' priority' + priority) if priority is defined else '' }}",
+            "{{ ' poll-interval ' ~ interval if interval is defined and interval != 120 else '' }}"
+            "{{ ' priority ' ~ priority if priority is defined and priority != 1 else '' }}",
+            "remval": "ip ospf neighbor {{ router_id }}",
             "result": {
                 "{{ name }}": {
                     "address_family": {
@@ -236,8 +239,9 @@ class Ospf_interfacesTemplate(NetworkTemplate):
                 re.VERBOSE
             ),
             "setval": "ipv6 ospf neighbor {{ process_id }} {{ router_id }} {{ address }}"
-            "{{ (' poll-interval' + interval) if interval is defined else '' }}"
-            "{{ (' priority' + priority) if priority is defined else '' }}",
+            "{{ ' poll-interval ' ~ interval if interval is defined and interval != 120 else '' }}"
+            "{{ ' priority ' ~ priority if priority is defined and priority != 1 else '' }}",
+            "remval": "ipv6 ospf neighbor {{ process_id }} {{ router_id }} {{ address }}",
             "result": {
                 "{{ name }}": {
                     "address_family": {
