@@ -79,7 +79,7 @@ class InterfacesFacts:
             ),
         )
 
-        facts["interfaces"] = params["config"]
+        facts["interfaces"] = params.get("config", [])
         ansible_facts["ansible_network_resources"].update(facts)
 
         return ansible_facts

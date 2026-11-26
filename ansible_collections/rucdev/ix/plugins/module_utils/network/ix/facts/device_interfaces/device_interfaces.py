@@ -77,6 +77,6 @@ class DeviceInterfacesFacts:
                 redact=True,
             ),
         )
-        facts["device_interfaces"] = params["config"]
+        facts["device_interfaces"] = params.get("config", [])
         ansible_facts["ansible_network_resources"].update(facts)
         return ansible_facts
