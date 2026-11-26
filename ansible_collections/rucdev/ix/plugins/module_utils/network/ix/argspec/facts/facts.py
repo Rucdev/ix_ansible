@@ -17,6 +17,7 @@ class FactsArgs(object):  # pylint: disable=R0903
 
     choices = [
         "all",
+        "device",
         "hostname",
         "interfaces",
         "l3_interfaces",

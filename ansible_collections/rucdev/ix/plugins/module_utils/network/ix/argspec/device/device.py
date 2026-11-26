@@ -23,12 +23,12 @@
 #############################################
 
 """
-The arg spec for the ix_device_interfaces module
+The arg spec for the ix_device module
 """
 
 
-class Device_interfacesArgs(object):  # pylint: disable=R0903
-    """The arg spec for the ix_device_interfaces module"""
+class DeviceArgs(object):  # pylint: disable=R0903
+    """The arg spec for the ix_device module"""
 
     def __init__(self, **kwargs):
         pass
@@ -38,20 +38,15 @@ class Device_interfacesArgs(object):  # pylint: disable=R0903
             "type": "list",
             "elements": "dict",
             "options": {
-                "duplex": {
-                    "choices": ["auto", "full", "half"],
-                    "default": "auto",
-                    "type": "str",
-                },
+                "duplex": {"choices": ["auto", "full", "half"], "type": "str"},
                 "keepalive": {
-                    "type": "list",
-                    "elements": "dict",
+                    "type": "dict",
                     "options": {
                         "down_notification_time": {"type": "int"},
                         "down_notification_count": {"type": "int"},
                     },
                 },
-                "mdix": {"choices": ["mdi", "mdix"], "type": "str", "default": "mdix"},
+                "mdix": {"choices": ["mdi", "mdix"], "type": "str"},
                 "name": {"required": True, "type": "str"},
                 "output_buffer": {"type": "int"},
                 "sflow": {
@@ -72,6 +67,7 @@ class Device_interfacesArgs(object):  # pylint: disable=R0903
             },
         },
         "reset": {"options": {"name": {"type": "str"}}, "type": "dict"},
+        "running_config": {"type": "str"},
         "state": {
             "choices": [
                 "merged",
@@ -80,7 +76,6 @@ class Device_interfacesArgs(object):  # pylint: disable=R0903
                 "deleted",
                 "rendered",
                 "gathered",
-                "purged",
                 "parsed",
             ],
             "default": "merged",

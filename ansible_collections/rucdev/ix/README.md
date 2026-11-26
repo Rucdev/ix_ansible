@@ -23,7 +23,7 @@ Name | Description
 --- | ---
 [rucdev.ix.ix_command](https://github.com/Rucdev/ix_ansible/blob/main/docs/rucdev.ix.ix_command_module.rst)|Run commands on remote NEC IX devices.
 [rucdev.ix.ix_config](https://github.com/Rucdev/ix_ansible/blob/main/docs/rucdev.ix.ix_config_module.rst)|Manage configuration on device of NEC IX
-[rucdev.ix.ix_device_interfaces](https://github.com/Rucdev/ix_ansible/blob/main/docs/rucdev.ix.ix_device_interfaces_module.rst)|Configures interfaces on NEC IX switches.
+[rucdev.ix.ix_device](https://github.com/Rucdev/ix_ansible/blob/main/docs/rucdev.ix.ix_device_module.rst)|Resource module to configure physical devices (device blocks).
 [rucdev.ix.ix_facts](https://github.com/Rucdev/ix_ansible/blob/main/docs/rucdev.ix.ix_facts_module.rst)|Get facts about ix devices.
 [rucdev.ix.ix_hostname](https://github.com/Rucdev/ix_ansible/blob/main/docs/rucdev.ix.ix_hostname_module.rst)|Resource module to configure hostname.
 [rucdev.ix.ix_interfaces](https://github.com/Rucdev/ix_ansible/blob/main/docs/rucdev.ix.ix_interfaces_module.rst)|Resource module to configure interface.

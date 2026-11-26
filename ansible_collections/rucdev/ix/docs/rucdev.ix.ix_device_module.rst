@@ -1,14 +1,14 @@
-.. _rucdev.ix.ix_device_interfaces_module:
+.. _rucdev.ix.ix_device_module:
 
 
-******************************
-rucdev.ix.ix_device_interfaces
-******************************
+*******************
+rucdev.ix.ix_device
+*******************
 
-**Configures interfaces on NEC IX switches.**
+**Resource module to configure physical devices (device blocks).**
 
 
-Version added: 1.1.0
+Version added: 0.2.0
 
 .. contents::
    :local:
@@ -17,7 +17,9 @@ Version added: 1.1.0
 
 Synopsis
 --------
-- This module configures interfaces on NEC IX switches.
+- This module manages the ``device`` blocks of NEC IX routers, i.e. physical port settings such as speed, duplex and MDI/MDIX (for example ``device GigaEthernet0``).
+- Logical interfaces (``interface GigaEthernet0.0``) are managed by :ref:`rucdev.ix.ix_interfaces <rucdev.ix.ix_interfaces_module>` and :ref:`rucdev.ix.ix_l3_interfaces <rucdev.ix.ix_l3_interfaces_module>`.
+- This module was called ``ix_device_interfaces`` before 0.3.0. The old name still works as a deprecated redirect and will be removed in 1.0.0.
 
 
 
@@ -46,7 +48,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>A dictionary of interface options.</div>
+                        <div>A list of device configurations.</div>
                 </td>
             </tr>
                                 <tr>
@@ -61,13 +63,13 @@ Parameters
                 </td>
                 <td>
                         <ul style="margin: 0; padding: 0"><b>Choices:</b>
-                                    <li><div style="color: blue"><b>auto</b>&nbsp;&larr;</div></li>
+                                    <li>auto</li>
                                     <li>full</li>
                                     <li>half</li>
                         </ul>
                 </td>
                 <td>
-                        <div>The duplex mode of the interface.</div>
+                        <div>The duplex mode of the device.</div>
                 </td>
             </tr>
             <tr>
@@ -77,13 +79,13 @@ Parameters
                     <b>keepalive</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">-</span>
+                        <span style="color: purple">dictionary</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
-                        <div>Enable device keepalive</div>
+                        <div>Keepalive settings of the device. The IX defaults are 4 seconds and 3 times.</div>
                 </td>
             </tr>
                                 <tr>
@@ -138,7 +140,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>The MDI/MDIX mode of the interface.</div>
+                        <div>The MDI/MDIX mode of the device.</div>
                 </td>
             </tr>
             <tr>
@@ -155,14 +157,14 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The name of the interface, e.g. GitEthernet0.0, Loopback0, etc.</div>
+                        <div>The name of the device, e.g. GigaEthernet0, GigaEthernet2.</div>
                 </td>
             </tr>
             <tr>
                     <td class="elbow-placeholder"></td>
                 <td colspan="3">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>output-buffer</b>
+                    <b>output_buffer</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
                         <span style="color: purple">integer</span>
@@ -181,13 +183,13 @@ Parameters
                     <b>sflow</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
-                        <span style="color: purple">-</span>
+                        <span style="color: purple">dictionary</span>
                     </div>
                 </td>
                 <td>
                 </td>
                 <td>
-                        <div>The sFlow configuration of the interface.</div>
+                        <div>The sFlow configuration of the device.</div>
                 </td>
             </tr>
                                 <tr>
@@ -298,7 +300,7 @@ Parameters
                         </ul>
                 </td>
                 <td>
-                        <div>The speed of the interface.</div>
+                        <div>The speed of the device.</div>
                 </td>
             </tr>
 
@@ -314,7 +316,7 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>Reset the interface configuration to the default.</div>
+                        <div>Not implemented. This option is ignored.</div>
                 </td>
             </tr>
                                 <tr>
@@ -330,10 +332,27 @@ Parameters
                 <td>
                 </td>
                 <td>
-                        <div>The name of the interface, e.g. GitEthernet0.0, Loopback0, etc.</div>
+                        <div>The name of the device.</div>
                 </td>
             </tr>
 
+            <tr>
+                <td colspan="4">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>running_config</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>This option is used only with state <em>parsed</em>.</div>
+                        <div>The value of this option should be the output received from the IX device by executing the command <b>show running-config device</b>.</div>
+                        <div>The state <em>parsed</em> reads the configuration from <code>running_config</code> option and transforms it into Ansible structured data as per the resource module&#x27;s argspec and the value is then returned in the <em>parsed</em> key within the result.</div>
+                </td>
+            </tr>
             <tr>
                 <td colspan="4">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
@@ -351,12 +370,11 @@ Parameters
                                     <li>deleted</li>
                                     <li>rendered</li>
                                     <li>gathered</li>
-                                    <li>purged</li>
                                     <li>parsed</li>
                         </ul>
                 </td>
                 <td>
-                        <div>The state of the interface configuration.</div>
+                        <div>The state the configuration should be left in.</div>
                 </td>
             </tr>
     </table>
@@ -367,8 +385,12 @@ Notes
 -----
 
 .. note::
-   - Tested against NEC IX2215 Version 10.8.21.
-   - This module works with connection network_cli.
+   - Tested against NEC IX2215 Version 10.10.29.
+   - This module works with connection ``network_cli``.
+   - On devices with switch ports (for example GigaEthernet2 on IX2215), IX writes ``speed``, ``duplex`` and ``mdi-mdix`` once per port (``port N speed 100``). The module sets them for all ports and reads back a single value.
+   - Settings that are not shown in the running-config are not reported, so ``deleted`` and ``overridden`` only negate settings that are explicitly configured.
+   - Removing ``keepalive`` sends ``keepalive 4 3`` (the IX defaults) instead of ``no keepalive``, because ``no keepalive`` disables keepalive.
+   - IX does not accept ``no device``, so there is no ``purged`` state.
 
 
 
@@ -377,18 +399,55 @@ Examples
 
 .. code-block:: yaml
 
-    - name: Example device_interface module
-      rucdev.ix.device_interface:
+    # Using merged
+
+    - name: Set speed and duplex of GigaEthernet2
+      rucdev.ix.ix_device:
         config:
-          name: GigaEthernet0
-          duplex: full
-          speed: auto
+          - name: GigaEthernet2
+            speed: "100"
+            duplex: full
+        state: merged
+
+    # Commands sent:
+    # - device GigaEthernet2
+    # - duplex full
+    # - speed 100
+
+    # Using replaced
+
+    - name: Keep only mdi-mdix on GigaEthernet2
+      rucdev.ix.ix_device:
+        config:
+          - name: GigaEthernet2
+            mdix: mdi
+        state: replaced
+
+    # Commands sent (when speed 100 and duplex full were configured):
+    # - device GigaEthernet2
+    # - no duplex full
+    # - mdi-mdix mdi
+    # - no speed 100
+
+    # Using deleted
+
+    - name: Remove explicit settings from GigaEthernet2
+      rucdev.ix.ix_device:
+        config:
+          - name: GigaEthernet2
+        state: deleted
+
+    # Using gathered
+
+    - name: Gather device configuration
+      rucdev.ix.ix_device:
+        state: gathered
 
 
 
 Return Values
 -------------
-Common return values are documented `here <https://docs.ansible.com/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
+Common return values are documented `here <https://docs.ansible.com/projects/ansible/latest/reference_appendices/common_return_values.html#common-return-values>`_, the following are the fields unique to this module:
 
 .. raw:: html
 

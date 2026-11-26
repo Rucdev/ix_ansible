@@ -1,1 +1,14 @@
 requires_ansible: ">=2.15.0"
+plugin_routing:
+  modules:
+    ix_device_interfaces:
+      redirect: rucdev.ix.ix_device
+      deprecation:
+        removal_version: 1.0.0
+        warning_text: Use rucdev.ix.ix_device instead.
+  action:
+    ix_device_interfaces:
+      redirect: rucdev.ix.ix_device
+      deprecation:
+        removal_version: 1.0.0
+        warning_text: Use rucdev.ix.ix_device instead.
