@@ -1,16 +1,9 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 # Copyright 2025 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-"""
-The module file for ix_ospfv3
-"""
-
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
+"""The module file for ix_ospfv3."""
 
 DOCUMENTATION = """
 module: ix_ospfv3
@@ -185,7 +178,29 @@ options:
 """
 
 EXAMPLES = """
+# Using merged
 
+- name: Configure OSPFv3 process 1
+  rucdev.ix.ix_ospfv3:
+    config:
+      processes:
+        - process_id: 1
+          router_id: 10.0.0.1
+          network:
+            - interface: GigaEthernet1.0
+              area: "0"
+          passive_interfaces:
+            - GigaEthernet0.0
+    state: merged
+
+# Using deleted
+
+- name: Remove OSPFv3 process 1
+  rucdev.ix.ix_ospfv3:
+    config:
+      processes:
+        - process_id: 1
+    state: deleted
 """
 
 RETURN = """
@@ -236,6 +251,7 @@ parsed:
 """
 
 from ansible.module_utils.basic import AnsibleModule
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.ospfv3.ospfv3 import (
     Ospfv3Args,
 )
@@ -244,9 +260,8 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.config.ospfv3
 )
 
 
-def main():
-    """
-    Main entry point for module execution
+def main() -> None:
+    """Run the module.
 
     :returns: the result form module invocation
     """

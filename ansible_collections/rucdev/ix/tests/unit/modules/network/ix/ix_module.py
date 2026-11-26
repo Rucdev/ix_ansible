@@ -15,79 +15,92 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
+"""Base class for the unit tests of the ix_* modules."""
 
+from __future__ import annotations
+
+import contextlib
 import json
-import os
+
+from pathlib import Path
+
+import pytest
 
 from ansible_collections.rucdev.ix.tests.unit.modules.utils import (
-    AnsibleExitJson,
-    AnsibleFailJson,
+    AnsibleExitJsonError,
+    AnsibleFailJsonError,
     ModuleTestCase,
 )
 
-fixture_path = os.path.join(os.path.dirname(__file__), "fixtures")
+fixture_path = Path(__file__).parent / "fixtures"
 fixture_data = {}
 
 
-def load_fixture(name):
-    path = os.path.join(fixture_path, name)
+def load_fixture(name: str) -> str | dict:
+    """Return the content of a fixture file, parsed as JSON when possible."""
+    path = fixture_path / name
 
     if path in fixture_data:
         return fixture_data[path]
 
-    with open(path) as f:
-        data = f.read()
+    data = path.read_text()
 
-    try:
+    with contextlib.suppress(Exception):
         data = json.loads(data)
-    except Exception:
-        pass
 
     fixture_data[path] = data
     return data
 
 
 class TestIxModule(ModuleTestCase):
+    """Base class that runs a module and checks the result."""
+
     def execute_module(
-        self, failed=False, changed=False, commands=None, sort=True, defaults=False
-    ):
+        self,
+        *,
+        failed: bool = False,
+        changed: bool = False,
+        commands: list | None = None,
+        sort: bool = True,
+    ) -> dict:
+        """Run the module and check whether it failed or changed and which commands it sent."""
         self.load_fixtures(commands)
 
         if failed:
             result = self.failed()
-            self.assertTrue(result["failed"], result)
+            assert result["failed"], result
         else:
-            result = self.changed(changed)
-            self.assertEqual(result["changed"], changed, result)
+            result = self.changed(changed=changed)
+            assert result["changed"] == changed, result
 
         if commands is not None:
             if sort:
-                self.assertEqual(
-                    sorted(commands), sorted(result["commands"]), result["commands"]
-                )
+                assert sorted(commands) == sorted(result["commands"]), result[
+                    "commands"
+                ]
             else:
-                self.assertEqual(commands, result["commands"], result["commands"])
+                assert commands == result["commands"], result["commands"]
 
         return result
 
-    def failed(self):
-        with self.assertRaises(AnsibleFailJson) as exc:
+    def failed(self) -> dict:
+        """Run the module, expect it to fail and return the result."""
+        with pytest.raises(AnsibleFailJsonError) as exc:
             self.module.main()
 
-        result = exc.exception.args[0]
-        self.assertTrue(result["failed"], result)
+        result = exc.value.args[0]
+        assert result["failed"], result
         return result
 
-    def changed(self, changed=False):
-        with self.assertRaises(AnsibleExitJson) as exc:
+    def changed(self, *, changed: bool = False) -> dict:
+        """Run the module, check the changed flag and return the result."""
+        with pytest.raises(AnsibleExitJsonError) as exc:
             self.module.main()
 
-        result = exc.exception.args[0]
-        self.assertEqual(result["changed"], changed, result)
+        result = exc.value.args[0]
+        assert result["changed"] == changed, result
         return result
 
-    def load_fixtures(self, commands=None):
-        pass
+    def load_fixtures(self, commands: list | None = None) -> None:
+        """Set what the mocked functions return; subclasses override this."""

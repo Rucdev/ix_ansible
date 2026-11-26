@@ -26,57 +26,69 @@
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
+"""Helpers that modules use to talk to IX through the cliconf plugin."""
 
-from ansible.module_utils.connection import Connection, ConnectionError
-from ansible.module_utils._text import to_text, to_bytes
+from __future__ import annotations
+
+import json
+
+from typing import TYPE_CHECKING
+
+from ansible.module_utils._text import to_text
+from ansible.module_utils.connection import Connection
+from ansible.module_utils.connection import ConnectionError as AnsibleConnectionError
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
     to_list,
 )
-import json
+
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
 
 _DEVICE_CONFIGS = {}
 
 
-def get_connection(module):
-    if hasattr(module, "_ix_connection"):
-        return module._ix_connection
+def get_connection(module: AnsibleModule) -> Connection:
+    """Return the cliconf connection of the module, creating it on first use."""
+    if hasattr(module, "ix_connection"):
+        return module.ix_connection
 
     capabilities = get_capabilities(module)
     network_api = capabilities.get("network_api")
     if network_api == "cliconf":
-        module._ix_connection = Connection(module._socket_path)
+        module.ix_connection = Connection(module._socket_path)
     else:
-        module.fail_json(msg="Invalid connection type %s" % network_api)
+        module.fail_json(msg=f"Invalid connection type {network_api}")
 
-    return module._ix_connection
+    return module.ix_connection
 
 
-def get_capabilities(module):
-    if hasattr(module, "_ix_capabilities"):
-        return module._ix_capabilities
+def get_capabilities(module: AnsibleModule) -> dict:
+    """Return the capabilities of the cliconf plugin, cached on the module."""
+    if hasattr(module, "ix_capabilities"):
+        return module.ix_capabilities
 
     try:
         capabilities = Connection(module._socket_path).get_capabilities()
-    except ConnectionError as exc:
+    except AnsibleConnectionError as exc:
         module.fail_json(msg=to_text(exc, errors="surrogate_then_replace"))
-    module._ix_capabilities = json.loads(capabilities)
-    return module._ix_capabilities
+    module.ix_capabilities = json.loads(capabilities)
+    return module.ix_capabilities
 
 
-def get_defaults_flag(module):
+def get_defaults_flag(module: AnsibleModule) -> str:
+    """Return the flag that makes show running-config include the defaults."""
     connection = get_connection(module)
     try:
         out = connection.get_defaults_flag()
-    except ConnectionError as exc:
+    except AnsibleConnectionError as exc:
         module.fail_json(msg=to_text(exc, errors="surrogate_then_replace"))
 
     return to_text(out, errors="surrogate_then_replace").strip()
 
 
-def get_config(module, flags=None):
+def get_config(module: AnsibleModule, flags: list | str | None = None) -> str:
+    """Return the running config for the given flags, read once per flags."""
     flags = to_list(flags)
 
     section_filter = False
@@ -91,7 +103,7 @@ def get_config(module, flags=None):
         connection = get_connection(module)
         try:
             out = connection.get_config(flags=flags)
-        except ConnectionError as exc:
+        except AnsibleConnectionError as exc:
             if section_filter:
                 out = get_config(module, flags=flags[:-1])
             else:
@@ -101,12 +113,18 @@ def get_config(module, flags=None):
         return cfg
 
 
-def run_commands(module, commands, check_rc=True, configure=False):
+def run_commands(
+    module: AnsibleModule,
+    commands: list | str,
+    *,
+    check_rc: bool = True,
+    configure: bool = False,
+) -> list:
+    """Run commands, in config mode when configure is true, and return their outputs."""
     connection = get_connection(module)
     try:
         if configure:
             return connection.run_configs(commands=commands, check_rc=check_rc)
-        else:
-            return connection.run_commands(commands=commands, check_rc=check_rc)
-    except ConnectionError as exc:
+        return connection.run_commands(commands=commands, check_rc=check_rc)
+    except AnsibleConnectionError as exc:
         module.fail_json(msg=to_text(exc))

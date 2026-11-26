@@ -1,16 +1,9 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 # Copyright 2026 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-"""
-The module file for ix_hostname
-"""
-
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
+"""The module file for ix_hostname."""
 
 DOCUMENTATION = """
 module: ix_hostname
@@ -165,6 +158,7 @@ parsed:
 """
 
 from ansible.module_utils.basic import AnsibleModule
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.hostname.hostname import (
     HostnameArgs,
 )
@@ -173,9 +167,8 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.config.hostna
 )
 
 
-def main():
-    """
-    Main entry point for module execution
+def main() -> None:
+    """Run the module.
 
     :returns: the result form module invocation
     """

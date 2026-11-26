@@ -1,14 +1,11 @@
-# -*- coding: utf-8 -*-
 # Copyright 2024 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
+"""The StaticRoutes parser templates file.
 
-"""
-The Static_routes parser templates file. This contains
+This contains
 a list of parser definitions and associated functions that
 facilitates both facts gathering and native command generation for
 the given network resource.
@@ -27,11 +24,18 @@ Re-entering the same route REPLACES its options, and "no ip route <dest>
 <gateway>" removes it regardless of options.
 """
 
+from __future__ import annotations
+
 import re
+
+from typing import TYPE_CHECKING, ClassVar
 
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.network_template import (
     NetworkTemplate,
 )
+
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
 
 INTERFACE_RE = r"(?:Tunnel|Loopback|Null|Dialer|BVI|USB-Serial|BRI|GigaEthernet)\S+"
 
@@ -39,7 +43,7 @@ INTERFACE_RE = r"(?:Tunnel|Loopback|Null|Dialer|BVI|USB-Serial|BRI|GigaEthernet)
 IDENTITY_FLAGS = {"ipv4": ("connected", "dhcp"), "ipv6": ("dhcp", "ra")}
 
 
-def _route_head(data):
+def _route_head(data: dict) -> str:
     afi = data["afi"]
     cmd = "ip route" if afi == "ipv4" else "ipv6 route"
     if data.get("vrf"):
@@ -55,28 +59,36 @@ def _route_head(data):
     return cmd
 
 
-def _tmplt_route(data):
+def _tmplt_route(data: dict) -> str:
     """Full command in running-config order. Default values are omitted."""
     cmd = _route_head(data)
     for opt in ("distance", "metric", "tag"):
         if data.get(opt) is not None:
-            cmd += " {0} {1}".format(opt, data[opt])
+            cmd += f" {opt} {data[opt]}"
     return cmd
 
 
-def _tmplt_route_remove(data):
+def _tmplt_route_remove(data: dict) -> str:
     """Identity only; IX removes the route regardless of its options."""
     return _route_head(data)
 
 
-class Static_routesTemplate(NetworkTemplate):
-    def __init__(self, lines=None, module=None):
-        super(Static_routesTemplate, self).__init__(
-            lines=lines, tmplt=self, module=module
+class StaticRoutesTemplate(NetworkTemplate):
+    """Parsers and command templates of the ix_static_routes module."""
+
+    def __init__(
+        self,
+        lines: list[str] | None = None,
+        module: AnsibleModule | None = None,
+    ) -> None:
+        """Set up the template with the parsers of the resource."""
+        super().__init__(
+            lines=lines,
+            tmplt=self,
+            module=module,
         )
 
-    # fmt: off
-    PARSERS = [
+    PARSERS: ClassVar[list] = [
         {
             "name": "ipv4",
             "getval": re.compile(
@@ -85,13 +97,16 @@ class Static_routesTemplate(NetworkTemplate):
                 (\svrf\s(?P<vrf>\S+))?
                 \s(?P<dest>\S+)
                 (\s(?P<forward_router_address>\d+\.\d+\.\d+\.\d+))?
-                (\s(?P<interface>""" + INTERFACE_RE + r"""))?
+                (\s(?P<interface>"""
+                + INTERFACE_RE
+                + r"""))?
                 (\s(?P<connected>connected))?
                 (\s(?P<dhcp>dhcp))?
                 (\sdistance\s(?P<distance>\d+))?
                 (\smetric\s(?P<metric>\d+))?
                 (\stag\s(?P<tag>\d+))?
-                \s*$""", re.VERBOSE,
+                \s*$""",
+                re.VERBOSE,
             ),
             "setval": _tmplt_route,
             "remval": _tmplt_route_remove,
@@ -119,13 +134,16 @@ class Static_routesTemplate(NetworkTemplate):
                 ^ipv6\sroute
                 \s(?P<dest>\S+)
                 (\s(?P<forward_router_address>[0-9A-Fa-f]*:[0-9A-Fa-f:.]*(%\S+)?))?
-                (\s(?P<interface>""" + INTERFACE_RE + r"""))?
+                (\s(?P<interface>"""
+                + INTERFACE_RE
+                + r"""))?
                 (\s(?P<dhcp>dhcp))?
                 (\s(?P<ra>ra))?
                 (\sdistance\s(?P<distance>\d+))?
                 (\smetric\s(?P<metric>\d+))?
                 (\stag\s(?P<tag>\d+))?
-                \s*$""", re.VERBOSE,
+                \s*$""",
+                re.VERBOSE,
             ),
             "setval": _tmplt_route,
             "remval": _tmplt_route_remove,
@@ -147,4 +165,3 @@ class Static_routesTemplate(NetworkTemplate):
             },
         },
     ]
-    # fmt: on

@@ -1,16 +1,12 @@
 #
-# -*- coding: utf-8 -*-
 # Copyright 2024 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 #
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
+"""The ix_static_routes config file.
 
-"""
-The ix_static_routes config file.
 It is in this file where the current configuration (as dict)
 is compared to the provided configuration (as dict) and the command set
 necessary to bring the current configuration to its desired end-state is
@@ -26,15 +22,23 @@ Device behaviour this relies on (verified on IX2215 10.10.29):
   are treated as "not specified" here (see DEFAULT_OPTIONS).
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module import (
     ResourceModule,
 )
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.facts import (
     Facts,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.static_routes import (
-    Static_routesTemplate,
+    StaticRoutesTemplate,
 )
+
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
 
 ROUTE_IDENTITY = (
     "vrf",
@@ -55,22 +59,21 @@ ROUTE_OPTIONS = ("distance", "metric", "tag")
 DEFAULT_OPTIONS = {"distance": 1, "metric": 1}
 
 
-class Static_routes(ResourceModule):
-    """
-    The ix_static_routes config class
-    """
+class StaticRoutes(ResourceModule):
+    """The ix_static_routes config class."""
 
-    def __init__(self, module):
-        super(Static_routes, self).__init__(
+    def __init__(self, module: AnsibleModule) -> None:
+        """Set up the resource module with the argument spec and the template."""
+        super().__init__(
             empty_fact_val=[],
             facts_module=Facts(module),
             module=module,
             resource="static_routes",
-            tmplt=Static_routesTemplate(),
+            tmplt=StaticRoutesTemplate(),
         )
 
-    def execute_module(self):
-        """Execute the module
+    def execute_module(self) -> dict:
+        """Execute the module.
 
         :rtype: A dictionary
         :returns: The result from module execution
@@ -80,10 +83,8 @@ class Static_routes(ResourceModule):
             self.run_commands()
         return self.result
 
-    def generate_commands(self):
-        """Generate configuration commands to send based on
-        want, have and desired state.
-        """
+    def generate_commands(self) -> None:
+        """Generate the commands to send based on want, have and the state."""
         wantd = self._flatten(self.want, validate=True)
         haved = self._flatten(self.have)
 
@@ -104,10 +105,8 @@ class Static_routes(ResourceModule):
         # replaced: only destinations present in want are managed
         # overridden: every route on the device is managed
         if self.state == "replaced":
-            scope = set(self._dest_of(k) for k in wantd)
-            in_scope = dict(
-                (k, v) for k, v in haved.items() if self._dest_of(k) in scope
-            )
+            scope = {self._dest_of(k) for k in wantd}
+            in_scope = {k: v for k, v in haved.items() if self._dest_of(k) in scope}
         else:
             in_scope = haved
 
@@ -120,19 +119,23 @@ class Static_routes(ResourceModule):
             if key not in wantd:
                 self.addcmd(have, have["afi"], negate=True)
 
-    def _delete(self, haved):
-        if not self.want:
-            targets = haved.values()
-        else:
-            targets = [
+    def _delete(self, haved: dict) -> None:
+        targets = (
+            haved.values()
+            if not self.want
+            else [
                 have for key, have in haved.items() if self._matches_delete_filter(have)
             ]
+        )
         for have in targets:
             self.addcmd(have, have["afi"], negate=True)
 
-    def _matches_delete_filter(self, have):
-        """deleted with config: a vrf / afi / dest without next_hops selects
-        every route below it; a next_hop selects that route only."""
+    def _matches_delete_filter(self, have: dict) -> bool:
+        """Return whether the config of state deleted selects the route.
+
+        A vrf, afi or dest without next_hops selects every route below it; a
+        next_hop selects that route only.
+        """
         for entry in self.want:
             if (entry.get("vrf") or None) != have.get("vrf"):
                 continue
@@ -140,31 +143,38 @@ class Static_routes(ResourceModule):
             if not afs:
                 return True
             for af in afs:
-                if af["afi"] != have["afi"]:
-                    continue
-                routes = af.get("routes")
-                if not routes:
+                if af["afi"] == have["afi"] and self._af_matches(entry, af, have):
                     return True
-                for route in routes:
-                    if route["dest"] != have["dest"]:
-                        continue
-                    if not route.get("next_hops"):
-                        return True
-                    for nh in route["next_hops"]:
-                        wanted = self._route(
-                            entry.get("vrf"), af["afi"], route["dest"], nh
-                        )
-                        if self._key(wanted) == self._key(have):
-                            return True
+        return False
+
+    def _af_matches(self, entry: dict, af: dict, have: dict) -> bool:
+        """Whether an address family of the deleted config selects the route."""
+        routes = af.get("routes")
+        if not routes:
+            return True
+        for route in routes:
+            if route["dest"] != have["dest"]:
+                continue
+            if not route.get("next_hops"):
+                return True
+            for nh in route["next_hops"]:
+                wanted = self._route(
+                    entry.get("vrf"),
+                    af["afi"],
+                    route["dest"],
+                    nh,
+                )
+                if self._key(wanted) == self._key(have):
+                    return True
         return False
 
     @staticmethod
-    def _same(want, have):
+    def _same(want: dict, have: dict | None) -> bool:
         """Compare two routes; gateway addresses are case-insensitive (IPv6)."""
         if not have:
             return False
 
-        def norm(route):
+        def norm(route: dict) -> dict:
             route = dict(route)
             if route.get("forward_router_address"):
                 route["forward_router_address"] = route[
@@ -175,11 +185,11 @@ class Static_routes(ResourceModule):
         return norm(want) == norm(have)
 
     @staticmethod
-    def _dest_of(key):
+    def _dest_of(key: tuple) -> tuple:
         return key[:3]  # vrf, afi, dest
 
     @staticmethod
-    def _key(route):
+    def _key(route: dict) -> tuple:
         key = []
         for field in ROUTE_IDENTITY:
             value = route.get(field)
@@ -188,7 +198,7 @@ class Static_routes(ResourceModule):
             key.append(value or None)
         return tuple(key)
 
-    def _route(self, vrf, afi, dest, next_hop):
+    def _route(self, vrf: str | None, afi: str, dest: str, next_hop: dict) -> dict:
         route = {"afi": afi, "dest": dest}
         if vrf:
             route["vrf"] = vrf
@@ -200,9 +210,12 @@ class Static_routes(ResourceModule):
             route[field] = value
         return route
 
-    def _flatten(self, config, validate=False):
-        """[{vrf, address_families: [{afi, routes: [{dest, next_hops}]}]}]
-        -> {identity key: flat route dict}"""
+    def _flatten(self, config: list, *, validate: bool = False) -> dict:
+        """Flatten the config into routes keyed by their identity.
+
+        [{vrf, address_families: [{afi, routes: [{dest, next_hops}]}]}]
+        -> {identity key: flat route dict}
+        """
         routes = {}
         for entry in config or []:
             vrf = entry.get("vrf")
@@ -216,20 +229,19 @@ class Static_routes(ResourceModule):
                         routes[self._key(route)] = route
         return routes
 
-    def _validate(self, route):
+    def _validate(self, route: dict) -> None:
         afi = route["afi"]
-        where = "%s route %s" % (afi, route["dest"])
+        where = "{} route {}".format(afi, route["dest"])
         if not route.get("forward_router_address") and not route.get("interface"):
             self._module.fail_json(
-                msg="%s: next_hops needs forward_router_address and/or interface"
-                % where
+                msg=f"{where}: next_hops needs forward_router_address and/or interface",
             )
         if afi == "ipv4" and route.get("ra"):
-            self._module.fail_json(msg="%s: ra is only valid for ipv6" % where)
+            self._module.fail_json(msg=f"{where}: ra is only valid for ipv6")
         if afi == "ipv6" and route.get("connected"):
-            self._module.fail_json(msg="%s: connected is only valid for ipv4" % where)
+            self._module.fail_json(msg=f"{where}: connected is only valid for ipv4")
         if afi == "ipv6" and route.get("vrf"):
-            self._module.fail_json(msg="%s: IX has no vrf for ipv6 route" % where)
+            self._module.fail_json(msg=f"{where}: IX has no vrf for ipv6 route")
         for flag in ("dhcp", "ra"):
             if route.get(flag) and not route.get("interface"):
-                self._module.fail_json(msg="%s: %s requires interface" % (where, flag))
+                self._module.fail_json(msg=f"{where}: {flag} requires interface")

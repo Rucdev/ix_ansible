@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# Copyright: Contributors to the Ansible project
 #
 # This file is part of Ansible
 #
@@ -15,9 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 #
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
+
+"""The ix_command module."""
 
 DOCUMENTATION = """
 module: ix_command
@@ -68,20 +69,19 @@ options:
 
 EXAMPLES = """
 - name: Get show running config
-  ix.ix.ix_config:
+  rucdev.ix.ix_command:
     commands: show running-config
 
 - name: Run multiple commands
-  ix.ix.ix_command:
+  rucdev.ix.ix_command:
     commands:
       - show clock
       - show vlans
 
 - name: Run show version and check to see if output contains IX
-  ix.ix.ix_command:
+  rucdev.ix.ix_command:
     commands: show version
     wait_for: result[0] contains IX
-
 """
 
 RETURN = """
@@ -108,40 +108,43 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.parsing import (
     Conditional,
 )
+from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
+    to_lines,
+    transform_commands,
+)
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.ix import (
     run_commands,
 )
-from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
-    transform_commands,
-    to_lines,
-)
 
 
-def parse_commands(module: AnsibleModule, warnings: list):
+def parse_commands(module: AnsibleModule, warnings: list) -> list:
+    """Return the commands to run; in check mode, skip non-show commands with a warning."""
     commands = transform_commands(module)
 
     if module.check_mode:
         for item in list(commands):
             if not item["command"].startswith("show"):
                 warnings.append(
-                    f"Only show commands are supported when using check mode, not executing {item['command']}"
+                    f"Only show commands are supported when using check mode, not executing {item['command']}",
                 )
                 commands.remove(item)
     return commands
 
 
-def main():
-    argument_spec = dict(
-        commands=dict(type="list", elements="raw", required=True),
-        wait_for=dict(type="list", elements="str", aliases=["waitfor"]),
-        retries=dict(default=9, type="int"),
-        interval=dict(default=1, type="int"),
-    )
+def main() -> None:
+    """Run the module."""
+    argument_spec = {
+        "commands": {"type": "list", "elements": "raw", "required": True},
+        "wait_for": {"type": "list", "elements": "str", "aliases": ["waitfor"]},
+        "retries": {"default": 9, "type": "int"},
+        "interval": {"default": 1, "type": "int"},
+    }
     module = AnsibleModule(argument_spec=argument_spec, supports_check_mode=True)
-    warnings = list()
-    result = dict(changed=False, warnings=warnings)
+    warnings = []
+    result = {"changed": False, "warnings": warnings}
     commands = parse_commands(module, warnings)
-    wait_for = module.params["wait_for"] or list()
+    wait_for = module.params["wait_for"] or []
     conditionals = []
 
     try:
@@ -167,7 +170,7 @@ def main():
         msg = "One or more conditional statements have not been satisfied"
         module.fail_json(msg=msg, failed_conditions=failed_conditions)
 
-    result.update(dict(stdout=responses, stdout_lines=list(to_lines(responses))))
+    result.update({"stdout": responses, "stdout_lines": list(to_lines(responses))})
     module.exit_json(**result)
 
 

@@ -1,6 +1,4 @@
-__metaclass__ = type
 #
-# -*- coding: utf-8 -*-
 # Copyright 2023 AP Communications
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -23,23 +21,19 @@ __metaclass__ = type
 #
 #############################################
 
-"""
-The arg spec for the ix_interfaces module
-"""
+"""The arg spec for the ix_interfaces module."""
+
+from typing import ClassVar
 
 
-class InterfacesArgs(object):  # pylint: disable=R0903
-    """The arg spec for the ix_interfaces module"""
+class InterfacesArgs:
+    """The arg spec for the ix_interfaces module."""
 
-    def __init__(self, **kwargs):
-        pass
-
-    argument_spec = {
+    argument_spec: ClassVar[dict] = {
         "config": {
             "type": "list",
             "elements": "dict",
             "options": {
-                "bandwidth": {"type": "number"},
                 "description": {"type": "str"},
                 "enabled": {"default": True, "type": "bool"},
                 "mtu": {"type": "int"},
@@ -60,4 +54,4 @@ class InterfacesArgs(object):  # pylint: disable=R0903
             "default": "merged",
             "type": "str",
         },
-    }  # pylint: disable=C0301
+    }

@@ -1,11 +1,7 @@
-# -*- coding: utf-8 -*-
 # Copyright 2024 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
 
 #############################################
 #                WARNING                    #
@@ -22,15 +18,15 @@ __metaclass__ = type
 #
 #############################################
 
-"""
-The arg spec for the ix_static_routes module
-"""
+"""The arg spec for the ix_static_routes module."""
+
+from typing import ClassVar
 
 
-class Static_routesArgs(object):  # pylint: disable=R0903
-    """The arg spec for the ix_static_routes module"""
+class StaticRoutesArgs:
+    """The arg spec for the ix_static_routes module."""
 
-    argument_spec = {
+    argument_spec: ClassVar[dict] = {
         "config": {
             "type": "list",
             "elements": "dict",
@@ -84,4 +80,4 @@ class Static_routesArgs(object):  # pylint: disable=R0903
             "default": "merged",
             "type": "str",
         },
-    }  # pylint: disable=C0301
+    }

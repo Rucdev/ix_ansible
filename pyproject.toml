@@ -13,7 +13,75 @@ dependencies = [
     "antsibull-docs>=2.20.0",
 ]
 
-[tool.uv]
-dev-dependencies = [
-    "black>=23.7.0",
+[dependency-groups]
+dev = [
+    # black keeps its stable style within a calendar year; 27.x will change it.
+    "black>=26.1.0,<27",
 ]
+
+[tool.black]
+target-version = ["py39"]
+
+[tool.ruff]
+# "ALL" grows with each ruff release, so pin the version used by CI.
+required-version = "==0.17.6"
+# tests/config.yml: modules support Python 3.9 and later.
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    # D203/D211 and D212/D213 contradict each other; D211 and D212 are kept.
+    "D203",
+    "D213",
+]
+
+[tool.ruff.lint.isort]
+# Same grouping as the Ansible network collections (cisco.ios .isort.cfg):
+# netcommon is third-party although it shares the ansible_collections package.
+known-first-party = ["ansible_collections.rucdev.ix"]
+known-third-party = ["ansible_collections.ansible"]
+lines-between-types = 1
+
+[tool.ruff.lint.pycodestyle]
+# Same limit as the pep8 test of ansible-test; black still formats to 88.
+max-line-length = 160
+
+[tool.ruff.lint.flake8-copyright]
+# Ansible's notice has no year ("Copyright: Contributors to the Ansible project"),
+# and existing notices such as "(c) 2016 Red Hat Inc." must not be edited without
+# the author's permission. See "Copyright and license" in the Ansible dev guide.
+notice-rgx = '(?i)(?:copyright\b|\(c\)\s+\d{4})'
+
+[tool.ruff.lint.per-file-ignores]
+# E402: validate-modules (import-before-documentation) requires imports to
+# come after DOCUMENTATION, EXAMPLES and RETURN, in modules and in plugins.
+# EXE001: modules start with "#!/usr/bin/python", and the shebang test of
+# ansible-test requires modules not to be executable.
+"ansible_collections/rucdev/ix/plugins/modules/*.py" = ["E402", "EXE001"]
+"ansible_collections/rucdev/ix/plugins/cliconf/*.py" = ["E402"]
+# Every __init__.py stays empty, without a docstring or a copyright notice. The
+# empty-init test of ansible-test requires that under plugins/modules and
+# tests/unit, and the other packages follow the same rule.
+"ansible_collections/rucdev/ix/**/__init__.py" = ["CPY001", "D104"]
+# pytest checks results with assert statements.
+"ansible_collections/rucdev/ix/tests/**" = ["S101"]
+# These methods keep the signatures of CliconfBase in ansible.netcommon,
+# which calls them with keyword arguments (including "format").
+"ansible_collections/rucdev/ix/plugins/cliconf/ix.py" = [
+    "A002",
+    "ARG002",
+    "FBT001",
+    "FBT002",
+    "PLR0913",
+    "PLR0917",
+]
+# ansible.netcommon calls get_facts(legacy_facts_type=...), which this
+# collection does not use.
+"ansible_collections/rucdev/ix/plugins/module_utils/network/ix/facts/facts.py" = ["ARG002"]
+# AnsibleModule exposes the persistent connection only as _socket_path and
+# the diff mode only as _diff.
+"ansible_collections/rucdev/ix/plugins/module_utils/network/ix/ix.py" = ["SLF001"]
+"ansible_collections/rucdev/ix/plugins/modules/ix_config.py" = ["SLF001"]
+# Module arguments are set the same way as in ansible.module_utils.testing.
+"ansible_collections/rucdev/ix/tests/unit/modules/utils.py" = ["SLF001"]

@@ -324,6 +324,22 @@ Parameters
             <tr>
                 <td colspan="4">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
+                    <b>running_config</b>
+                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
+                    <div style="font-size: small">
+                        <span style="color: purple">string</span>
+                    </div>
+                </td>
+                <td>
+                </td>
+                <td>
+                        <div>This option is used only with state <em>parsed</em>.</div>
+                        <div>The value of this option should be the output received from the IX device by executing the command <b>show running-config</b>.</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>state</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -374,7 +390,7 @@ Examples
         config:
           - name: GigaEthernet0.0
             ipv4:
-              address: 192.168.1.1/24
+              - address: 192.168.1.1/24
         state: merged
 
 
@@ -387,8 +403,6 @@ Examples
           - name: GigaEthernet0.0
         state: deleted
 
-
-
     # Using overridden
 
     - name: Overrides all device configuration with provided configuration
@@ -396,11 +410,11 @@ Examples
         config:
           - name: GigaEthernet0.0
             ipv4:
-              address: 192.168.1.1/24
+              - address: 192.168.1.1/24
           - name: GigaEthernet1.0
             ipv6:
-              autoconfig:
-                enable: true
+              - autoconfig:
+                  enable: true
         state: overridden
 
 
@@ -411,7 +425,7 @@ Examples
         config:
           - name: GigaEthernet0.0
             ipv4:
-              address: 192.168.1.1/24
+              - address: 192.168.1.1/24
         state: replaced
 
 

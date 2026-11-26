@@ -1,42 +1,53 @@
-# -*- coding: utf-8 -*-
 # Copyright 2026 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
+"""The Hostname parser templates file.
 
-"""
-The Hostname parser templates file. This contains
+This contains
 a list of parser definitions and associated functions that
 facilitates both facts gathering and native command generation for
 the given network resource.
 """
 
+from __future__ import annotations
+
 import re
+
+from typing import TYPE_CHECKING, ClassVar
 
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.network_template import (
     NetworkTemplate,
 )
 
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
+
 
 class HostnameTemplate(NetworkTemplate):
-    def __init__(self, lines=None, module=None):
-        super(HostnameTemplate, self).__init__(lines=lines, tmplt=self, module=module)
+    """Parsers and command templates of the ix_hostname module."""
 
-    # fmt: off
-    PARSERS = [
+    def __init__(
+        self,
+        lines: list[str] | None = None,
+        module: AnsibleModule | None = None,
+    ) -> None:
+        """Set up the template with the parsers of the resource."""
+        super().__init__(lines=lines, tmplt=self, module=module)
+
+    PARSERS: ClassVar[list] = [
         {
             "name": "hostname",
             "getval": re.compile(
                 r"""
                 ^hostname\s(?P<hostname>\S+)
-                \s*$""", re.VERBOSE),
+                \s*$""",
+                re.VERBOSE,
+            ),
             "setval": "hostname {{ hostname }}",
             "result": {
                 "hostname": "{{ hostname }}",
             },
         },
     ]
-    # fmt: on

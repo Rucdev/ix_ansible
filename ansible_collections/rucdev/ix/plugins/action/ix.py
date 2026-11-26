@@ -16,38 +16,39 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 #
-from __future__ import absolute_import, division, print_function
 
 
-__metaclass__ = type
+"""Action plugin for the ix_* network modules."""
 
+from __future__ import annotations
 
 from ansible.utils.display import Display
 from ansible_collections.ansible.netcommon.plugins.action.network import (
     ActionModule as ActionNetworkModule,
 )
 
-
 display = Display()
 
 
 class ActionModule(ActionNetworkModule):
-    def run(self, tmp=None, task_vars=None):
+    """Run the ix_* modules over a network_cli connection."""
+
+    def run(self, tmp: str | None = None, task_vars: dict | None = None) -> dict:
+        """Fail unless the connection is network_cli, then run the module."""
         del tmp  # tmp no longer has any effect
 
         module_name = self._task.action.split(".")[-1]
-        self._config_module = True if module_name in ["ix_config", "config"] else False
+        self._config_module = module_name in ["ix_config", "config"]
         persistent_connection = self._play_context.connection.split(".")[-1]
         warnings = []
 
         if persistent_connection != "network_cli":
             return {
                 "failed": True,
-                "msg": "Connection type %s is not valid for this module"
-                % self._play_context.connection,
+                "msg": f"Connection type {self._play_context.connection} is not valid for this module",
             }
 
-        result = super(ActionModule, self).run(task_vars=task_vars)
+        result = super().run(task_vars=task_vars)
         if warnings:
             if "warnings" in result:
                 result["warnings"].extend(warnings)

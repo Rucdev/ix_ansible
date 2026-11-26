@@ -1,12 +1,10 @@
 #
-# -*- coding: utf-8 -*-
 # Copyright 2025 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
+"""Unit tests of the ix_ospfv2 module."""
 
 from textwrap import dedent
 from unittest.mock import patch
@@ -18,14 +16,17 @@ from .ix_module import TestIxModule
 
 
 class TestIxOspfv2Module(TestIxModule):
+    """Unit tests of the ix_ospfv2 module."""
+
     module = ix_ospfv2
 
-    def setUp(self):
-        super(TestIxOspfv2Module, self).setUp()
+    def setUp(self) -> None:
+        """Patch the connection and the function that returns the device config."""
+        super().setUp()
 
         self.mock_get_resource_connection_facts = patch(
             "ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module_base."
-            "get_resource_connection"
+            "get_resource_connection",
         )
         self.get_resource_connection_facts = (
             self.mock_get_resource_connection_facts.start()
@@ -33,19 +34,20 @@ class TestIxOspfv2Module(TestIxModule):
 
         self.mock_execute_show_command = patch(
             "ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.ospfv2.ospfv2."
-            "Ospfv2Facts.get_ospfv2_data"
+            "Ospfv2Facts.get_ospfv2_data",
         )
         self.execute_show_command = self.mock_execute_show_command.start()
         self.maxDiff = 10000
 
-    def tearDown(self):
-        super(TestIxOspfv2Module, self).tearDown()
+    def tearDown(self) -> None:
+        """Stop the patches."""
+        super().tearDown()
         self.mock_get_resource_connection_facts.stop()
         self.mock_execute_show_command.stop()
 
-    def test_ix_ospfv2_merged(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+    def test_ix_ospfv2_merged(self) -> None:
+        """Merged adds the OSPFv2 process settings."""
+        self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
              compatible rfc1583
@@ -53,45 +55,47 @@ class TestIxOspfv2Module(TestIxModule):
              network 192.168.0.0/24 area 0
              area 0
              passive-interface GigaEthernet0.0
-            """
-        )
+            """)
         set_module_args(
-            dict(
-                config=dict(
-                    processes=[
-                        dict(
-                            process_id=200,
-                            router_id="192.168.1.1",
-                            compatible=dict(rfc1583=True),
-                            network=[
-                                dict(
-                                    address="192.168.0.0/24",
-                                    area="0",
-                                ),
-                                dict(
-                                    address="10.0.0.0/24",
-                                    area="10",
-                                ),
+            {
+                "config": {
+                    "processes": [
+                        {
+                            "process_id": 200,
+                            "router_id": "192.168.1.1",
+                            "compatible": {"rfc1583": True},
+                            "network": [
+                                {
+                                    "address": "192.168.0.0/24",
+                                    "area": "0",
+                                },
+                                {
+                                    "address": "10.0.0.0/24",
+                                    "area": "10",
+                                },
                             ],
-                            areas=[
-                                dict(
-                                    area_id="0",
-                                ),
-                                dict(
-                                    area_id="10",
-                                    default_cost=10,
-                                    nssa=dict(
-                                        no_summary=True,
-                                        translate=True,
-                                    ),
-                                ),
+                            "areas": [
+                                {
+                                    "area_id": "0",
+                                },
+                                {
+                                    "area_id": "10",
+                                    "default_cost": 10,
+                                    "nssa": {
+                                        "no_summary": True,
+                                        "translate": True,
+                                    },
+                                },
                             ],
-                            passive_interfaces=["GigaEthernet0.0", "GigaEthernet0.1"],
-                        )
-                    ]
-                ),
-                state="merged",
-            )
+                            "passive_interfaces": [
+                                "GigaEthernet0.0",
+                                "GigaEthernet0.1",
+                            ],
+                        },
+                    ],
+                },
+                "state": "merged",
+            },
         )
         commands = [
             "ip router ospf 200",
@@ -102,11 +106,11 @@ class TestIxOspfv2Module(TestIxModule):
             "passive-interface GigaEthernet0.1",
         ]
         result = self.execute_module(changed=True)
-        self.assertEqual(sorted(result["commands"]), sorted(commands))
+        assert sorted(result["commands"]) == sorted(commands)
 
-    def test_ix_ospfv2_merged_idempotent(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+    def test_ix_ospfv2_merged_idempotent(self) -> None:
+        """Merged with the current settings changes nothing."""
+        self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
              compatible rfc1583
@@ -115,44 +119,43 @@ class TestIxOspfv2Module(TestIxModule):
              area 0
              area 0 default-cost 10
              passive-interface GigaEthernet0.0
-            """
-        )
+            """)
         set_module_args(
-            dict(
-                config=dict(
-                    processes=[
-                        dict(
-                            process_id=200,
-                            router_id="192.168.1.1",
-                            compatible=dict(rfc1583=True),
-                            distribute_list=dict(
-                                type="prefix",
-                                name="test_prefix",
-                            ),
-                            network=[
-                                dict(
-                                    address="192.168.0.0/24",
-                                    area="0",
-                                ),
+            {
+                "config": {
+                    "processes": [
+                        {
+                            "process_id": 200,
+                            "router_id": "192.168.1.1",
+                            "compatible": {"rfc1583": True},
+                            "distribute_list": {
+                                "type": "prefix",
+                                "name": "test_prefix",
+                            },
+                            "network": [
+                                {
+                                    "address": "192.168.0.0/24",
+                                    "area": "0",
+                                },
                             ],
-                            areas=[
-                                dict(
-                                    area_id="0",
-                                    default_cost=10,
-                                ),
+                            "areas": [
+                                {
+                                    "area_id": "0",
+                                    "default_cost": 10,
+                                },
                             ],
-                            passive_interfaces=["GigaEthernet0.0"],
-                        )
-                    ]
-                ),
-                state="merged",
-            )
+                            "passive_interfaces": ["GigaEthernet0.0"],
+                        },
+                    ],
+                },
+                "state": "merged",
+            },
         )
         self.execute_module(changed=False, commands=[])
 
-    def test_ix_ospfv2_replaced(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+    def test_ix_ospfv2_replaced(self) -> None:
+        """Replaced sets the process settings and removes the others."""
+        self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
              compatible rfc1583
@@ -161,33 +164,32 @@ class TestIxOspfv2Module(TestIxModule):
              area 0
              area 0 default-cost 10
              passive-interface GigaEthernet0.0
-            """
-        )
+            """)
         set_module_args(
-            dict(
-                config=dict(
-                    processes=[
-                        dict(
-                            process_id=200,
-                            router_id="192.168.2.1",
-                            default_metric=10,
-                            network=[
-                                dict(
-                                    address="192.168.0.0/24",
-                                    area="0",
-                                ),
+            {
+                "config": {
+                    "processes": [
+                        {
+                            "process_id": 200,
+                            "router_id": "192.168.2.1",
+                            "default_metric": 10,
+                            "network": [
+                                {
+                                    "address": "192.168.0.0/24",
+                                    "area": "0",
+                                },
                             ],
-                            areas=[
-                                dict(
-                                    area_id="0",
-                                    default_cost=20,
-                                ),
+                            "areas": [
+                                {
+                                    "area_id": "0",
+                                    "default_cost": 20,
+                                },
                             ],
-                        )
-                    ]
-                ),
-                state="replaced",
-            )
+                        },
+                    ],
+                },
+                "state": "replaced",
+            },
         )
         commands = [
             "ip router ospf 200",
@@ -199,11 +201,11 @@ class TestIxOspfv2Module(TestIxModule):
             "no passive-interface GigaEthernet0.0",
         ]
         result = self.execute_module(changed=True)
-        self.assertEqual(sorted(result["commands"]), sorted(commands))
+        assert sorted(result["commands"]) == sorted(commands)
 
-    def test_ix_ospfv2_overridden(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+    def test_ix_ospfv2_overridden(self) -> None:
+        """Overridden removes the processes that are not given."""
+        self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
              compatible rfc1583
@@ -212,61 +214,60 @@ class TestIxOspfv2Module(TestIxModule):
              area 0
              area 0 default-cost 10
              passive-interface GigaEthernet0.0
-            """
-        )
+            """)
         set_module_args(
-            dict(
-                config=dict(
-                    processes=[
-                        dict(
-                            process_id=100,
-                            router_id="10.10.10.10",
-                            default_metric=20,
-                            distance=dict(
-                                external=110,
-                                inter_area=90,
-                                intra_area=80,
-                            ),
-                            distribute_list=dict(
-                                type="route-map",
-                                name="new_route_map",
-                            ),
-                            network=[
-                                dict(
-                                    address="10.0.0.0/24",
-                                    area="5",
-                                ),
+            {
+                "config": {
+                    "processes": [
+                        {
+                            "process_id": 100,
+                            "router_id": "10.10.10.10",
+                            "default_metric": 20,
+                            "distance": {
+                                "external": 110,
+                                "inter_area": 90,
+                                "intra_area": 80,
+                            },
+                            "distribute_list": {
+                                "type": "route-map",
+                                "name": "new_route_map",
+                            },
+                            "network": [
+                                {
+                                    "address": "10.0.0.0/24",
+                                    "area": "5",
+                                },
                             ],
-                            areas=[
-                                dict(
-                                    area_id="5",
-                                    nssa=dict(
-                                        no_summary=True,
-                                        translate=True,
-                                        stability_interval=10,
-                                        default_metric=20,
-                                        default_metric_type=1,
-                                    ),
-                                ),
-                                dict(
-                                    area_id="10",
-                                    stub=dict(
-                                        set=True,
-                                        no_summary=True,
-                                    ),
-                                ),
+                            "areas": [
+                                {
+                                    "area_id": "5",
+                                    "nssa": {
+                                        "no_summary": True,
+                                        "translate": True,
+                                        "stability_interval": 10,
+                                        "default_metric": 20,
+                                        "default_metric_type": 1,
+                                    },
+                                },
+                                {
+                                    "area_id": "10",
+                                    "stub": {
+                                        "set": True,
+                                        "no_summary": True,
+                                    },
+                                },
                             ],
-                            originate_default=dict(
-                                always=True,
-                                metric=100,
-                                metric_type=1,
-                                route_map="default_map",
-                            ),
-                        )
-                    ]
-                ),
-                state="overridden",
-            )
+                            "originate_default": {
+                                "always": True,
+                                "metric": 100,
+                                "metric_type": 1,
+                                "route_map": "default_map",
+                            },
+                        },
+                    ],
+                },
+                "state": "overridden",
+            },
         )
         commands = [
             "no ip router ospf 200",
@@ -283,11 +284,11 @@ class TestIxOspfv2Module(TestIxModule):
             "originate-default always metric 100 metric-type 1 route-map default_map",
         ]
         result = self.execute_module(changed=True)
-        self.assertEqual(sorted(result["commands"]), sorted(commands))
+        assert sorted(result["commands"]) == sorted(commands)
 
-    def test_ix_ospfv2_deleted(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+    def test_ix_ospfv2_deleted(self) -> None:
+        """Deleted removes the OSPFv2 process."""
+        self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
              compatible rfc1583
@@ -295,20 +296,19 @@ class TestIxOspfv2Module(TestIxModule):
              network 192.168.0.0/24 area 0
              area 0 default-cost 10
              passive-interface GigaEthernet0.0
-            """
-        )
+            """)
         set_module_args(
-            dict(
-                config=dict(processes=[dict(process_id=200)]),
-                state="deleted",
-            )
+            {
+                "config": {"processes": [{"process_id": 200}]},
+                "state": "deleted",
+            },
         )
         commands = ["no ip router ospf 200"]
         self.execute_module(changed=True, commands=commands)
 
-    def test_ix_ospfv2_parsed(self):
-        self.execute_show_command.return_value = dedent(
-            """\
+    def test_ix_ospfv2_parsed(self) -> None:
+        """Parsed reads the OSPFv2 settings from running_config."""
+        self.execute_show_command.return_value = dedent("""\
             ip router ospf 200
              router-id 192.168.1.1
              compatible rfc1583
@@ -316,13 +316,12 @@ class TestIxOspfv2Module(TestIxModule):
              network 192.168.0.0/24 area 0
              area 0 default-cost 10
              passive-interface GigaEthernet0.0
-            """
-        )
+            """)
         set_module_args(
-            dict(
-                running_config="ip router ospf 1\n area 5 nssa no-summary stability-interval 10 translate default-metric 20 default-metric-type 1\n",
-                state="parsed",
-            )
+            {
+                "running_config": "ip router ospf 1\n area 5 nssa no-summary stability-interval 10 translate default-metric 20 default-metric-type 1\n",
+                "state": "parsed",
+            },
         )
         result = self.execute_module(changed=False)
         parsed_list = {
@@ -339,110 +338,114 @@ class TestIxOspfv2Module(TestIxModule):
                                 "default_metric": 20,
                                 "default_metric_type": 1,
                             },
-                        }
+                        },
                     ],
-                }
-            ]
+                },
+            ],
         }
-        self.assertEqual(parsed_list, result["parsed"])
+        assert parsed_list == result["parsed"]
 
-    def test_ix_ospfv2_rendered(self):
+    def test_ix_ospfv2_rendered(self) -> None:
+        """Rendered returns the OSPFv2 commands."""
         set_module_args(
-            dict(
-                config=dict(
-                    processes=[
-                        dict(
-                            process_id=100,
-                            router_id="10.10.10.10",
-                            compatible=dict(rfc1583=True),
-                            default_metric=10,
-                            distance=dict(
-                                external=110,
-                                inter_area=90,
-                                intra_area=80,
-                                nssa_external=100,
-                            ),
-                            distribute_list=dict(
-                                type="prefix",
-                                name="test_prefix",
-                            ),
-                            network=[
-                                dict(
-                                    address="192.168.0.0/24",
-                                    area="5",
-                                ),
-                                dict(
-                                    address="10.0.0.0/24",
-                                    area="10",
-                                ),
+            {
+                "config": {
+                    "processes": [
+                        {
+                            "process_id": 100,
+                            "router_id": "10.10.10.10",
+                            "compatible": {"rfc1583": True},
+                            "default_metric": 10,
+                            "distance": {
+                                "external": 110,
+                                "inter_area": 90,
+                                "intra_area": 80,
+                                "nssa_external": 100,
+                            },
+                            "distribute_list": {
+                                "type": "prefix",
+                                "name": "test_prefix",
+                            },
+                            "network": [
+                                {
+                                    "address": "192.168.0.0/24",
+                                    "area": "5",
+                                },
+                                {
+                                    "address": "10.0.0.0/24",
+                                    "area": "10",
+                                },
                             ],
-                            nssa_ranges=[
-                                dict(
-                                    range="192.168.1.0/24",
-                                    not_advertise=True,
-                                    tag="100",
-                                ),
+                            "nssa_ranges": [
+                                {
+                                    "range": "192.168.1.0/24",
+                                    "not_advertise": True,
+                                    "tag": "100",
+                                },
                             ],
-                            originate_default=dict(
-                                always=True,
-                                metric=100,
-                                metric_type=1,
-                                route_map="default_map",
-                            ),
-                            passive_interfaces=["GigaEthernet0.0", "GigaEthernet0.1"],
-                            rib=dict(max_entries=10000),
-                            timers=dict(
-                                delay=5,
-                                hold=10,
-                            ),
-                            areas=[
-                                dict(
-                                    area_id="0",
-                                    virtual_links=[
-                                        dict(
-                                            address="192.168.2.1",
-                                            authentication=dict(
-                                                auth_type="message-digest",
-                                                message_digest_key_id=1,
-                                                message_digest_password="md5password",
-                                            ),
-                                            dead_interval=40,
-                                            hello_interval=10,
-                                            retransmit_interval=5,
-                                            transmit_delay=1,
-                                        ),
+                            "originate_default": {
+                                "always": True,
+                                "metric": 100,
+                                "metric_type": 1,
+                                "route_map": "default_map",
+                            },
+                            "passive_interfaces": [
+                                "GigaEthernet0.0",
+                                "GigaEthernet0.1",
+                            ],
+                            "rib": {"max_entries": 10000},
+                            "timers": {
+                                "delay": 5,
+                                "hold": 10,
+                            },
+                            "areas": [
+                                {
+                                    "area_id": "0",
+                                    "virtual_links": [
+                                        {
+                                            "address": "192.168.2.1",
+                                            "authentication": {
+                                                "auth_type": "message-digest",
+                                                "message_digest_key_id": 1,
+                                                "message_digest_password": "md5password",
+                                            },
+                                            "dead_interval": 40,
+                                            "hello_interval": 10,
+                                            "retransmit_interval": 5,
+                                            "transmit_delay": 1,
+                                        },
                                     ],
-                                ),
-                                dict(
-                                    area_id="5",
-                                    nssa=dict(
-                                        no_summary=True,
-                                        translate=True,
-                                        stability_interval=10,
-                                        default_metric=20,
-                                        default_metric_type=1,
-                                    ),
-                                    ranges=[
-                                        dict(
-                                            address="192.168.10.0/24",
-                                            advertise=True,
-                                        ),
+                                },
+                                {
+                                    "area_id": "5",
+                                    "nssa": {
+                                        "no_summary": True,
+                                        "translate": True,
+                                        "stability_interval": 10,
+                                        "default_metric": 20,
+                                        "default_metric_type": 1,
+                                    },
+                                    "ranges": [
+                                        {
+                                            "address": "192.168.10.0/24",
+                                            "advertise": True,
+                                        },
                                     ],
-                                ),
-                                dict(
-                                    area_id="10",
-                                    default_cost=20,
-                                    stub=dict(
-                                        set=True,
-                                        no_summary=True,
-                                    ),
-                                ),
+                                },
+                                {
+                                    "area_id": "10",
+                                    "default_cost": 20,
+                                    "stub": {
+                                        "set": True,
+                                        "no_summary": True,
+                                    },
+                                },
                             ],
-                        )
-                    ]
-                ),
-                state="rendered",
-            )
+                        },
+                    ],
+                },
+                "state": "rendered",
+            },
         )
         commands = [
             "ip router ospf 100",
@@ -460,8 +463,10 @@ class TestIxOspfv2Module(TestIxModule):
             "rib max-entries 10000",
             "timers delay 5 hold 10",
             "area 0",
-            "area 0 virtual-link 192.168.2.1 dead-interval 40 hello-interval 10 retransmit-interval"
-            " 5 transmit-delay 1 authentication message-digest message-digest-key 1 md5password",
+            (
+                "area 0 virtual-link 192.168.2.1 dead-interval 40 hello-interval 10 retransmit-interval"
+                " 5 transmit-delay 1 authentication message-digest message-digest-key 1 md5password"
+            ),
             "area 5",
             "area 5 nssa no-summary stability-interval 10 translate default-metric 20 default-metric-type 1",
             "area 5 range 192.168.10.0/24 advertise",
@@ -470,7 +475,7 @@ class TestIxOspfv2Module(TestIxModule):
             "area 10 stub no-summary",
         ]
         result = self.execute_module(changed=False)
-        self.assertEqual(sorted(result["rendered"]), sorted(commands))
+        assert sorted(result["rendered"]) == sorted(commands)
 
     NSSA_RANGES_CONFIG = dedent("""\
         ip router ospf 1
@@ -480,85 +485,84 @@ class TestIxOspfv2Module(TestIxModule):
         !
         """)
 
-    def test_ix_ospfv2_nssa_ranges_parsed(self):
-        set_module_args(dict(running_config=self.NSSA_RANGES_CONFIG, state="parsed"))
+    def test_ix_ospfv2_nssa_ranges_parsed(self) -> None:
+        """Parsed reads the NSSA ranges."""
+        set_module_args({"running_config": self.NSSA_RANGES_CONFIG, "state": "parsed"})
         result = self.execute_module(changed=False)
-        self.assertEqual(
-            result["parsed"]["processes"][0]["nssa_ranges"],
-            [
-                dict(range="192.168.1.0/24", tag="100"),
-                dict(range="192.168.2.0/24", not_advertise=True),
-            ],
-        )
+        assert result["parsed"]["processes"][0]["nssa_ranges"] == [
+            {"range": "192.168.1.0/24", "tag": "100"},
+            {"range": "192.168.2.0/24", "not_advertise": True},
+        ]
 
-    def test_ix_ospfv2_nssa_ranges_gathered(self):
+    def test_ix_ospfv2_nssa_ranges_gathered(self) -> None:
+        """Gathered reads the NSSA ranges of the device."""
         self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
-        set_module_args(dict(state="gathered"))
+        set_module_args({"state": "gathered"})
         result = self.execute_module(changed=False)
-        self.assertEqual(
-            result["gathered"]["processes"][0]["nssa_ranges"],
-            [
-                dict(range="192.168.1.0/24", tag="100"),
-                dict(range="192.168.2.0/24", not_advertise=True),
-            ],
-        )
+        assert result["gathered"]["processes"][0]["nssa_ranges"] == [
+            {"range": "192.168.1.0/24", "tag": "100"},
+            {"range": "192.168.2.0/24", "not_advertise": True},
+        ]
 
-    def test_ix_ospfv2_nssa_ranges_merged(self):
+    def test_ix_ospfv2_nssa_ranges_merged(self) -> None:
+        """Merged adds an NSSA range."""
         self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
         set_module_args(
-            dict(
-                config=dict(
-                    processes=[
-                        dict(
-                            process_id=1,
-                            nssa_ranges=[dict(range="10.0.0.0/8", tag="200")],
-                        )
-                    ]
-                ),
-                state="merged",
-            )
+            {
+                "config": {
+                    "processes": [
+                        {
+                            "process_id": 1,
+                            "nssa_ranges": [{"range": "10.0.0.0/8", "tag": "200"}],
+                        },
+                    ],
+                },
+                "state": "merged",
+            },
         )
         self.execute_module(
             changed=True,
             commands=["ip router ospf 1", "nssa-range 10.0.0.0/8 tag 200"],
         )
 
-    def test_ix_ospfv2_nssa_ranges_merged_idempotent(self):
+    def test_ix_ospfv2_nssa_ranges_merged_idempotent(self) -> None:
+        """Merged with the current NSSA ranges changes nothing."""
         self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
         set_module_args(
-            dict(
-                config=dict(
-                    processes=[
-                        dict(
-                            process_id=1,
-                            nssa_ranges=[
-                                dict(range="192.168.1.0/24", tag="100"),
-                                dict(range="192.168.2.0/24", not_advertise=True),
+            {
+                "config": {
+                    "processes": [
+                        {
+                            "process_id": 1,
+                            "nssa_ranges": [
+                                {"range": "192.168.1.0/24", "tag": "100"},
+                                {"range": "192.168.2.0/24", "not_advertise": True},
                             ],
-                            areas=[dict(area_id="1")],
-                        )
-                    ]
-                ),
-                state="merged",
-            )
+                            "areas": [{"area_id": "1"}],
+                        },
+                    ],
+                },
+                "state": "merged",
+            },
         )
         self.execute_module(changed=False, commands=[])
 
-    def test_ix_ospfv2_nssa_ranges_replaced(self):
+    def test_ix_ospfv2_nssa_ranges_replaced(self) -> None:
+        """Replaced removes the NSSA ranges that are not given."""
         self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
         set_module_args(
-            dict(
-                config=dict(
-                    processes=[
-                        dict(
-                            process_id=1,
-                            nssa_ranges=[dict(range="192.168.1.0/24", tag="300")],
-                            areas=[dict(area_id="1")],
-                        )
-                    ]
-                ),
-                state="replaced",
-            )
+            {
+                "config": {
+                    "processes": [
+                        {
+                            "process_id": 1,
+                            "nssa_ranges": [{"range": "192.168.1.0/24", "tag": "300"}],
+                            "areas": [{"area_id": "1"}],
+                        },
+                    ],
+                },
+                "state": "replaced",
+            },
         )
         # IX rejects re-registering an existing prefix, so the old entry
         # must be removed before the new one is added (order is checked).
@@ -573,20 +577,21 @@ class TestIxOspfv2Module(TestIxModule):
             ],
         )
 
-    def test_ix_ospfv2_nssa_ranges_merged_change_tag(self):
+    def test_ix_ospfv2_nssa_ranges_merged_change_tag(self) -> None:
+        """Merged changes the tag of an NSSA range."""
         self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
         set_module_args(
-            dict(
-                config=dict(
-                    processes=[
-                        dict(
-                            process_id=1,
-                            nssa_ranges=[dict(range="192.168.1.0/24", tag="300")],
-                        )
-                    ]
-                ),
-                state="merged",
-            )
+            {
+                "config": {
+                    "processes": [
+                        {
+                            "process_id": 1,
+                            "nssa_ranges": [{"range": "192.168.1.0/24", "tag": "300"}],
+                        },
+                    ],
+                },
+                "state": "merged",
+            },
         )
         self.execute_module(
             changed=True,
@@ -598,7 +603,8 @@ class TestIxOspfv2Module(TestIxModule):
             ],
         )
 
-    def test_ix_ospfv2_nssa_ranges_deleted(self):
+    def test_ix_ospfv2_nssa_ranges_deleted(self) -> None:
+        """Deleted removes the NSSA ranges with the process."""
         self.execute_show_command.return_value = self.NSSA_RANGES_CONFIG
-        set_module_args(dict(state="deleted"))
+        set_module_args({"state": "deleted"})
         self.execute_module(changed=True, commands=["no ip router ospf 1"])

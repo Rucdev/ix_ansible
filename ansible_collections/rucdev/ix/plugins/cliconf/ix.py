@@ -16,6 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 
+
+"""Cliconf plugin for NEC IX routers."""
+
+from __future__ import annotations
+
 DOCUMENTATION = """
 author: Yushi Takeda (@ruc_dev)
 name: ix
@@ -25,24 +30,29 @@ description:
 version_added: 0.1.0
 """
 
-
-import re
 import json
+import re
+
 from functools import wraps
-from ansible.module_utils._text import to_text
-from ansible_collections.ansible.netcommon.plugins.plugin_utils.cliconf_base import (
-    CliconfBase,
-)
-from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
-    to_list,
-)
-from ansible.module_utils.common._collections_compat import Mapping
+from typing import TYPE_CHECKING
+
 from ansible.errors import AnsibleConnectionFailure
+from ansible.module_utils._text import to_text
+from ansible.module_utils.common._collections_compat import Mapping
+from ansible.utils.display import Display
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.config import (
     NetworkConfig,
     dumps,
 )
-from ansible.utils.display import Display
+from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
+    to_list,
+)
+from ansible_collections.ansible.netcommon.plugins.plugin_utils.cliconf_base import (
+    CliconfBase,
+)
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 display = Display()
 
@@ -65,9 +75,11 @@ SHOW_COMMAND_RE = re.compile(r"^\s*show\s")
 INVALID_COMMAND_RE = re.compile(r"%\s*\S+\s+--\s+Invalid command\.")
 
 
-def configure_mode(func):
+def configure_mode(func: Callable[..., object]) -> Callable[..., object]:
+    """Decorate a Cliconf method so that it runs in config mode."""
+
     @wraps(func)
-    def wrapped(self, *args, **kwargs):
+    def wrapped(self: Cliconf, *args: object, **kwargs: object) -> object:
         self._enter_config_mode()
         return func(self, *args, **kwargs)
 
@@ -75,16 +87,19 @@ def configure_mode(func):
 
 
 class Cliconf(CliconfBase):
-    def __init__(self, *args, **kwargs):
+    """Cliconf plugin for NEC IX routers."""
+
+    def __init__(self, *args: object, **kwargs: object) -> None:
+        """Set up the cache of the device information."""
         self._device_info = {}
         display.vvvvv("cliconf init")
-        super(Cliconf, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
-    def _current_prompt(self):
+    def _current_prompt(self) -> str:
         prompt = self._connection.get_prompt()
         return to_text(prompt, errors="surrogate_or_strict").strip() if prompt else ""
 
-    def _enter_config_mode(self):
+    def _enter_config_mode(self) -> None:
         """Enter global config mode unless already there.
 
         From a sub-mode (e.g. "(config-ospfv2-1)#") "configure" also returns
@@ -93,9 +108,12 @@ class Cliconf(CliconfBase):
         if not self._current_prompt().endswith("(config)#"):
             self.send_command("configure")
 
-    def _send_show_aware(self, **kwargs):
-        """send_command, retrying a "show" command in config mode when exec
-        mode rejects it as an invalid command (see SHOW_COMMAND_RE)."""
+    def _send_show_aware(self, **kwargs: object) -> str:
+        """Send a command, retrying a "show" command once in config mode.
+
+        Exec mode rejects many "show" commands as invalid (see SHOW_COMMAND_RE).
+        Such a command is sent again in config mode; any other failure is raised.
+        """
         try:
             return self.send_command(**kwargs)
         except AnsibleConnectionFailure as exc:
@@ -108,7 +126,7 @@ class Cliconf(CliconfBase):
         self._enter_config_mode()
         return self.send_command(**kwargs)
 
-    def set_cli_prompt_context(self):
+    def set_cli_prompt_context(self) -> None:
         """Make sure every task starts in exec mode, like cisco.ios.
 
         Called by network_cli at the start of each task. IX has no "end"
@@ -120,21 +138,33 @@ class Cliconf(CliconfBase):
             return
         if CONFIG_PROMPT_RE.search(self._current_prompt()):
             self._connection.queue_message(
-                "vvvv", "config mode at task start, returning to exec mode"
+                "vvvv",
+                "config mode at task start, returning to exec mode",
             )
             self.send_command("configure")
             self.send_command("exit")
 
     @configure_mode
-    def get_config(self, source="running", flags=None, format=None):
+    def get_config(
+        self,
+        source: str = "running",
+        flags: list | str | None = None,
+        format: str | None = None,
+    ) -> str:
+        """Return the output of show running-config.
+
+        flags are appended to the command without a space in between.
+        source="startup" is accepted, but only "running" sets the show command,
+        so the command is then built from the flags alone.
+        """
+        # running, startup以外はエラーとする
         if source not in ("running", "startup"):
-            raise ValueError(
-                # running, startup以外はエラーとする
-                f"fetching configuration for {source} is not supported"
-            )
+            msg = f"fetching configuration for {source} is not supported"
+            raise ValueError(msg)
 
         if format:
-            raise ValueError(f"'format' value {format} is not supported for get_config")
+            msg = f"'format' value {format} is not supported for get_config"
+            raise ValueError(msg)
 
         if not flags:
             flags = []
@@ -148,55 +178,60 @@ class Cliconf(CliconfBase):
 
     def get_diff(
         self,
-        candidate=None,
-        running=None,
-        diff_match=None,
-        diff_ignore_lines=None,
-        path=None,
-        diff_replace=None,
-    ):
+        candidate: str | None = None,
+        running: str | None = None,
+        diff_match: str | None = None,
+        diff_ignore_lines: list | None = None,
+        path: list | None = None,
+        diff_replace: str | None = None,
+    ) -> dict:
+        """Return the lines of the candidate config that the running config lacks."""
         diff = {}
         device_operations = self.get_device_operations()
         option_values = self.get_option_values()
         if candidate is None and device_operations["supports_generate_diff"]:
-            raise ValueError("candidate configuration is required to generate diff")
+            msg = "candidate configuration is required to generate diff"
+            raise ValueError(msg)
 
         if diff_match not in option_values["diff_match"]:
+            msg = f"'match' value {diff_match} in invalid, valid values are {', '.join(option_values['diff_match'])}"
             raise ValueError(
-                f"'match' value {diff_match} in invalid, valid values are {', '.join(option_values['diff_match'])}"
+                msg,
             )
 
         if diff_replace not in option_values["diff_replace"]:
+            msg = f"'replace' value {diff_replace} in invalid, valid values are {', '.join(option_values['diff_replace'])}"
             raise ValueError(
-                f"'replace' value {diff_replace} in invalid, valid values are {', '.join(option_values['diff_replace'])}"
+                msg,
             )
 
+        # Banners are not compared; only the configuration lines are.
         candidate_obj = NetworkConfig(indent=1)
-        # TODO: バナーに対応させる
-        # want_src, want_banners = self._extract_banners(candi)
         candidate_obj.load(candidate)
 
         if running and diff_match != "none":
-            # have_src, have_banners = self._extract_banners(running)
             running_obj = NetworkConfig(
-                indent=1, contents=running, ignore_lines=diff_ignore_lines
+                indent=1,
+                contents=running,
+                ignore_lines=diff_ignore_lines,
             )
             configdiffobjs = candidate_obj.difference(
-                running_obj, path=path, match=diff_match, replace=diff_replace
+                running_obj,
+                path=path,
+                match=diff_match,
+                replace=diff_replace,
             )
         else:
             configdiffobjs = candidate_obj.items
-            have_banners = {}
 
         diff["config_diff"] = (
             dumps(configdiffobjs, "commands") if configdiffobjs else ""
         )
-        # banners = self.__diff_banners(want_banners, have_banners)
-        # diff["banner_diff"] = banners if banners else {}
 
         return diff
 
     def get_device_info(self) -> dict:
+        """Return the OS, version, model and hostname of the device."""
         if not self._device_info:
             device_info = {}
             device_info["network_os"] = "ix"
@@ -205,12 +240,12 @@ class Cliconf(CliconfBase):
             data = to_text(reply, errors="surrogate_or_strict")
             version_pattern = r"IX Series (\S+).*Software, Version (\S+),"
 
-            match = re.search(version_pattern, data, re.M)
+            match = re.search(version_pattern, data, re.MULTILINE)
             if match:
                 device_info["network_os_model"] = match.group(1)
                 device_info["network_os_version"] = match.group(2)
 
-            match = re.search(r"System image file is \"(\S*)\"", data, re.M)
+            match = re.search(r"System image file is \"(\S*)\"", data, re.MULTILINE)
             if match:
                 device_info["network_os_image"] = match.group(1)
 
@@ -219,7 +254,7 @@ class Cliconf(CliconfBase):
             self.send_command("terminal length 0")
             reply = self.get(command="show running-config")
             data = to_text(reply, errors="surrogate_or_strict")
-            match = re.search(r"hostname (.+)", data, re.M)
+            match = re.search(r"hostname (.+)", data, re.MULTILINE)
             if match:
                 device_info["network_os_hostname"] = match.group(1)
 
@@ -234,18 +269,21 @@ class Cliconf(CliconfBase):
 
     def get(
         self,
-        command=None,
-        prompt=None,
-        answer=None,
-        sendonly=False,
-        newline=True,
-        output=None,
-        check_all=False,
-    ):
+        command: str | None = None,
+        prompt: str | None = None,
+        answer: str | None = None,
+        sendonly: bool = False,
+        newline: bool = True,
+        output: str | None = None,
+        check_all: bool = False,
+    ) -> str:
+        """Send one command and return its output."""
         if not command:
-            raise ValueError("must provide value of command to execute")
+            msg = "must provide value of command to execute"
+            raise ValueError(msg)
         if output:
-            raise ValueError(f"'output' value {output} is not supported for get")
+            msg = f"'output' value {output} is not supported for get"
+            raise ValueError(msg)
 
         if CONFIG_ONLY_COMMANDS_RE.match(to_text(command)):
             self._enter_config_mode()
@@ -262,14 +300,15 @@ class Cliconf(CliconfBase):
     @configure_mode
     def configure_get(
         self,
-        command=None,
-        prompt=None,
-        answer=None,
-        sendonly=False,
-        newline=True,
-        output=None,
-        check_all=False,
-    ):
+        command: str | None = None,
+        prompt: str | None = None,
+        answer: str | None = None,
+        sendonly: bool = False,
+        newline: bool = True,
+        output: str | None = None,
+        check_all: bool = False,
+    ) -> str:
+        """Send one command in config mode and return its output."""
         return self.get(
             command,
             prompt,
@@ -281,13 +320,15 @@ class Cliconf(CliconfBase):
         )
 
     def get_capabilities(self) -> str:
-        result = super(Cliconf, self).get_capabilities()
+        """Return the capabilities of the plugin and the device as JSON."""
+        result = super().get_capabilities()
         result["rpc"] += ["get_diff", "run_commands"]
         result["device_operations"] = self.get_device_operations()
         result.update(self.get_option_values())
         return json.dumps(result)
 
     def get_device_operations(self) -> dict:
+        """Return the configuration operations that the device supports."""
         return {
             "supports_diff_replace": True,
             "supports_commit": False,
@@ -301,7 +342,8 @@ class Cliconf(CliconfBase):
             "supports_replace": False,
         }
 
-    def get_option_values(self):
+    def get_option_values(self) -> dict:
+        """Return the accepted values of the format, diff and output options."""
         return {
             "format": ["text"],
             "diff_match": ["line", "strict", "exact", "none"],
@@ -309,18 +351,20 @@ class Cliconf(CliconfBase):
             "output": [],
         }
 
-    def run_commands(self, commands=None, check_rc=True) -> list:
+    def run_commands(self, commands: list | None = None, check_rc: bool = True) -> list:
+        """Run commands and return their outputs."""
         if commands is None:
-            raise ValueError("'commands' value is required")
+            msg = "'commands' value is required"
+            raise ValueError(msg)
 
-        responses = list()
-        for cmd in to_list(commands):
-            if not isinstance(cmd, Mapping):
-                cmd = {"command": cmd}
+        responses = []
+        for item in to_list(commands):
+            cmd = item if isinstance(item, Mapping) else {"command": item}
             output = cmd.pop("output", None)
             if output:
+                msg = f"'output' value {output} is not supported for run_commands"
                 raise ValueError(
-                    f"'output' value {output} is not supported for run_commands"
+                    msg,
                 )
 
             if CONFIG_ONLY_COMMANDS_RE.match(to_text(cmd["command"])):
@@ -338,27 +382,41 @@ class Cliconf(CliconfBase):
         return responses
 
     @configure_mode
-    def run_configs(self, commands=None, check_rc=True) -> list:
+    def run_configs(
+        self,
+        commands: list | None = None,
+        *,
+        check_rc: bool = True,
+    ) -> list:
+        """Run commands in config mode and return their outputs."""
         return self.run_commands(commands=commands, check_rc=check_rc)
 
     @configure_mode
     def edit_config(
-        self, candidate=None, commit=True, replace=None, diff=False, comment=None
-    ):
+        self,
+        candidate: list | str | None = None,
+        commit: bool = True,
+        replace: str | None = None,
+        diff: bool = False,
+        comment: str | None = None,
+    ) -> dict:
+        """Send the candidate lines in config mode."""
         resp = {}
         operations = self.get_device_operations()
         self.check_edit_config_capability(
-            operations, candidate, commit, replace, comment
+            operations,
+            candidate,
+            commit,
+            replace,
+            comment,
         )
 
         results = []
         requests = []
         if commit:
             self.send_command("configure")
-            for line in to_list(candidate):
-                if not isinstance(line, Mapping):
-                    line = {"command": line}
-
+            for item in to_list(candidate):
+                line = item if isinstance(item, Mapping) else {"command": item}
                 cmd = line["command"]
                 if cmd != "exit":
                     results.append(self.send_command(**line))
@@ -368,13 +426,15 @@ class Cliconf(CliconfBase):
             self.send_command("exit")
 
         else:
-            raise ValueError("check mode is not supported")
+            msg = "check mode is not supported"
+            raise ValueError(msg)
 
         resp["request"] = requests
         resp["response"] = results
         return resp
 
-    def get_default_flag(self):
+    def get_default_flag(self) -> str:
+        """Return the show running-config flag that includes the default values."""
         self.send_command(SVINTR_CONFIG)
         out = self.get("show running-config ?")
         out = to_text(out, errors="surrogate_then_replace")
@@ -385,5 +445,4 @@ class Cliconf(CliconfBase):
                 commands.add(line.strip().split()[0])
         if "all" in commands:
             return "all"
-        else:
-            return "full"
+        return "full"

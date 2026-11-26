@@ -1,21 +1,17 @@
-# -*- coding: utf-8 -*-
 # Copyright 2026 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
+"""The arg spec for the ix_hostname module."""
 
-"""
-The arg spec for the ix_hostname module
-"""
+from typing import ClassVar
 
 
-class HostnameArgs(object):  # pylint: disable=R0903
-    """The arg spec for the ix_hostname module"""
+class HostnameArgs:
+    """The arg spec for the ix_hostname module."""
 
-    argument_spec = {
+    argument_spec: ClassVar[dict] = {
         "config": {
             "type": "dict",
             "options": {
@@ -36,4 +32,4 @@ class HostnameArgs(object):  # pylint: disable=R0903
             ],
             "default": "merged",
         },
-    }  # pylint: disable=C0301
+    }

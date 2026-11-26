@@ -1,0 +1,4 @@
+# The version is the maintainer's release decision; the collection is 0.2.0.
+galaxy.yml galaxy-version-incorrect
+# Whether and how to keep a changelog is the maintainer's decision.
+galaxy.yml galaxy[no-changelog]

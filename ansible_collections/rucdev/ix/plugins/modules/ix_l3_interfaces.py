@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 # Copyright 2023 AP Communications
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -22,13 +21,7 @@
 #
 #############################################
 
-"""
-The module file for ix_l3_interfaces
-"""
-
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
+"""The module file for ix_l3_interfaces."""
 
 ANSIBLE_METADATA = {
     "metadata_version": "1.1",
@@ -116,6 +109,12 @@ options:
           eui:
             description: Use eui-64 interface identifier
             type: bool
+  running_config:
+    description:
+      - This option is used only with state I(parsed).
+      - The value of this option should be the output received from the IX device
+        by executing the command B(show running-config).
+    type: str
   state:
     choices:
     - merged
@@ -155,7 +154,7 @@ EXAMPLES = """
     config:
       - name: GigaEthernet0.0
         ipv4:
-          address: 192.168.1.1/24
+          - address: 192.168.1.1/24
     state: merged
 
 
@@ -168,8 +167,6 @@ EXAMPLES = """
       - name: GigaEthernet0.0
     state: deleted
 
-
-
 # Using overridden
 
 - name: Overrides all device configuration with provided configuration
@@ -177,11 +174,11 @@ EXAMPLES = """
     config:
       - name: GigaEthernet0.0
         ipv4:
-          address: 192.168.1.1/24
+          - address: 192.168.1.1/24
       - name: GigaEthernet1.0
         ipv6:
-          autoconfig:
-            enable: true
+          - autoconfig:
+              enable: true
     state: overridden
 
 
@@ -192,10 +189,8 @@ EXAMPLES = """
     config:
       - name: GigaEthernet0.0
         ipv4:
-          address: 192.168.1.1/24
+          - address: 192.168.1.1/24
     state: replaced
-
-
 """
 RETURN = """
 before:
@@ -221,25 +216,26 @@ commands:
 
 
 from ansible.module_utils.basic import AnsibleModule
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.l3_interfaces.l3_interfaces import (
-    L3_interfacesArgs,
+    L3InterfacesArgs,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.config.l3_interfaces.l3_interfaces import (
-    L3_interfaces,
+    L3Interfaces,
 )
 
 
-def main():
-    """
-    Main entry point for module execution
+def main() -> None:
+    """Run the module.
 
     :returns: the result form module invocation
     """
     module = AnsibleModule(
-        argument_spec=L3_interfacesArgs.argument_spec, supports_check_mode=True
+        argument_spec=L3InterfacesArgs.argument_spec,
+        supports_check_mode=True,
     )
 
-    result = L3_interfaces(module).execute_module()
+    result = L3Interfaces(module).execute_module()
     module.exit_json(**result)
 
 

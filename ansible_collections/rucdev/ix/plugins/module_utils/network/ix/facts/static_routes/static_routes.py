@@ -1,42 +1,50 @@
 #
-# -*- coding: utf-8 -*-
 # Copyright 2024 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-"""
-The ix static_routes fact class
+"""The ix static_routes fact class.
+
 It is in this file the configuration is collected from the device
 for a given resource, parsed, and the facts tree is populated
 based on the configuration.
 """
 
-import re
-from copy import deepcopy
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common import (
     utils,
 )
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.static_routes.static_routes import (
-    Static_routesArgs,
+    StaticRoutesArgs,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.static_routes import (
-    Static_routesTemplate,
+    StaticRoutesTemplate,
 )
 
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
+    from ansible.module_utils.connection import Connection
 
-class Static_routesFacts(object):
-    """The ix static_routes facts class"""
 
-    def __init__(self, module, subspec="config", options="options"):
+class StaticRoutesFacts:
+    """The ix static_routes facts class."""
+
+    def __init__(self, module: AnsibleModule) -> None:
+        """Keep the module and the argument spec of the resource."""
         self._module = module
-        self.argument_spec = Static_routesArgs.argument_spec
+        self.argument_spec = StaticRoutesArgs.argument_spec
 
-    def get_static_route_data(self, connection):
+    def get_static_route_data(self, connection: Connection) -> str:
+        """Return the running config of the device."""
         return connection.configure_get("show running-config")
 
-    def process_static_routes(self, objs):
+    def process_static_routes(self, objs: dict) -> dict:
+        """Group the parsed routes by VRF, address family and destination."""
         strout = {}
-        for k, obj in objs.items():
+        for obj in objs.values():
             _routes = {"next_hops": []}
             _nx_hop = []
             is_vrf = False
@@ -54,22 +62,21 @@ class Static_routesFacts(object):
             if is_vrf:
                 if strout.get(_vrf) and strout[_vrf].get(_afi):
                     strout[_vrf][_afi].append(_routes)
-                else:
-                    if strout.get(_vrf):
-                        _tma = {_afi: [_routes]}
-                        strout[_vrf].update(_tma)
-                    else:
-                        _tm = {_vrf: {_afi: [_routes]}}
-                        strout.update(_tm)
-            else:
-                if strout.get(_afi):
-                    strout[_afi].append(_routes)
-                else:
+                elif strout.get(_vrf):
                     _tma = {_afi: [_routes]}
-                    strout.update(_tma)
+                    strout[_vrf].update(_tma)
+                else:
+                    _tm = {_vrf: {_afi: [_routes]}}
+                    strout.update(_tm)
+            elif strout.get(_afi):
+                strout[_afi].append(_routes)
+            else:
+                _tma = {_afi: [_routes]}
+                strout.update(_tma)
         return strout
 
-    def structure_static_routes(self, strout):
+    def structure_static_routes(self, strout: dict) -> list:
+        """Return the grouped routes in the structure of the argument spec."""
         _static_route_facts = []
         afi_v4 = strout.pop("ipv4", None)
         afi_v6 = strout.pop("ipv6", None)
@@ -79,11 +86,11 @@ class Static_routesFacts(object):
 
             if afi_v4:
                 _triv_static_route["address_families"].append(
-                    {"afi": "ipv4", "routes": afi_v4}
+                    {"afi": "ipv4", "routes": afi_v4},
                 )
             if afi_v6:
                 _triv_static_route["address_families"].append(
-                    {"afi": "ipv6", "routes": afi_v6}
+                    {"afi": "ipv6", "routes": afi_v6},
                 )
 
             _static_route_facts.append(_triv_static_route)
@@ -99,33 +106,38 @@ class Static_routesFacts(object):
 
             if afi_v4:
                 _vrf_static_route["address_families"].append(
-                    {"afi": "ipv4", "routes": afi_v4}
+                    {"afi": "ipv4", "routes": afi_v4},
                 )
             if afi_v6:
                 _vrf_static_route["address_families"].append(
-                    {"afi": "ipv6", "routes": afi_v6}
+                    {"afi": "ipv6", "routes": afi_v6},
                 )
 
             _static_route_facts.append(_vrf_static_route)
         return _static_route_facts
 
-    def populate_facts(self, connection, ansible_facts, data=None):
-        """Populate the facts for Static_routes network resource
+    def populate_facts(
+        self,
+        connection: Connection,
+        ansible_facts: dict,
+        data: str | None = None,
+    ) -> dict:
+        """Populate the facts for StaticRoutes network resource.
+
         :param connection: the device connection
         :param ansible_facts: Facts dictionary
         :param data: previously collected conf
         :rtype: dictionary
-        :returns: facts
+        :returns: facts.
         """
-
         if not data:
             data = self.get_static_route_data(connection)
 
-        static_routes_parser = Static_routesTemplate(
-            lines=data.splitlines(), module=self._module
+        static_routes_parser = StaticRoutesTemplate(
+            lines=data.splitlines(),
+            module=self._module,
         )
         objs = static_routes_parser.parse()
-        # raise Exception(objs)
 
         strout = self.process_static_routes(objs)
         objs = self.structure_static_routes(strout)
@@ -134,8 +146,10 @@ class Static_routesFacts(object):
         facts = {"static_routes": []}
         params = utils.remove_empties(
             static_routes_parser.validate_config(
-                self.argument_spec, {"config": objs}, redact=True
-            )
+                self.argument_spec,
+                {"config": objs},
+                redact=True,
+            ),
         )
         facts["static_routes"] = params.get("config", [])
         ansible_facts["ansible_network_resources"].update(facts)

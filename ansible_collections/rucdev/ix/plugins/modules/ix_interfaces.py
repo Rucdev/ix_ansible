@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 # Copyright 2023 AP Communications
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -22,13 +21,7 @@
 #
 #############################################
 
-"""
-The module file for ix_interfaces
-"""
-
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
+"""The module file for ix_interfaces."""
 
 ANSIBLE_METADATA = {
     "metadata_version": "1.1",
@@ -44,7 +37,7 @@ description: This module manages the interface attributes of Nec Univerge IX net
 version_added: 0.2.0
 author:
   - Yushi Takeda (@Rucdev)
-note:
+notes:
   - Tested against NEC IX 2105 version 10.2.39
 options:
   config:
@@ -68,12 +61,6 @@ options:
           to disable it.
         type: bool
         default: true
-      bandwidth:
-        description:
-        - This command doesn't limit bandwidth on interface.
-        - The bandwidth is used calculate for MIB or cost.
-        type: number
-        required: false
       mtu:
         description:
         - MTU for a specific interface. Applicable for Ethernet interfaces only.
@@ -136,8 +123,6 @@ EXAMPLES = """
       - name: GigaEthernet0.0
     state: deleted
 
-
-
 # Using overridden
 
 - name: Overrides all device configuration with provided configuration
@@ -160,19 +145,19 @@ EXAMPLES = """
         enabled: false
         mtu: 1200
     state: replaced
-
-
 """
 RETURN = """
 before:
   description: The configuration prior to the model invocation.
   returned: always
+  type: list
   sample: >
     The configuration returned will always be in the same format
      of the parameters above.
 after:
   description: The resulting configuration model invocation.
   returned: when changed
+  type: list
   sample: >
     The configuration returned will always be in the same format
      of the parameters above.
@@ -185,6 +170,7 @@ commands:
 
 
 from ansible.module_utils.basic import AnsibleModule
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.interfaces.interfaces import (
     InterfacesArgs,
 )
@@ -193,14 +179,14 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.config.interf
 )
 
 
-def main():
-    """
-    Main entry point for module execution
+def main() -> None:
+    """Run the module.
 
     :returns: the result form module invocation
     """
     module = AnsibleModule(
-        argument_spec=InterfacesArgs.argument_spec, supports_check_mode=True
+        argument_spec=InterfacesArgs.argument_spec,
+        supports_check_mode=True,
     )
 
     result = Interfaces(module).execute_module()

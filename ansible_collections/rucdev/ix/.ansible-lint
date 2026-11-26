@@ -1,0 +1,15 @@
+---
+profile: production
+enable_list:
+  # Every opt-in rule.
+  - empty-string-compare
+  - galaxy-version-incorrect
+  - jinja-template-extension
+  - no-log-password
+  - no-prompting
+  - no-same-owner
+  - only-builtins
+  - role-argument-spec
+exclude_paths:
+  - tests/output/
+...

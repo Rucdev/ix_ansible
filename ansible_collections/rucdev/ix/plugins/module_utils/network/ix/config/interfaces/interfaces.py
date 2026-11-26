@@ -1,26 +1,26 @@
-__metaclass__ = type
 #
-# -*- coding: utf-8 -*-
 # Copyright 2023 AP Communications
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-"""
-The ix_interfaces class
+"""The ix_interfaces class.
+
 It is in this file where the current configuration (as dict)
 is compared to the provided configuration (as dict) and the command set
 necessary to bring the current configuration to it's desired end-state is
-created
+created.
 """
-from ansible.module_utils.six import iteritems
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.resource_module import (
     ResourceModule,
 )
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
     dict_merge,
 )
-from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.utils import (
-    to_list,
-)
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.facts.facts import (
     Facts,
 )
@@ -28,14 +28,16 @@ from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.
     InterfacesTemplate,
 )
 
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
+
 
 class Interfaces(ResourceModule):
-    """
-    The ix_interfaces class
-    """
+    """The ix_interfaces class."""
 
-    def __init__(self, module):
-        super(Interfaces, self).__init__(
+    def __init__(self, module: AnsibleModule) -> None:
+        """Set up the resource module with the argument spec and the template."""
+        super().__init__(
             empty_fact_val={},
             facts_module=Facts(module),
             module=module,
@@ -44,8 +46,8 @@ class Interfaces(ResourceModule):
         )
         self.parsers = ["description", "mtu"]
 
-    def execute_module(self):
-        """Execute the module
+    def execute_module(self) -> dict:
+        """Execute the module.
 
         :rtype: A dictionary
         :returns: The result from module execution
@@ -55,10 +57,8 @@ class Interfaces(ResourceModule):
             self.run_commands()
         return self.result
 
-    def generate_commands(self):
-        """Generate configuration commands to send based on
-        want, have and desired state.
-        """
+    def generate_commands(self) -> None:
+        """Generate the commands to send based on want, have and the state."""
         wantd = {entry["name"]: entry for entry in self.want}
         haved = {entry["name"]: entry for entry in self.have}
 
@@ -71,60 +71,53 @@ class Interfaces(ResourceModule):
 
         # if state is deleted, empty out wantd and set haved to wantd
         if self.state in ["deleted", "purged"]:
-            haved = {k: v for k, v in iteritems(haved) if k in wantd or not wantd}
+            haved = {k: v for k, v in haved.items() if k in wantd or not wantd}
             wantd = {}
 
         # remove superfluous config for overridden and deleted
         if self.state in ["overridden", "deleted"]:
-            for k, have in iteritems(haved):
+            for k, have in haved.items():
                 if k not in wantd:
                     self._compare(want={}, have=have)
 
         if self.state == "purged":
-            for k, have in iteritems(haved):
+            for have in haved.values():
                 self.purge(have)
         else:
-            for k, want in iteritems(wantd):
+            for k, want in wantd.items():
                 self._compare(want=want, have=haved.pop(k, {}))
 
-    def _compare(self, want, have):
-        """Leverages the base class `compare()` method and
-        populates the list of commands to be run by comparing
-        the `want` and `have` data with the `parsers` defined
-        for the Interfaces network resource.
-        """
+    def _compare(self, want: dict, have: dict) -> None:
+        """Add the commands that change have into want, using the parsers."""
         begin = len(self.commands)
         self.compare(parsers=self.parsers, want=want, have=have)
         if want.get("enabled") != have.get("enabled"):
             if want.get("enabled"):
-                self.addcmd(want, "enabled", True)
-            else:
-                if want:
-                    self.addcmd(want, "enabled", False)
-                elif have.get("enabled"):
-                    # handles deleted as want be blank and only
-                    # negates if no shutdown
-                    self.addcmd(have, "enabled", False)
+                self.addcmd(want, "enabled", negate=True)
+            elif want:
+                self.addcmd(want, "enabled", negate=False)
+            elif have.get("enabled"):
+                # handles deleted as want be blank and only
+                # negates if no shutdown
+                self.addcmd(have, "enabled", negate=False)
         if want.get("mode") != have.get("mode"):
             if want.get("mode") == "layer3":
-                self.addcmd(want, "mode", True)
-            else:
-                if want:
-                    self.addcmd(want, "mode", False)
-                elif have.get("mode"):  # can oly have layer2 as switchport no show cli
-                    # handles deleted as want be blank and only
-                    self.addcmd(have, "mode", False)
+                self.addcmd(want, "mode", negate=True)
+            elif want:
+                self.addcmd(want, "mode", negate=False)
+            elif have.get("mode"):  # can oly have layer2 as switchport no show cli
+                # handles deleted as want be blank and only
+                self.addcmd(have, "mode", negate=False)
         if len(self.commands) != begin:
             self.commands.insert(
-                begin, self._tmplt.render(want or have, "interface", False)
+                begin,
+                self._tmplt.render(want or have, "interface", negate=False),
             )
 
-    def purge(self, have):
-        """Handle operation for purged state"""
-        self.commands.append(self._tmplt.render(have, "interface", True))
+    def purge(self, have: dict) -> None:
+        """Handle operation for purged state."""
+        self.commands.append(self._tmplt.render(have, "interface", negate=True))
 
-    def normalize_interface_names(self, param):
-        # if param:
-        #     for _k, val in iteritems(param):
-        #         val["name"] = normalize_interface(val["name"])
+    def normalize_interface_names(self, param: dict) -> dict:
+        """Return param unchanged; IX interface names need no normalization."""
         return param

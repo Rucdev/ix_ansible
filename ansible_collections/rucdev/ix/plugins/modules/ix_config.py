@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# Copyright: Contributors to the Ansible project
 #
 # This file is part of Ansible
 #
@@ -15,9 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
 #
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
+
+"""The ix_config module."""
+
+from __future__ import annotations
 
 DOCUMENTATION = """
 module: ix_config
@@ -216,214 +219,287 @@ EXAMPLES = """
     lines: ip address 192.168.1.1/24
     parents:
       - interface GigaEthernet0.0
-
 """
 
 RETURN = """"""
 
+from typing import TYPE_CHECKING
+
 from ansible.module_utils._text import to_text
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.connection import ConnectionError
+from ansible.module_utils.connection import ConnectionError as AnsibleConnectionError
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.config import (
     NetworkConfig,
     dumps,
 )
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.ix import (
-    run_commands,
     get_config,
     get_connection,
+    run_commands,
 )
 
+if TYPE_CHECKING:
+    from ansible.module_utils.connection import Connection
 
-def get_candidate_config(module: AnsibleModule):
+
+def get_candidate_config(module: AnsibleModule) -> str:
+    """Return the candidate config built from src, or from lines and parents."""
     candidate = ""
     if module.params["src"]:
         candidate = module.params["src"]
     elif module.params["lines"]:
         candidate_obj = NetworkConfig(indent=1)
-        parents = module.params["parents"] or list()
+        parents = module.params["parents"] or []
         candidate_obj.add(module.params["lines"], parents=parents)
         candidate = dumps(candidate_obj, "raw")
     return candidate
 
 
-def get_running_config(module: AnsibleModule, current_config=None, flags=None):
+def get_running_config(
+    module: AnsibleModule,
+    current_config: str | None = None,
+    flags: list | None = None,
+) -> str:
+    """Return the running config to compare with, reading it from the device if needed."""
     running = module.params["running_config"]
     if not running:
-        if not module.params["defaults"] and current_config:
-            running = current_config
-        else:
-            running = get_config(module, flags)
+        running = (
+            current_config
+            if not module.params["defaults"] and current_config
+            else get_config(module, flags)
+        )
     return running
 
 
-def save_config(module: AnsibleModule, result):
+def save_config(module: AnsibleModule, result: dict) -> None:
+    """Copy the running config to the startup config, except in check mode."""
     result["changed"] = True
     if not module.check_mode:
         run_commands(module, "copy running-config startup-config\r", configure=True)
     else:
         module.warn(
-            "Skipping command `copy running-config start-config` due to check_mode. Configuration not copied to non-volatile storage"
+            "Skipping command `copy running-config start-config` due to check_mode. Configuration not copied to non-volatile storage",
         )
 
 
-def main():
+def argument_spec() -> dict:
+    """Return the argument spec of the module."""
+    backup_spec = {"filename": {}, "dir_path": {"type": "path"}}
+    return {
+        "src": {"type": "str"},
+        "lines": {"aliases": ["commands"], "type": "list", "elements": "str"},
+        "parents": {"type": "list", "elements": "str"},
+        "before": {"type": "list", "elements": "str"},
+        "after": {"type": "list", "elements": "str"},
+        "match": {"default": "line", "choices": ["line", "strict", "exact", "none"]},
+        "replace": {"default": "line", "choices": ["line", "block"]},
+        "running_config": {"aliases": ["config"]},
+        "intended_config": {},
+        "defaults": {"type": "bool", "default": False},
+        "backup": {"type": "bool", "default": False},
+        "backup_options": {"type": "dict", "options": backup_spec},
+        "save_when": {
+            "choices": ["always", "never", "modified", "changed"],
+            "default": "never",
+        },
+        "diff_against": {"choices": ["startup", "intended", "running"]},
+        "diff_ignore_lines": {"type": "list", "elements": "str"},
+    }
+
+
+def read_running_config(
+    module: AnsibleModule,
+    flags: list,
+    result: dict,
+) -> tuple[str | None, NetworkConfig | None]:
+    """Read the running config when backup or a diff against it needs it.
+
+    Return the text and the parsed config, or (None, None).
     """
-    main entry point for module execution
-    """
-    backup_spec = dict(filename=dict(), dir_path=dict(type="path"))
-    argument_spec = dict(
-        src=dict(type="str"),
-        lines=dict(aliases=["commands"], type="list", elements="str"),
-        parents=dict(type="list", elements="str"),
-        before=dict(type="list", elements="str"),
-        after=dict(type="list", elements="str"),
-        match=dict(default="line", choices=["line", "strict", "exact", "none"]),
-        replace=dict(default="line", choices=["line", "block"]),
-        running_config=dict(aliases=["config"]),
-        intended_config=dict(),
-        defaults=dict(type="bool", default=False),
-        backup=dict(type="bool", default=False),
-        backup_options=dict(type="dict", options=backup_spec),
-        save_when=dict(
-            choices=["always", "never", "modified", "changed"], default="never"
-        ),
-        diff_against=dict(choices=["startup", "intended", "running"]),
-        diff_ignore_lines=dict(type="list", elements="str"),
-    )
-
-    mutually_exclusive = [("lines", "src"), ("parents", "src")]
-
-    required_if = [
-        ("match", "strict", ["lines"]),
-        ("match", "exact", ["lines"]),
-        ("replace", "block", ["lines"]),
-        ("diff_against", "intended", ["intended_config"]),
-    ]
-
-    module = AnsibleModule(
-        argument_spec=argument_spec,
-        mutually_exclusive=mutually_exclusive,
-        required_if=required_if,
-        supports_check_mode=True,
-    )
-
-    result = {"changed": False}
-    warnings = list()
-    result["warnings"] = warnings
-    diff_ignore_lines = module.params["diff_ignore_lines"]
-    flags = []
-    config = None
-    contents = None
-    connection = get_connection(module)
-    if (
-        module.params["backup"]
-        or module._diff
-        and module.params["diff_against"] == "running"
+    if not module.params["backup"] and not (
+        module._diff and module.params["diff_against"] == "running"
     ):
-        contents = get_config(module, flags)
-        config = NetworkConfig(indent=1, contents=contents)
-        if module.params["backup"]:
-            result["__backup__"] = contents
+        return None, None
+    contents = get_config(module, flags)
+    if module.params["backup"]:
+        result["__backup__"] = contents
+    return contents, NetworkConfig(indent=1, contents=contents)
 
-    if any((module.params["lines"], module.params["src"])):
-        match = module.params["match"]
-        replace = module.params["replace"]
-        path = module.params["parents"]
-        candidate = get_candidate_config(module)
-        running = get_running_config(module, contents, flags)
-        try:
-            response = connection.get_diff(
-                candidate=candidate,
-                running=running,
-                diff_match=match,
-                diff_ignore_lines=diff_ignore_lines,
-                path=path,
-                diff_replace=replace,
-            )
-        except ConnectionError as exc:
-            module.fail_json(msg=to_text(exc, errors="surrogate_then_replace"))
 
-        config_diff = response["config_diff"]
-        if config_diff:
-            commands = config_diff.split("\n")
-            if module.params["before"]:
-                commands[:0] = module.params["before"]
-            if module.params["after"]:
-                commands.extend(module.params["after"])
+def apply_lines(
+    module: AnsibleModule,
+    connection: Connection,
+    contents: str | None,
+    flags: list,
+    result: dict,
+) -> None:
+    """Send the lines or src that differ from the running config."""
+    if not any((module.params["lines"], module.params["src"])):
+        return
+    candidate = get_candidate_config(module)
+    running = get_running_config(module, contents, flags)
+    try:
+        response = connection.get_diff(
+            candidate=candidate,
+            running=running,
+            diff_match=module.params["match"],
+            diff_ignore_lines=module.params["diff_ignore_lines"],
+            path=module.params["parents"],
+            diff_replace=module.params["replace"],
+        )
+    except AnsibleConnectionError as exc:
+        module.fail_json(msg=to_text(exc, errors="surrogate_then_replace"))
 
-            result["commands"] = commands
-            result["updates"] = commands
+    config_diff = response["config_diff"]
+    if not config_diff:
+        return
+    commands = config_diff.split("\n")
+    if module.params["before"]:
+        commands[:0] = module.params["before"]
+    if module.params["after"]:
+        commands.extend(module.params["after"])
 
-            if not module.check_mode:
-                if commands:
-                    connection.edit_config(candidate=commands)
+    result["commands"] = commands
+    result["updates"] = commands
 
-            result["changed"] = True
+    if not module.check_mode and commands:
+        connection.edit_config(candidate=commands)
 
+    result["changed"] = True
+
+
+def save_when(
+    module: AnsibleModule,
+    result: dict,
+    diff_ignore_lines: list | None,
+) -> tuple[str | NetworkConfig | None, NetworkConfig | None]:
+    """Save the running config as save_when asks.
+
+    Return the running and startup configs that were read for it, if any.
+    """
     running_config = module.params["running_config"]
     startup_config = None
     if module.params["save_when"] == "always":
         save_config(module, result)
     elif module.params["save_when"] == "modified":
         output = run_commands(
-            module, ["show running-config", "show startup-config"], configure=True
+            module,
+            ["show running-config", "show startup-config"],
+            configure=True,
         )
         running_config = NetworkConfig(
-            indent=1, contents=output[0], ignore_lines=diff_ignore_lines
+            indent=1,
+            contents=output[0],
+            ignore_lines=diff_ignore_lines,
         )
         startup_config = NetworkConfig(
-            indent=1, contents=output[1], ignore_lines=diff_ignore_lines
+            indent=1,
+            contents=output[1],
+            ignore_lines=diff_ignore_lines,
         )
         if running_config.sha1 != startup_config.sha1:
             save_config(module, result)
 
     elif module.params["save_when"] == "changed" and result["changed"]:
         save_config(module, result)
+    return running_config, startup_config
 
-    if module._diff:
-        if not running_config:
-            output = run_commands(module, "show running-config", configure=True)
-            contents = output[0]
-        else:
-            contents = running_config
 
-        running_config = NetworkConfig(
-            indent=1, contents=contents, ignore_lines=diff_ignore_lines
-        )
-        if module.params["diff_against"] == "running":
-            if module.check_mode:
-                module.warn(
-                    "unable to perform diff against running-config due to check mode"
-                )
-                contents = None
-            else:
-                contents = config.config_text
-        elif module.params["diff_against"] == "startup":
-            if not startup_config:
-                output = run_commands(module, "show startup-config", configure=True)
-                contents = output[0]
-            else:
-                contents = startup_config.config_text
-        elif module.params["diff_against"] == "intended":
-            contents = module.params["intended_config"]
-
-        if contents is not None:
-            base_config = NetworkConfig(
-                indent=1, contents=contents, ignore_lines=diff_ignore_lines
+def diff_base_contents(
+    module: AnsibleModule,
+    config: NetworkConfig | None,
+    startup_config: NetworkConfig | None,
+    running_contents: str | NetworkConfig,
+) -> str | NetworkConfig | None:
+    """Return the config to compare the running config with, or None."""
+    if module.params["diff_against"] == "running":
+        if module.check_mode:
+            module.warn(
+                "unable to perform diff against running-config due to check mode",
             )
+            return None
+        return config.config_text
+    if module.params["diff_against"] == "startup":
+        if not startup_config:
+            output = run_commands(module, "show startup-config", configure=True)
+            return output[0]
+        return startup_config.config_text
+    if module.params["diff_against"] == "intended":
+        return module.params["intended_config"]
+    return running_contents
 
-            if running_config.sha1 != base_config.sha1:
-                if module.params["diff_against"] == "intended":
-                    before = running_config
-                    after = base_config
-                elif module.params["diff_against"] in ("startup", "running"):
-                    before = base_config
-                    after = running_config
 
-                result.update(
-                    dict(changed=True, diff=dict(before=str(before), after=str(after)))
-                )
+def report_diff(
+    module: AnsibleModule,
+    result: dict,
+    config: NetworkConfig | None,
+    running_config: str | NetworkConfig | None,
+    startup_config: NetworkConfig | None,
+) -> None:
+    """Add the diff between the running config and diff_against to the result."""
+    diff_ignore_lines = module.params["diff_ignore_lines"]
+    if not running_config:
+        output = run_commands(module, "show running-config", configure=True)
+        contents = output[0]
+    else:
+        contents = running_config
+
+    running_config = NetworkConfig(
+        indent=1,
+        contents=contents,
+        ignore_lines=diff_ignore_lines,
+    )
+    contents = diff_base_contents(module, config, startup_config, contents)
+    if contents is None:
+        return
+    base_config = NetworkConfig(
+        indent=1,
+        contents=contents,
+        ignore_lines=diff_ignore_lines,
+    )
+    if running_config.sha1 == base_config.sha1:
+        return
+    if module.params["diff_against"] == "intended":
+        before = running_config
+        after = base_config
+    elif module.params["diff_against"] in ("startup", "running"):
+        before = base_config
+        after = running_config
+
+    result.update(
+        {
+            "changed": True,
+            "diff": {"before": str(before), "after": str(after)},
+        },
+    )
+
+
+def main() -> None:
+    """Run the module."""
+    module = AnsibleModule(
+        argument_spec=argument_spec(),
+        mutually_exclusive=[("lines", "src"), ("parents", "src")],
+        required_if=[
+            ("match", "strict", ["lines"]),
+            ("match", "exact", ["lines"]),
+            ("replace", "block", ["lines"]),
+            ("diff_against", "intended", ["intended_config"]),
+        ],
+        supports_check_mode=True,
+    )
+
+    result = {"changed": False}
+    warnings = []
+    result["warnings"] = warnings
+    diff_ignore_lines = module.params["diff_ignore_lines"]
+    flags = []
+    connection = get_connection(module)
+    contents, config = read_running_config(module, flags, result)
+    apply_lines(module, connection, contents, flags, result)
+    running_config, startup_config = save_when(module, result, diff_ignore_lines)
+    if module._diff:
+        report_diff(module, result, config, running_config, startup_config)
 
     module.exit_json(**result)
 

@@ -111,17 +111,17 @@ Examples
 .. code-block:: yaml
 
     - name: Get show running config
-      ix.ix.ix_config:
+      rucdev.ix.ix_command:
         commands: show running-config
 
     - name: Run multiple commands
-      ix.ix.ix_command:
+      rucdev.ix.ix_command:
         commands:
           - show clock
           - show vlans
 
     - name: Run show version and check to see if output contains IX
-      ix.ix.ix_command:
+      rucdev.ix.ix_command:
         commands: show version
         wait_for: result[0] contains IX
 

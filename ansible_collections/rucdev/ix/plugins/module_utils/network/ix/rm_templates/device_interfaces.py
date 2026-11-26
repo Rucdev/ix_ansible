@@ -1,34 +1,46 @@
-# -*- coding: utf-8 -*-
 # Copyright 2022 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 
+"""The Interfaces parser templates file.
 
-__metaclass__ = type
-
-"""
-The Interfaces parser templates file. This contains
+This contains
 a list of parser definitions and associated functions that
 facilitates both facts gathering and native command generation for
 the given network resource.
 """
 
+from __future__ import annotations
+
 import re
+
+from typing import TYPE_CHECKING, ClassVar
 
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common.rm_base.network_template import (
     NetworkTemplate,
 )
 
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
 
-class Device_interfacesTemplate(NetworkTemplate):
-    def __init__(self, lines=None, tmplt=None, prefix=None, module=None):
-        super(Device_interfacesTemplate, self).__init__(
-            lines, tmplt=self, module=module
+
+class DeviceInterfacesTemplate(NetworkTemplate):
+    """Parsers and command templates of the ix_device_interfaces module."""
+
+    def __init__(
+        self,
+        lines: list[str] | None = None,
+        module: AnsibleModule | None = None,
+    ) -> None:
+        """Set up the template with the parsers of the resource."""
+        super().__init__(
+            lines,
+            tmplt=self,
+            module=module,
         )
 
-    PARSERS = [
+    PARSERS: ClassVar[list] = [
         {
             "name": "device",
             "getval": re.compile(
@@ -72,7 +84,7 @@ class Device_interfacesTemplate(NetworkTemplate):
                         {
                             "down_notification_time": "{{ down_notification_time }}",
                             "down_notification_count": "{{ down_notification_count }}",
-                        }
+                        },
                     ],
                 },
             },
@@ -102,7 +114,7 @@ class Device_interfacesTemplate(NetworkTemplate):
             "result": {
                 "{{ name }}": {
                     "output_buffer": "{{ output_buffer }}",
-                }
+                },
             },
         },
         {
@@ -150,7 +162,7 @@ class Device_interfacesTemplate(NetworkTemplate):
                     "sflow": {
                         "sampling_rate": {
                             "in": "{{ sampling_rate_in }}",
-                        }
+                        },
                     },
                 },
             },
@@ -168,7 +180,7 @@ class Device_interfacesTemplate(NetworkTemplate):
                     "sflow": {
                         "sampling_rate": {
                             "out": "{{ sampling_rate_out }}",
-                        }
+                        },
                     },
                 },
             },

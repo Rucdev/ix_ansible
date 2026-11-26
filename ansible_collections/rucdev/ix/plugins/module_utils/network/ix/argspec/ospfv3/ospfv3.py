@@ -1,11 +1,7 @@
-# -*- coding: utf-8 -*-
 # Copyright 2025 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
 
 #############################################
 #                WARNING                    #
@@ -22,16 +18,15 @@ __metaclass__ = type
 #
 #############################################
 
-"""
-The arg spec for the ix_ospfv3 module
-"""
+"""The arg spec for the ix_ospfv3 module."""
+
+from typing import ClassVar
 
 
-class Ospfv3Args(object):  # pylint: disable=R0903
-    """The arg spec for the ix_ospfv3 module
-    """
+class Ospfv3Args:
+    """The arg spec for the ix_ospfv3 module."""
 
-    argument_spec = {
+    argument_spec: ClassVar[dict] = {
         "config": {
             "type": "dict",
             "options": {
@@ -101,7 +96,7 @@ class Ospfv3Args(object):  # pylint: disable=R0903
                             },
                         },
                     },
-                }
+                },
             },
         },
         "running_config": {"type": "str"},
@@ -118,4 +113,4 @@ class Ospfv3Args(object):  # pylint: disable=R0903
             ],
             "default": "merged",
         },
-    }  # pylint: disable=C0301
+    }

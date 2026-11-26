@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 # Copyright 2019 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
@@ -22,13 +21,7 @@
 #
 #############################################
 
-"""
-The module file for ix_device_interfaces
-"""
-
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
+"""The module file for ix_device_interfaces."""
 
 ANSIBLE_METADATA = {
     "metadata_version": "1.1",
@@ -70,6 +63,8 @@ options:
       keepalive:
         description:
         - Enable device keepalive
+        type: list
+        elements: dict
         suboptions:
           down_notification_time:
             description:
@@ -86,13 +81,15 @@ options:
         choices:
         - mdi
         - mdix
-      output-buffer:
+        default: mdix
+      output_buffer:
         description:
         - The number of output buffers.
         type: int
       sflow:
         description:
         - The sFlow configuration of the interface.
+        type: dict
         suboptions:
           max_header_size:
             description:
@@ -120,9 +117,9 @@ options:
         - The speed of the interface.
         type: str
         choices:
-        - 10
-        - 100
-        - 1000
+        - "10"
+        - "100"
+        - "1000"
         - auto
   reset:
     description:
@@ -151,23 +148,24 @@ options:
 
 EXAMPLES = """
 - name: Example device_interface module
-  rucdev.ix.device_interface:
+  rucdev.ix.ix_device_interfaces:
     config:
-      name: GigaEthernet0
-      duplex: full
-      speed: auto
-
+      - name: GigaEthernet0
+        duplex: full
+        speed: auto
 """
 RETURN = """
 before:
   description: The configuration prior to the model invocation.
   returned: always
+  type: list
   sample: >
     The configuration returned will always be in the same format
      of the parameters above.
 after:
   description: The resulting configuration model invocation.
   returned: when changed
+  type: list
   sample: >
     The configuration returned will always be in the same format
      of the parameters above.
@@ -180,25 +178,26 @@ commands:
 
 
 from ansible.module_utils.basic import AnsibleModule
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.device_interfaces.device_interfaces import (
-    Device_interfacesArgs,
+    DeviceInterfacesArgs,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.config.device_interfaces.device_interfaces import (
-    Device_interfaces,
+    DeviceInterfaces,
 )
 
 
-def main():
-    """
-    Main entry point for module execution
+def main() -> None:
+    """Run the module.
 
     :returns: the result form module invocation
     """
     module = AnsibleModule(
-        argument_spec=Device_interfacesArgs.argument_spec, supports_check_mode=True
+        argument_spec=DeviceInterfacesArgs.argument_spec,
+        supports_check_mode=True,
     )
 
-    result = Device_interfaces(module).execute_module()
+    result = DeviceInterfaces(module).execute_module()
     module.exit_json(**result)
 
 

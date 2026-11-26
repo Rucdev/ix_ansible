@@ -53,23 +53,6 @@ Parameters
                     <td class="elbow-placeholder"></td>
                 <td colspan="1">
                     <div class="ansibleOptionAnchor" id="parameter-"></div>
-                    <b>bandwidth</b>
-                    <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
-                    <div style="font-size: small">
-                        <span style="color: purple">number</span>
-                    </div>
-                </td>
-                <td>
-                </td>
-                <td>
-                        <div>This command doesn&#x27;t limit bandwidth on interface.</div>
-                        <div>The bandwidth is used calculate for MIB or cost.</div>
-                </td>
-            </tr>
-            <tr>
-                    <td class="elbow-placeholder"></td>
-                <td colspan="1">
-                    <div class="ansibleOptionAnchor" id="parameter-"></div>
                     <b>description</b>
                     <a class="ansibleOptionLink" href="#parameter-" title="Permalink to this option"></a>
                     <div style="font-size: small">
@@ -185,6 +168,12 @@ Parameters
     <br/>
 
 
+Notes
+-----
+
+.. note::
+   - Tested against NEC IX 2105 version 10.2.39
+
 
 
 Examples
@@ -212,8 +201,6 @@ Examples
         config:
           - name: GigaEthernet0.0
         state: deleted
-
-
 
     # Using overridden
 
@@ -258,7 +245,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <b>after</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">-</span>
+                      <span style="color: purple">list</span>
                     </div>
                 </td>
                 <td>when changed</td>
@@ -276,7 +263,7 @@ Common return values are documented `here <https://docs.ansible.com/ansible/late
                     <b>before</b>
                     <a class="ansibleOptionLink" href="#return-" title="Permalink to this return value"></a>
                     <div style="font-size: small">
-                      <span style="color: purple">-</span>
+                      <span style="color: purple">list</span>
                     </div>
                 </td>
                 <td>always</td>

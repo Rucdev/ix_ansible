@@ -1,16 +1,9 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 # Copyright 2025 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-"""
-The module file for ix_ospf_interfaces
-"""
-
-from __future__ import absolute_import, division, print_function
-
-__metaclass__ = type
+"""The module file for ix_ospf_interfaces."""
 
 DOCUMENTATION = """
 module: ix_ospf_interfaces
@@ -56,7 +49,6 @@ options:
               - Sets the password if encryption is not used.
               - Valid only when afi = ipv4. IX has no OSPFv3 equivalent, so the module fails if this is set under afi = ipv6 or without afi.
             type: str
-            no_log: true
           cost:
             description: Sets the value of cost on the interface.(1~65535)
             type: int
@@ -78,7 +70,6 @@ options:
               password:
                 description: md5 password
                 type: str
-                no_log: true
           mtu_ignore:
             description:
               - Ignore MTU mismatch
@@ -192,7 +183,28 @@ options:
 """
 
 EXAMPLES = """
+# Using merged
 
+- name: Set OSPF interface parameters on GigaEthernet1.0
+  rucdev.ix.ix_ospf_interfaces:
+    config:
+      - name: GigaEthernet1.0
+        address_family:
+          - afi: ipv4
+            cost: 10
+            hello_interval: 5
+            dead_interval: 20
+          - afi: ipv6
+            cost: 20
+    state: merged
+
+# Using deleted
+
+- name: Remove the OSPF interface parameters of GigaEthernet1.0
+  rucdev.ix.ix_ospf_interfaces:
+    config:
+      - name: GigaEthernet1.0
+    state: deleted
 """
 
 RETURN = """
@@ -243,22 +255,22 @@ parsed:
 """
 
 from ansible.module_utils.basic import AnsibleModule
+
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.ospf_interfaces.ospf_interfaces import (
-    Ospf_interfacesArgs,
+    OspfInterfacesArgs,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.config.ospf_interfaces.ospf_interfaces import (
-    Ospf_interfaces,
+    OspfInterfaces,
 )
 
 
-def main():
-    """
-    Main entry point for module execution
+def main() -> None:
+    """Run the module.
 
     :returns: the result form module invocation
     """
     module = AnsibleModule(
-        argument_spec=Ospf_interfacesArgs.argument_spec,
+        argument_spec=OspfInterfacesArgs.argument_spec,
         mutually_exclusive=[["config", "running_config"]],
         required_if=[
             ["state", "merged", ["config"]],
@@ -270,7 +282,7 @@ def main():
         supports_check_mode=True,
     )
 
-    result = Ospf_interfaces(module).execute_module()
+    result = OspfInterfaces(module).execute_module()
     module.exit_json(**result)
 
 

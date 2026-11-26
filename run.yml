@@ -10,3 +10,4 @@
     ansible_connection: local
     resource: ospf_interfaces
     docstring: ../ix_rm_model/ospf_interfaces/ix_ospf_interfaces.yaml
+...

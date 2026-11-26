@@ -1,9 +1,14 @@
-from __future__ import absolute_import, division, print_function
+# Copyright: Contributors to the Ansible project
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-__metaclass__ = type
+"""Terminal plugin for NEC IX routers."""
+
+from __future__ import annotations
 
 import json
 import re
+
+from typing import ClassVar
 
 from ansible.errors import AnsibleConnectionFailure
 from ansible.module_utils._text import to_bytes, to_text
@@ -13,17 +18,16 @@ from ansible_collections.ansible.netcommon.plugins.plugin_utils.terminal_base im
 
 
 class TerminalModule(TerminalBase):
-    def __init__(self, connection):
-        super().__init__(connection)
+    """Prompts and error messages of the IX CLI, and switching to config mode."""
 
-    terminal_stdout_re = [
+    terminal_stdout_re: ClassVar[list] = [
         re.compile(
             rb"[\r\n]?[\w\+\-\.:\/\[\]]+(?:\([^\)]+\)){0,3}(?:[%$#]) ?$",
-        )
+        ),
     ]
 
-    # TODO: エラーメッセージのパターンをある程度収集する
-    terminal_stderr_re = [
+    # IX error messages that mean a command failed. Add new ones as they are found.
+    terminal_stderr_re: ClassVar[list] = [
         re.compile(rb"% .* Invalid command\."),
         re.compile(rb"% .* -- Ambiguous command."),
         re.compile(rb"% Expects a subcommand or item selection."),
@@ -38,29 +42,33 @@ class TerminalModule(TerminalBase):
 
     terminal_config_prompt = re.compile(r"^.+\(config\)#$")
 
-    def on_open_shell(self):
-        pass
+    def on_open_shell(self) -> None:
+        """Do nothing when the shell opens."""
 
-    def on_become(self, passwd=None):
+    def on_become(self, passwd: str | None = None) -> None:
+        """Enter config mode, answering the password prompt when a password is given."""
         if self._get_prompt().endswith(b"(config)#"):
             return
         cmd = {"command": "configure"}
         if passwd:
             cmd["prompt"] = to_text(
-                r"[\r\n]?Password: ?$", errors="surrogate_or_strict"
+                r"[\r\n]?Password: ?$",
+                errors="surrogate_or_strict",
             )
             cmd["answer"] = passwd
         try:
             self._exec_cli_command(
-                to_bytes(json.dumps(cmd), errors="surrogate_or_strict")
+                to_bytes(json.dumps(cmd), errors="surrogate_or_strict"),
             )
-        except AnsibleConnectionFailure:
-            raise AnsibleConnectionFailure("unable to switch configure mode")
+        except AnsibleConnectionFailure as exc:
+            msg = "unable to switch configure mode"
+            raise AnsibleConnectionFailure(msg) from exc
 
-    def on_unbecome(self):
+    def on_unbecome(self) -> None:
+        """Leave config mode."""
         prompt = self._get_prompt()
         if prompt is None:
             return
-        elif b"(config" in prompt:
+        if b"(config" in prompt:
             self._exec_cli_command(b"configure")
             self._exec_cli_command(b"exit")

@@ -1,50 +1,54 @@
-# -*- coding: utf-8 -*-
 # Copyright 2024 Red Hat
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-from __future__ import absolute_import, division, print_function
 
-__metaclass__ = type
+"""The ix ospfv3 fact class.
 
-"""
-The ix ospfv3 fact class
 It is in this file the configuration is collected from the device
 for a given resource, parsed, and the facts tree is populated
 based on the configuration.
 """
 
-from copy import deepcopy
+from __future__ import annotations
 
-from ansible.module_utils.six import iteritems
+from typing import TYPE_CHECKING
+
 from ansible_collections.ansible.netcommon.plugins.module_utils.network.common import (
     utils,
+)
+
+from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.ospfv3.ospfv3 import (
+    Ospfv3Args,
 )
 from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.rm_templates.ospfv3 import (
     Ospfv3Template,
 )
-from ansible_collections.rucdev.ix.plugins.module_utils.network.ix.argspec.ospfv3.ospfv3 import (
-    Ospfv3Args,
-)
+
+if TYPE_CHECKING:
+    from ansible.module_utils.basic import AnsibleModule
+    from ansible.module_utils.connection import Connection
 
 
-class Ospfv3Facts(object):
-    """The ix ospfv3 facts class"""
+class Ospfv3Facts:
+    """The ix ospfv3 facts class."""
 
-    def __init__(self, module, subspec="config", options="options"):
+    def __init__(self, module: AnsibleModule) -> None:
+        """Keep the module and the argument spec of the resource."""
         self._module = module
         self.argument_spec = Ospfv3Args.argument_spec
 
-    def get_ospfv3_data(self, connection):
+    def get_ospfv3_data(self, connection: Connection) -> str:
+        """Return the running config of the device."""
         return connection.configure_get("show running-config ospf")
 
-    def dict_to_list(self, ospf_data):
-        """Converts areas in each process to list
+    def dict_to_list(self, ospf_data: dict) -> dict:
+        """Convert the areas of each process to a list.
+
         :param ospf_data: ospf data
         :rtype: dictionary
-        :returns: facts_output
+        :returns: facts_output.
         """
-
         facts_output = {"processes": []}
 
         for process in ospf_data.get("processes", []):
@@ -54,8 +58,9 @@ class Ospfv3Facts(object):
 
         return facts_output
 
-    def preprocess_lines(self, lines):
-        """Filters input lines to extract only the relevant OSPFv3 configuration
+    def preprocess_lines(self, lines: list) -> list:
+        """Filter the input lines to the OSPFv3 configuration.
+
         :param lines: A list of configuration lines.
 
         :rtypes: list
@@ -73,8 +78,13 @@ class Ospfv3Facts(object):
                 get_line = False
         return filtered_lines
 
-    def populate_facts(self, connection, ansible_facts, data=None):
-        """Populate the facts for Ospfv3 network resource
+    def populate_facts(
+        self,
+        connection: Connection,
+        ansible_facts: dict,
+        data: str | None = None,
+    ) -> dict:
+        """Populate the facts for Ospfv3 network resource.
 
         :param connection: the device connection
         :param ansible_facts: Facts dictionary
@@ -91,7 +101,8 @@ class Ospfv3Facts(object):
         # pick up
         # parse native config using the Ospfv3 template
         ospfv3_parser = Ospfv3Template(
-            lines=self.preprocess_lines(data.splitlines()), module=self._module
+            lines=self.preprocess_lines(data.splitlines()),
+            module=self._module,
         )
         ospfv3_parsed = ospfv3_parser.parse()
 
@@ -107,8 +118,10 @@ class Ospfv3Facts(object):
 
         params = utils.remove_empties(
             ospfv3_parser.validate_config(
-                self.argument_spec, {"config": facts_output}, redact=True
-            )
+                self.argument_spec,
+                {"config": facts_output},
+                redact=True,
+            ),
         )
         facts["ospfv3"] = params.get("config")
         ansible_facts["ansible_network_resources"].update(facts)
