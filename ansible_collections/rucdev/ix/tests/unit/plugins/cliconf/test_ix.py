@@ -263,6 +263,16 @@ class TestCliconfModeHandling(TestCase):
         self._cliconf.get(command="show running-config")
         assert self._sent == ["configure", "show running-config"]
 
+    def test_get_config_running_from_exec(self) -> None:
+        """get_config() sends show running-config in config mode."""
+        self._cliconf.get_config()
+        assert self._sent == ["configure", "show running-config"]
+
+    def test_get_config_startup_from_exec(self) -> None:
+        """get_config(source="startup") sends show startup-config in config mode."""
+        self._cliconf.get_config(source="startup")
+        assert self._sent == ["configure", "show startup-config"]
+
     def test_edit_config_then_task_start_is_exec(self) -> None:
         """After edit_config the session is back in exec mode.
 
