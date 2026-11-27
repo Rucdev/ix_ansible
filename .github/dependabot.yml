@@ -1,0 +1,16 @@
+---
+version: 2
+updates:
+  # The workflows reference actions by tag (actions/checkout@v7 and so on).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    # Skip releases that are only a few days old.
+    cooldown:
+      default-days: 7
+    # One pull request for all the action updates of a week.
+    groups:
+      github-actions:
+        patterns: ["*"]
+...
