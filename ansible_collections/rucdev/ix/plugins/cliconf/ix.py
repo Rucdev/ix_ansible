@@ -153,7 +153,8 @@ class Cliconf(CliconfBase):
     ) -> str:
         """Return the output of show running-config or show startup-config.
 
-        flags are appended to the command without a space in between.
+        flags are appended to the command, separated by spaces
+        (e.g. ["interface", "GigaEthernet0.0"]).
         """
         # running, startup以外はエラーとする
         if source not in ("running", "startup"):
@@ -168,8 +169,7 @@ class Cliconf(CliconfBase):
             flags = []
 
         cmd = "show running-config" if source == "running" else "show startup-config"
-        cmd += " ".join(to_list(flags))
-        cmd = cmd.strip()
+        cmd = " ".join([cmd, *to_list(flags)])
         return self.send_command(cmd)
 
     def get_diff(
@@ -336,6 +336,10 @@ class Cliconf(CliconfBase):
             "supports_diff_ignore_lines": True,
             "supports_generate_diff": True,
             "supports_replace": False,
+            # IX has no show running-config option that includes the
+            # default values (no "all" or "full" as on IOS), so
+            # ansible.netcommon.cli_config rejects defaults: true.
+            "supports_defaults": False,
         }
 
     def get_option_values(self) -> dict:
@@ -428,17 +432,3 @@ class Cliconf(CliconfBase):
         resp["request"] = requests
         resp["response"] = results
         return resp
-
-    def get_default_flag(self) -> str:
-        """Return the show running-config flag that includes the default values."""
-        self.send_command(SVINTR_CONFIG)
-        out = self.get("show running-config ?")
-        out = to_text(out, errors="surrogate_then_replace")
-
-        commands = set()
-        for line in out.splitlines():
-            if line.strip():
-                commands.add(line.strip().split()[0])
-        if "all" in commands:
-            return "all"
-        return "full"

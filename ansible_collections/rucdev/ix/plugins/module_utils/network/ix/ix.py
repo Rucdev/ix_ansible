@@ -76,17 +76,6 @@ def get_capabilities(module: AnsibleModule) -> dict:
     return module.ix_capabilities
 
 
-def get_defaults_flag(module: AnsibleModule) -> str:
-    """Return the flag that makes show running-config include the defaults."""
-    connection = get_connection(module)
-    try:
-        out = connection.get_defaults_flag()
-    except AnsibleConnectionError as exc:
-        module.fail_json(msg=to_text(exc, errors="surrogate_then_replace"))
-
-    return to_text(out, errors="surrogate_then_replace").strip()
-
-
 def get_config(module: AnsibleModule, flags: list | str | None = None) -> str:
     """Return the running config for the given flags, read once per flags."""
     flags = to_list(flags)

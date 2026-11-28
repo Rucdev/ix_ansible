@@ -113,13 +113,6 @@ options:
     type: str
     aliases:
     - config
-  defaults:
-    description:
-    - This argument specifies whether or not to collect all defaults when getting
-        the remote device running config.  When enabled, the module will get the current
-        config by issuing the command C(show running-config all).
-    type: bool
-    default: no
   save_when:
     description:
       - When changes are made to the device running-configuration, the changes are not
@@ -264,11 +257,7 @@ def get_running_config(
     """Return the running config to compare with, reading it from the device if needed."""
     running = module.params["running_config"]
     if not running:
-        running = (
-            current_config
-            if not module.params["defaults"] and current_config
-            else get_config(module, flags)
-        )
+        running = current_config or get_config(module, flags)
     return running
 
 
@@ -296,7 +285,6 @@ def argument_spec() -> dict:
         "replace": {"default": "line", "choices": ["line", "block"]},
         "running_config": {"aliases": ["config"]},
         "intended_config": {},
-        "defaults": {"type": "bool", "default": False},
         "backup": {"type": "bool", "default": False},
         "backup_options": {"type": "dict", "options": backup_spec},
         "save_when": {
