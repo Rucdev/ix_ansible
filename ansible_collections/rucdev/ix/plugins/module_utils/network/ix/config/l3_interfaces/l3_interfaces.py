@@ -176,10 +176,10 @@ class L3Interfaces(ResourceModule):
         want: dict | None = None,
         have: dict | None = None,
     ) -> None:
-        """Fail the module unless the address in want and in have has a valid prefix length.
+        """Fail the module unless the address in want and in have is valid for afi.
 
-        Each address must be "<address>/<prefix length>" with a prefix length in
-        range for afi. The address part itself is not checked.
+        Each address must be "<address>/<prefix length>", with an address of the
+        IP version of afi and a prefix length in range.
         """
         for entry in (want, have):
             if not entry or not entry.get("address"):
