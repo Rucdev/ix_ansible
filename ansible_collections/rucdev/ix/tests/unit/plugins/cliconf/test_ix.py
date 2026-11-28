@@ -76,7 +76,7 @@ class TestPluginCLIConfIOS(TestCase):
             "device_operations": {
                 "supports_commit": False,
                 "supports_commit_comment": False,
-                "supports_defaults": True,
+                "supports_defaults": False,
                 "supports_diff_ignore_lines": True,
                 "supports_diff_match": True,
                 "supports_diff_replace": True,
@@ -102,10 +102,19 @@ class TestPluginCLIConfIOS(TestCase):
                 "edit_banner",
                 "get_diff",
                 "run_commands",
-                "get_defaults_flag",
             ],
         }
         assert sorted(mock_capabilities) == sorted(capabilities)
+
+    def test_defaults_not_supported(self) -> None:
+        """IX has no show running-config option for the defaults (#60).
+
+        ansible.netcommon.cli_config reads supports_defaults and rejects
+        defaults: true, instead of sending "show running-config all".
+        """
+        capabilities = json.loads(self._cliconf.get_capabilities())
+        assert capabilities["device_operations"]["supports_defaults"] is False
+        assert "get_default_flag" not in capabilities["rpc"]
 
 
 class TestCliconfModeHandling(TestCase):
@@ -272,6 +281,22 @@ class TestCliconfModeHandling(TestCase):
         """get_config(source="startup") sends show startup-config in config mode."""
         self._cliconf.get_config(source="startup")
         assert self._sent == ["configure", "show startup-config"]
+
+    def test_get_config_flags_list_separated_by_space(self) -> None:
+        """get_config() puts a space between the show command and each flag (#60)."""
+        self._cliconf.get_config(flags=["interface", "GigaEthernet0.0"])
+        assert self._sent == [
+            "configure",
+            "show running-config interface GigaEthernet0.0",
+        ]
+
+    def test_get_config_flags_str_separated_by_space(self) -> None:
+        """get_config() also takes flags as one string (#60)."""
+        self._cliconf.get_config(source="startup", flags="interface GigaEthernet0.0")
+        assert self._sent == [
+            "configure",
+            "show startup-config interface GigaEthernet0.0",
+        ]
 
     def test_edit_config_then_task_start_is_exec(self) -> None:
         """After edit_config the session is back in exec mode.
