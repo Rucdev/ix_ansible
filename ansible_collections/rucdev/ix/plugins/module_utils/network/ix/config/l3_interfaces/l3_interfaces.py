@@ -181,27 +181,13 @@ class L3Interfaces(ResourceModule):
         Each address must be "<address>/<prefix length>" with a prefix length in
         range for afi. The address part itself is not checked.
         """
-        if afi == "ipv4" and want:
-            v4_addr = (
-                validate_ipv4(self._module, want["address"])
-                if want.get("address")
-                else {}
-            )
-            if v4_addr:
-                want["address"] = v4_addr
-        elif afi == "ipv6" and want and want.get("address"):
-            validate_ipv6(want["address"], self._module)
-
-        if afi == "ipv4" and have:
-            v4_addr_h = (
-                validate_ipv4(self._module, have["address"])
-                if have.get("address")
-                else {}
-            )
-            if v4_addr_h:
-                have["address"] = v4_addr_h
-        elif afi == "ipv6" and have and have.get("address"):
-            validate_ipv6(have["address"], self._module)
+        for entry in (want, have):
+            if not entry or not entry.get("address"):
+                continue
+            if afi == "ipv4":
+                validate_ipv4(self._module, entry["address"])
+            elif afi == "ipv6":
+                validate_ipv6(entry["address"], self._module)
 
     def list_to_dict(self, param: dict) -> None:
         """Turn the address lists of each interface into dicts keyed by address."""

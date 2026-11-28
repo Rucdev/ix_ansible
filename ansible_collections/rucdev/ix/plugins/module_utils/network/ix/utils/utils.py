@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ansible.module_utils.common.network import is_masklen, to_netmask
+from ansible.module_utils.common.network import is_masklen
 
 if TYPE_CHECKING:
     from ansible.module_utils.basic import AnsibleModule
@@ -50,19 +50,3 @@ def validate_ipv6(value: str, module: AnsibleModule) -> None:
             module.fail_json(
                 msg=f"invalid value for mask: {address[1]}, mask should be in range 0-128",
             )
-
-
-def validate_n_expand_ipv4(module: AnsibleModule, want: dict) -> str:
-    # Check if input IPV4 is valid IP and expand IPV4 with its subnet mask
-    """Validate the IPv4 address of want and return it as "address netmask"."""
-    ip_addr_want = want.get("address")
-    if ip_addr_want == "default":
-        return f"0.0.0.0 {to_netmask('0')}"
-    if len(ip_addr_want.split(" ")) > 1:
-        return ip_addr_want
-    validate_ipv4(module, ip_addr_want)
-    ip = ip_addr_want.split("/")
-    if len(ip) == ADDRESS_PARTS:
-        ip_addr_want = f"{ip[0]} {to_netmask(ip[1])}"
-
-    return ip_addr_want
