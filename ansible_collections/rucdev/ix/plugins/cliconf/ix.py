@@ -151,11 +151,9 @@ class Cliconf(CliconfBase):
         flags: list | str | None = None,
         format: str | None = None,
     ) -> str:
-        """Return the output of show running-config.
+        """Return the output of show running-config or show startup-config.
 
         flags are appended to the command without a space in between.
-        source="startup" is accepted, but only "running" sets the show command,
-        so the command is then built from the flags alone.
         """
         # running, startup以外はエラーとする
         if source not in ("running", "startup"):
@@ -169,9 +167,7 @@ class Cliconf(CliconfBase):
         if not flags:
             flags = []
 
-        cmd = ""
-        if source == "running":
-            cmd = "show running-config"
+        cmd = "show running-config" if source == "running" else "show startup-config"
         cmd += " ".join(to_list(flags))
         cmd = cmd.strip()
         return self.send_command(cmd)
